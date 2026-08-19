@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import torch, dgl
 from allegroEij_merge import get_allegro_model_transforms, transform_ase_atoms, create_DGL_g, intersect_graphs
-from graph_converter import Icoxx2Graph
+from icoxx_graph_converter import Icoxx2Graph
 
 #df=pd.DataFrame({'id': ids, 'mat_dir': paths})
 df=pd.read_csv('5_lo_chg_mpInfo_nonmetals.csv')

@@ -4,14 +4,10 @@ import torch, dgl
 from allegroEij_merge import get_allegro_model_transforms, transform_ase_atoms, create_DGL_g, intersect_graphs
 from graph_converter import Icoxx2Graph
 
-ids=['Cs3Bi2I9', 'CsCu3S2', 'CsPbBr3']
-paths=['/home/malfahdi/RZ-Dienste/hpc-user/malfahdi/tests/test_allegro/Cs3Bi2I9', 
-       '/home/malfahdi/RZ-Dienste/hpc-user/malfahdi/tests/test_allegro/CsCu3S2', 
-       '/home/malfahdi/RZ-Dienste/hpc-user/malfahdi/tests/test_allegro/CsPbBr3']
-df=pd.DataFrame({'id': ids, 'mat_path': paths})
-df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR'))
-df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster'))
-df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster'))
+df=pd.read_csv('5_lo_chg_mpInfo_nonmetals.csv')
+df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
+df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster.gz'))
+df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -33,14 +29,13 @@ for i, (cont_path, icoxx_path) in enumerate(zip(df['struc_dir'].values, df['ICOH
 
     Eij_chunks.append(g_intersect.edata['g1_edge_features']); icoxx_chunks.append(g_intersect.edata['g2_ICOXXs'].unsqueeze(-1))
     #print(g_intersect.edata['g1_edge_energy'].shape, g_intersect.edata['g2_ICOXXs'].shape)
-    print(g_intersect.edata['g1_edge_features'].shape, g_intersect.edata['g2_ICOXXs'].unsqueeze(-1).shape)
+    #print(g_intersect.edata['g1_edge_features'].shape, g_intersect.edata['g2_ICOXXs'].unsqueeze(-1).shape)
     #exit()
 
 X = torch.cat(Eij_chunks, dim=0).cpu().numpy()
-icoxxs = torch.cat(icoxx_chunks, dim=0).cpu().numpy()
-#print(Eijs.shape, icoxxs.shape)
+icoxxs = torch.cat(icoxx_chunks, dim=0).squeeze().cpu().numpy()
 
-import numpy as np
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 # Standardize each edge feature
@@ -57,13 +52,20 @@ print("PCA shape:", X_pca.shape)
 print("Explained variance:",
       pca.explained_variance_ratio_)
 
-'''corr = torch.corrcoef(torch.stack([Eijs, icoxxs]))[0, 1]
-print(corr)
-pd.DataFrame({'ICOXX': icoxxs, 'Eij': Eijs}).to_csv('Eij_icoxx_low_LTC.csv', index=False)
-
 import matplotlib.pyplot as plt
-plt.scatter(icoxxs, Eijs)
-plt.savefig('eij_vs_icoxx_low_LTC.pdf')
+plt.figure(figsize=(4,3.5))
+plt.scatter(
+    X_pca[:, 0],
+    X_pca[:, 1],
+    c=icoxxs,
+    s=5,
+    #cmap="rainbow"
+    )
+# [0.0734705  0.05522907]test2 dataset
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.colorbar(label="-ICOHP (eV)")
+plt.tight_layout()
+plt.savefig('Eij_latent_space_ICOHP.png')
 plt.show()
-'''
 
