@@ -114,8 +114,42 @@ class Allegro_ICOXX:
         icoxxs_scaled = scaler.fit_transform(icoxxs)
         return torch.corrcoef(torch.stack([Eijs.reshape(-1), icoxxs.reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, icoxxs_scaled)
 
+    def plot_Eij_d(self,
+                        save_plot: bool=True, 
+                        Eii_icoxx_plot_name:str = 'Eij_d.png', 
+                        dpi: float = 400):
+        """ plot Eij vs. ICOXX
+        args:
+            save_plot: option to save plot, 
+            Eii_icoxx_plot_name: filename of the plot, 
+            dpi: plot's resolution
+        :return:
+            g: csv file "label+'_Eij_all.csv'" contains ICOXX and Eij raw data
+            coeff: Pearson's correlation coefficient between Eij and ICOXX 
+        """
 
-    def plot_PCAEij_icoxx(self, 
+        plt.figure(figsize=(4,3.5))
+        plt.scatter(self.d, self.Eijs, c='blue')
+        plt.xlabel('Bond Distance')
+        plt.ylabel(r'$E_{ij}$', fontsize=12)
+        ax=plt.gca()
+        nx = len(ax.get_xticks())
+        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
+        ny = len(ax.get_yticks())
+        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
+        plt.tight_layout()
+        if save_plot:
+            plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
+        plt.show()
+
+        pd.DataFrame({'bond distance': self.d.squeeze(), 'Eij': self.Eijs.squeeze()}).to_csv('Dist_Eij_all.csv', index=False)
+
+        scaler = StandardScaler()
+        Eijs_scaled = scaler.fit_transform(self.Eijs)
+        d_scaled = scaler.fit_transform(self.d)
+        return torch.corrcoef(torch.stack([Eijs.reshape(-1), self.d.reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, d_scaled)
+
+    def plot_PCAEij_icoxx_and_dcor(self, 
                           icohp: bool=True, 
                           save_plot: bool=True, 
                           PCAEiiFeats_icoxx_plot_name:str = 'PCAEijFeatureSpace_ICOXX.png', 
@@ -161,45 +195,10 @@ class Allegro_ICOXX:
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], colorBar_label: icoxxs.squeeze(),}).to_csv(label+'_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, icoxx_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca, colorBar_label: StandardScaler().fit_transform(icoxxs)}
-        mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=3000)
+        mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=20)
         return mean_mat, std_mat, mean_pvals
 
-    def plot_Eij_d(self,
-                        save_plot: bool=True, 
-                        Eii_icoxx_plot_name:str = 'Eij_d.png', 
-                        dpi: float = 400):
-        """ plot Eij vs. ICOXX
-        args:
-            save_plot: option to save plot, 
-            Eii_icoxx_plot_name: filename of the plot, 
-            dpi: plot's resolution
-        :return:
-            g: csv file "label+'_Eij_all.csv'" contains ICOXX and Eij raw data
-            coeff: Pearson's correlation coefficient between Eij and ICOXX 
-        """
-
-        plt.figure(figsize=(4,3.5))
-        plt.scatter(self.d, self.Eijs, c='blue')
-        plt.xlabel('Bond Distance')
-        plt.ylabel(r'$E_{ij}$', fontsize=12)
-        ax=plt.gca()
-        nx = len(ax.get_xticks())
-        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-        ny = len(ax.get_yticks())
-        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-        plt.tight_layout()
-        if save_plot:
-            plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
-        plt.show()
-
-        pd.DataFrame({'bond distance': self.d.squeeze(), 'Eij': self.Eijs.squeeze()}).to_csv('bondDist_Eij_all.csv', index=False)
-
-        scaler = StandardScaler()
-        Eijs_scaled = scaler.fit_transform(self.Eijs)
-        d_scaled = scaler.fit_transform(self.d)
-        return torch.corrcoef(torch.stack([Eijs.reshape(-1), self.d.reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, d_scaled)
-
-    def plot_PCAEij_d(self, 
+    def plot_PCAEij_d_and_dcor(self, 
                           save_plot: bool=True, 
                           PCAEiiFeats_dist_plot_name:str = 'PCAEijFeatureSpace_dist.png', 
                           dpi: float=400):
@@ -238,10 +237,10 @@ class Allegro_ICOXX:
 
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], 'bond distance': self.d.squeeze(),}).to_csv('Dist_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
-        #sets={'PCAEijfeats': self.EijFeats_pca, 'd': StandardScaler().fit_transform(self.d)}
-        #mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=3000)
-        #return mean_mat, std_mat, mean_pvals
-        return dcor.distance_correlation(self.EijFeats_pca, StandardScaler().fit_transform(self.d))
+        sets={'PCAEijfeats': self.EijFeats_pca, 'd': StandardScaler().fit_transform(self.d)}
+        mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=100)
+        return mean_mat, std_mat, mean_pvals
+        #return dcor.distance_correlation(self.EijFeats_pca, StandardScaler().fit_transform(self.d))
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -259,39 +258,39 @@ PCAEijFeats_var=alleg_icoxx.PCA_Xij()
 print('PCA EijFeats:', PCAEijFeats_var)
 
 # plot Eij vs. d and get Pearson and dcor correlations
-Pcorr_d, dcor_d=alleg_icoxx.plot_Eij_d(save_plot = True, Eii_icoxx_plot_name = 'Eij_d.png', dpi = 800)
+Pcorr_d, dcor_d=alleg_icoxx.plot_Eij_d(save_plot = True, Eii_icoxx_plot_name = 'Eij_d.jpg', dpi = 800)
 print('Eij and bond length Pearson and dcor Correlations:',Pcorr_d, dcor_d)
 # plot Eij vs. ICOHP and get Pearson and dcor correlations
-PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(icohp=True, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOHP.png', dpi = 800)
+PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(icohp=True, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOHP.jpg', dpi = 800)
 print('Eij and ICOHP Pearson and dcor Correlations:', PCorr_ICOHP, dcor_ICOHP)
 # plot Eij vs. ICOBI and get Pearson and dcor correlations
-PCorr_ICOBI, dcor_ICOBI=alleg_icoxx.plot_Eij_icoxx(icohp=False, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOBI.png', dpi = 800)
+PCorr_ICOBI, dcor_ICOBI=alleg_icoxx.plot_Eij_icoxx(icohp=False, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOBI.jpg', dpi = 800)
 print('Eij and ICOBI Pearson and dcor Correlations:', PCorr_ICOBI, dcor_ICOBI)
 
 
 XijD_dcor_mean_mat, XijD_dcor_std_mat, XijD_dcor_mean_pvals = alleg_icoxx.plot_PCAEij_d( 
                         save_plot=True, 
-                        PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.png', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
+                        PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('d: PCA variances, Eij dcor:', Xij_variances,) # EijD_dcor)
 print('\n\nd, Xij dcor (mean, std, p-val):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat); print(XijD_dcor_mean_pvals);
 #exit()
 # plot PCA(Eij Features) color-coded with ICOHP
 #Xij_variances, EijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx(
-XijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx(
+XijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         icohp=True, 
                         save_plot=True, 
-                        PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOHP.png', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
+                        PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOHP.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOHP: PCA variances, Eij dcor:', Xij_variances,) # EijICOHP_dcor) 
 print('\n\nICOHP, Xij dcor (mean, std, p-val):', XijICOHP_dcor,) # EijICOHP_dcor) 
 
 # plot PCA(Eij Features) color-coded with ICOBI
 #Xij_variances, EijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx(
-XijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx(
+XijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         icohp=False, 
                         save_plot=True, 
-                        PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOBI.png', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
+                        PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOBI.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOBI: PCA variances, Eij dcor:', Xij_variances,) #EijICOBI_dcor)
 print('\n\nICOBI, Xij dcor (mean, std, p-val):', XijICOBI_dcor,) #EijICOBI_dcor)
