@@ -161,28 +161,3 @@ def intersect_graphs(g1, g2, edge_key):
         g3.edata[f"g1_{name}"] = feat[g1_matching_ids]
 
     return g3
-
-"""
-exit()
-for name, module in sequential_net.named_children():
-    modified_modules[name] = module
-
-    # Determine if we should save this layer
-    should_save = False
-    #if layers_to_save == "all":
-     #   should_save = "type_embed" in name or "layer" in name
-    #elif layers_to_save == "layer":
-     #   should_save = "layer" in name and "convnet" in name
-    #elif layers_to_save == "type_embed":
-     #   should_save = "type_embed" in name
-
-    if should_save:
-        save_module = SaveForOutput(
-                field=AtomicDataDict.NODE_FEATURES_KEY,
-                out_field=f"saved_{name}_embeddings",
-                irreps_in=module.irreps_out
-                )
-        modified_modules[f"save_{name}"] = save_module
-        saved_layer_names.append(f"saved_{name}_embeddings")
-
-"""
