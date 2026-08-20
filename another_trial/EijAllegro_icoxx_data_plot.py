@@ -195,7 +195,7 @@ class Allegro_ICOXX:
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], colorBar_label: icoxxs.squeeze(),}).to_csv(label+'_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, icoxx_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca, colorBar_label: StandardScaler().fit_transform(icoxxs)}
-        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=20)
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20)
         return mean_mat, std_mat
 
     def plot_PCAEij_d_and_dcor(self, 
@@ -238,7 +238,7 @@ class Allegro_ICOXX:
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], 'bond distance': self.d.squeeze(),}).to_csv('Dist_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca, 'd': StandardScaler().fit_transform(self.d)}
-        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=100)
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20)
         return mean_mat, std_mat
         #return dcor.distance_correlation(self.EijFeats_pca, StandardScaler().fit_transform(self.d))
 
@@ -273,7 +273,7 @@ XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAEij_d(
                         PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('d: PCA variances, Eij dcor:', Xij_variances,) # EijD_dcor)
-print('\n\nd, Xij dcor (mean, std, p-val):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat); print(XijD_dcor_mean_pvals);
+print('\n\nd, Xij dcor (mean, std):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat); print(XijD_dcor_mean_pvals);
 #exit()
 # plot PCA(Eij Features) color-coded with ICOHP
 #Xij_variances, EijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx(
@@ -283,7 +283,7 @@ XijICOHP_dcor_mean, XijICOHP_dcor_std = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOHP.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOHP: PCA variances, Eij dcor:', Xij_variances,) # EijICOHP_dcor) 
-print('\n\nICOHP, Xij dcor (mean, std, p-val):'); print(XijICOHP_dcor_mean); print(XijICOHP_dcor_std); # EijICOHP_dcor) 
+print('\n\nICOHP, Xij dcor (mean, std):'); print(XijICOHP_dcor_mean); print(XijICOHP_dcor_std); # EijICOHP_dcor) 
 
 # plot PCA(Eij Features) color-coded with ICOBI
 #Xij_variances, EijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx(
@@ -293,5 +293,5 @@ XijICOBI_dcor_mean, XijICOBI_dcor_std = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOBI.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOBI: PCA variances, Eij dcor:', Xij_variances,) #EijICOBI_dcor)
-print('\n\nICOBI, Xij dcor (mean, std, p-val):'); pritn(XijICOBI_dcor_mean); print(XijICOBI_dcor_std);  #EijICOBI_dcor)
+print('\n\nICOBI, Xij dcor (mean, std):'); pritn(XijICOBI_dcor_mean); print(XijICOBI_dcor_std);  #EijICOBI_dcor)
 

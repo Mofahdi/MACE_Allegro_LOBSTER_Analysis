@@ -10,7 +10,6 @@ import dcor
 
 def evaluate_distance_correlation_matrix_bootstrap(
     sets: dict[str, np.ndarray],
-    #num_resamples: int = 1000,
     num_bootstrap: int = 200,
     random_state: int = 42,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:

@@ -268,30 +268,30 @@ PCorr_ICOBI, dcor_ICOBI=alleg_icoxx.plot_Eij_icoxx(icohp=False, save_plot=True, 
 print('Eij and ICOBI Pearson and dcor Correlations:', PCorr_ICOBI, dcor_ICOBI)
 
 
-XijD_dcor_mean_mat, XijD_dcor_std_mat, XijD_dcor_mean_pvals = alleg_icoxx.plot_PCAEij_d_and_dcor( 
+XijD_dcor_mean_mat, XijD_dcor_std_mat, XijD_dcor_mean_pval = alleg_icoxx.plot_PCAEij_d_and_dcor( 
                         save_plot=True, 
                         PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('d: PCA variances, Eij dcor:', Xij_variances,) # EijD_dcor)
-print('\n\nd, Xij dcor (mean, std, p-val):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat); print(XijD_dcor_mean_pvals);
+print('\n\nd, Xij dcor (mean, std, p-val):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat); print(XijD_dcor_mean_pval);
 #exit()
 # plot PCA(Eij Features) color-coded with ICOHP
 #Xij_variances, EijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx(
-XijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
+XijICOHP_dcor_mean, XijICOHP_dcor_std, XijICOHP_dcor_pval = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         icohp=True, 
                         save_plot=True, 
                         PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOHP.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOHP: PCA variances, Eij dcor:', Xij_variances,) # EijICOHP_dcor) 
-print('\n\nICOHP, Xij dcor (mean, std, p-val):', XijICOHP_dcor,) # EijICOHP_dcor) 
+print('\n\nICOHP, Xij dcor (mean, std, p-val):'); print(XijICOHP_dcor_mean); print(XijICOHP_dcor_std); print(XijICOHP_dcor_pval)    # EijICOHP_dcor) 
 
 # plot PCA(Eij Features) color-coded with ICOBI
-#Xij_variances, EijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx(
-XijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
+#Xij_variances, EijICOBI_dcor = alleg_icoxx.plot_PCAEij_icoxx
+XijICOBI_dcor_mean, XijICOBI_dcor_std, XijICOBI_dcor_pval = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         icohp=False, 
                         save_plot=True, 
                         PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOBI.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOBI: PCA variances, Eij dcor:', Xij_variances,) #EijICOBI_dcor)
-print('\n\nICOBI, Xij dcor (mean, std, p-val):', XijICOBI_dcor,) #EijICOBI_dcor)
+print('\n\nICOBI, Xij dcor (mean, std, p-val):'); print(XijICOBI_dcor_mean); print(XijICOBI_dcor_std); print(XijICOBI_dcor_pval);  #EijICOBI_dcor)
 
