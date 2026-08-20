@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=megnet
-#SBATCH --time=10:30:00
+#SBATCH --time=20:30:00
 #SBATCH --output=results.out
 #SBATCH --error=results.err
 #SBATCH --nodes=1

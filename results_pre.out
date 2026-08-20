@@ -1,0 +1,34 @@
+PCA EijFeats: [0.07212882 0.05204938]
+Eij and bond length Pearson and dcor Correlations: 0.6429283618927002 0.6826792042885972
+Eij and ICOHP Pearson and dcor Correlations: 0.8007630705833435 0.7875730430335991
+Eij and ICOBI Pearson and dcor Correlations: -0.8028280138969421 0.7880716026051396
+
+
+d, Xij dcor (mean, std, p-val):
+             PCAEijfeats        d
+PCAEijfeats      1.00000  0.48973
+d                0.48973  1.00000
+             PCAEijfeats             d
+PCAEijfeats       0.0000  3.149967e-02
+d                 0.0315  1.820162e-15
+             PCAEijfeats         d
+PCAEijfeats     0.009901  0.009901
+d               0.009901  0.009901
+
+
+ICOHP, Xij dcor (mean, std, p-val): (             PCAEijfeats  ICOHP (eV)
+PCAEijfeats     1.000000    0.631138
+ICOHP (eV)      0.631138    1.000000,              PCAEijfeats    ICOHP (eV)
+PCAEijfeats     0.000000  5.422674e-02
+ICOHP (eV)      0.054227  1.549371e-14,              PCAEijfeats  ICOHP (eV)
+PCAEijfeats     0.009901    0.009901
+ICOHP (eV)      0.009901    0.009901)
+
+
+ICOBI, Xij dcor (mean, std, p-val): (             PCAEijfeats     ICOBI
+PCAEijfeats     1.000000  0.606412
+ICOBI           0.606412  1.000000,              PCAEijfeats         ICOBI
+PCAEijfeats     0.000000  5.522739e-02
+ICOBI           0.055227  1.212667e-14,              PCAEijfeats     ICOBI
+PCAEijfeats     0.009901  0.009901
+ICOBI           0.009901  0.009901)

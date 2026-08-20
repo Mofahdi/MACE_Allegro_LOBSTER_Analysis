@@ -238,7 +238,7 @@ class Allegro_ICOXX:
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], 'bond distance': self.d.squeeze(),}).to_csv('Dist_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca, 'd': StandardScaler().fit_transform(self.d)}
-        mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=100)
+        mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=100, num_bootstrap=20)
         return mean_mat, std_mat, mean_pvals
         #return dcor.distance_correlation(self.EijFeats_pca, StandardScaler().fit_transform(self.d))
 
@@ -258,17 +258,17 @@ PCAEijFeats_var=alleg_icoxx.PCA_Xij()
 print('PCA EijFeats:', PCAEijFeats_var)
 
 # plot Eij vs. d and get Pearson and dcor correlations
-Pcorr_d, dcor_d=alleg_icoxx.plot_Eij_d(save_plot = True, Eii_icoxx_plot_name = 'Eij_d.jpg', dpi = 800)
+Pcorr_d, dcor_d=alleg_icoxx.plot_Eij_d(save_plot = True, Eii_icoxx_plot_name = 'Eij_d.jpg', dpi = 700)
 print('Eij and bond length Pearson and dcor Correlations:',Pcorr_d, dcor_d)
 # plot Eij vs. ICOHP and get Pearson and dcor correlations
-PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(icohp=True, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOHP.jpg', dpi = 800)
+PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(icohp=True, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOHP.jpg', dpi = 700)
 print('Eij and ICOHP Pearson and dcor Correlations:', PCorr_ICOHP, dcor_ICOHP)
 # plot Eij vs. ICOBI and get Pearson and dcor correlations
-PCorr_ICOBI, dcor_ICOBI=alleg_icoxx.plot_Eij_icoxx(icohp=False, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOBI.jpg', dpi = 800)
+PCorr_ICOBI, dcor_ICOBI=alleg_icoxx.plot_Eij_icoxx(icohp=False, save_plot=True, Eii_icoxx_plot_name = 'Eij_ICOBI.jpg', dpi = 700)
 print('Eij and ICOBI Pearson and dcor Correlations:', PCorr_ICOBI, dcor_ICOBI)
 
 
-XijD_dcor_mean_mat, XijD_dcor_std_mat, XijD_dcor_mean_pvals = alleg_icoxx.plot_PCAEij_d( 
+XijD_dcor_mean_mat, XijD_dcor_std_mat, XijD_dcor_mean_pvals = alleg_icoxx.plot_PCAEij_d_and_dcor( 
                         save_plot=True, 
                         PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)

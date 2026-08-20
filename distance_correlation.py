@@ -53,7 +53,7 @@ def evaluate_distance_correlation_matrix_bootstrap(
 
         for _ in range(num_bootstrap):
             # Bootstrap resample indices with replacement
-            idx = rng.integers(0, n_samples, 500)
+            idx = rng.integers(0, n_samples, 10000)
             X_i = sets[i][idx]
             X_j = sets[j][idx]
 
