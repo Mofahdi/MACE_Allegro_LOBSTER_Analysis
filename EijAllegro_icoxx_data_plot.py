@@ -246,7 +246,7 @@ class Allegro_ICOXX:
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device = "cpu"
 # initialize class
-alleg_icoxx=Allegro_ICOXX(df_path='5_lo_chg_mpInfo_nonmetals_test.csv', 
+alleg_icoxx=Allegro_ICOXX(df_path='5_lo_chg_mpInfo_nonmetals.csv', 
                           model_path="Allegro-OAM-L-0.1.nequip.zip", 
                           device=device)
 
