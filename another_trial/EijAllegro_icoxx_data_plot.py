@@ -255,8 +255,8 @@ alleg_icoxx=Allegro_ICOXX(df_path='5_lo_chg_mpInfo_nonmetals.csv',
 # Howerver, our object can plot and will reproduce our work's plots
 Eijs, EijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
 PCAEijFeats_var=alleg_icoxx.PCA_Xij()
-print('PCA EijFeats:', PCAEijFeats_var)
-
+print('PCA EijFeats variation:', PCAEijFeats_var)
+print('number of edges', Eijs.shape)
 # plot Eij vs. d and get Pearson and dcor correlations
 Pcorr_d, dcor_d=alleg_icoxx.plot_Eij_d(save_plot = True, Eii_icoxx_plot_name = 'Eij_d.jpg', dpi = 800)
 print('Eij and bond length Pearson and dcor Correlations:',Pcorr_d, dcor_d)
@@ -268,7 +268,7 @@ PCorr_ICOBI, dcor_ICOBI=alleg_icoxx.plot_Eij_icoxx(icohp=False, save_plot=True, 
 print('Eij and ICOBI Pearson and dcor Correlations:', PCorr_ICOBI, dcor_ICOBI)
 
 
-XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAEij_d( 
+XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAEij_d_and_dcor( 
                         save_plot=True, 
                         PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
