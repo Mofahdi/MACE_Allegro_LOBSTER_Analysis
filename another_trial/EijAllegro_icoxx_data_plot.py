@@ -273,7 +273,7 @@ XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAEij_d_and_dcor(
                         PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('d: PCA variances, Eij dcor:', Xij_variances,) # EijD_dcor)
-print('\n\nd, Xij dcor (mean, std):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat); print(XijD_dcor_mean_pvals);
+print('\n\nd, Xij dcor (mean, std):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat);
 #exit()
 # plot PCA(Eij Features) color-coded with ICOHP
 #Xij_variances, EijICOHP_dcor = alleg_icoxx.plot_PCAEij_icoxx(
