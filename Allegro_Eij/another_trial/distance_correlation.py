@@ -63,7 +63,7 @@ def evaluate_distance_correlation_matrix_bootstrap(
             #)
 
             dcor_values.append(val)
-            pval_values.append(test.p_value)
+            #pval_values.append(test.p_value)
 
         mean_val = np.mean(dcor_values)
         std_val = np.std(dcor_values)

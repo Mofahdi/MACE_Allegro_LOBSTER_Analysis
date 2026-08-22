@@ -293,5 +293,5 @@ XijICOBI_dcor_mean, XijICOBI_dcor_std = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
                         PCAEiiFeats_icoxx_plot_name = 'PCAEijFeatureSpace_ICOBI.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
                         dpi=700)
 #print('ICOBI: PCA variances, Eij dcor:', Xij_variances,) #EijICOBI_dcor)
-print('\n\nICOBI, Xij dcor (mean, std):'); pritn(XijICOBI_dcor_mean); print(XijICOBI_dcor_std);  #EijICOBI_dcor)
+print('\n\nICOBI, Xij dcor (mean, std):'); print(XijICOBI_dcor_mean); print(XijICOBI_dcor_std);  #EijICOBI_dcor)
 

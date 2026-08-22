@@ -1,0 +1,32 @@
+PCA EijFeats variation: [0.06948579 0.05301641]
+number of edges torch.Size([6050504, 1])
+Eij and bond length Pearson and dcor Correlations: 0.6380458474159241 0.6769502193347949
+Eij and ICOHP Pearson and dcor Correlations: 0.8201455473899841 0.8180750101904517
+Eij and ICOBI Pearson and dcor Correlations: -0.817023515701294 0.8133634200578963
+
+
+d, Xij dcor (mean, std):
+             PCAEijfeats         d
+PCAEijfeats     0.000000  0.257931
+d               0.257931  1.000000
+             PCAEijfeats             d
+PCAEijfeats     0.000000  1.738050e-03
+d               0.001738  1.252763e-14
+
+
+ICOHP, Xij dcor (mean, std):
+             PCAEijfeats  ICOHP (eV)
+PCAEijfeats     0.000000    0.341193
+ICOHP (eV)      0.341193    1.000000
+             PCAEijfeats    ICOHP (eV)
+PCAEijfeats      0.00000  2.349893e-03
+ICOHP (eV)       0.00235  3.020849e-13
+
+
+ICOBI, Xij dcor (mean, std):
+             PCAEijfeats     ICOBI
+PCAEijfeats     0.000000  0.327613
+ICOBI           0.327613  1.000000
+             PCAEijfeats         ICOBI
+PCAEijfeats     0.000000  2.529073e-03
+ICOBI           0.002529  6.126989e-13
