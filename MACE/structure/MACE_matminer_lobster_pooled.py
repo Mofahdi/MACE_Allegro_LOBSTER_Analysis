@@ -15,7 +15,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 default_dtype = torch.float32
 torch.set_default_dtype(default_dtype)
 
-mace_calc=MACECalculator(model_paths='mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
+mace_calc=MACECalculator(model_paths='../mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
 mace_model=mace_calc.models[0]
 
 df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test3.csv')

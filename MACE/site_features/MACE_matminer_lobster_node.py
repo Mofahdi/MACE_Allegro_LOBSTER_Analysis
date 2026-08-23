@@ -17,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 default_dtype = torch.float32
 torch.set_default_dtype(default_dtype)
 
-mace_calc=MACECalculator(model_paths='mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
+mace_calc=MACECalculator(model_paths='../mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
 mace_model=mace_calc.models[0]
 
 df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test4.csv')
@@ -26,11 +26,18 @@ df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobste
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
 df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
 
-mace_chunks=[]; mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; #energies=[]; inter_es=[]
-for i, (cont_path, icoxx_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, df['CHRG_dir'].values)):
+mace_chunks=[]; mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; 
+for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, df['ICOBI_dir'].values, df['CHRG_dir'].values)):
     #try:
     matminer_n_feats = get_matminer_site_feats(cont_path)
-    lobster_n_feats = get_lobster_site_feat(structure_path=cont_path, ICOXX_path=icoxx_path, chrg_path=chrg_dir)
+    if i==0:
+        lobster_n_feats, lobster_feat_labels = get_lobster_site_feat(structure_path=cont_path, 
+                                                ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
+                                                chrg_path=chrg_dir, output_feat_labels=True)
+    else:
+        lobster_n_feats = get_lobster_site_feat(structure_path=cont_path, 
+                                                                     ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
+                                                                     chrg_path=chrg_dir, output_feat_labels=False)
     matminer_chunks.append(matminer_n_feats)
     lobster_chunks.append(lobster_n_feats)
     matminer_lobster_chunks.append(torch.cat([matminer_n_feats, lobster_n_feats], dim=-1))

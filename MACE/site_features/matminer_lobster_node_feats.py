@@ -44,7 +44,7 @@ default_dtype = torch.float32
 torch.set_default_dtype(default_dtype)
 
 
-def get_lobster_site_feat(structure_path, ICOXX_path, chrg_path):
+def get_lobster_site_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, output_feat_labels: bool = False):
     """
     Get featurized dataframe using path provided containing LOBSTER calc files.
 
@@ -61,18 +61,23 @@ def get_lobster_site_feat(structure_path, ICOXX_path, chrg_path):
     struc=Structure.from_file(structure_path)
     sites_feats=[]
     for site_index in range(len(struc)):
-        #site_feat=[]
-        icoxx_featurizer = FeaturizeIcoxxlist(
-        path_to_icoxxlist=ICOXX_path,
+        icohp_featurizer = FeaturizeIcoxxlist(
+        path_to_icoxxlist=ICOHP_path,
         path_to_structure=structure_path,
         bin_width=0.1,
         normalization="counts",
         max_length=5,
         )
-
+        icobi_featurizer = FeaturizeIcoxxlist(
+        path_to_icoxxlist=ICOBI_path,
+        path_to_structure=structure_path,
+        bin_width=0.1,
+        normalization="counts",
+        max_length=5,
+        )
         
-        site_bwdf = icoxx_featurizer.calc_site_bwdf(site_index=site_index)
-        bwdf_values = site_bwdf[f"{site_index}"]["icoxx_binned"]
+        site_icohp_bwdf = icohp_featurizer.calc_site_bwdf(site_index=site_index)
+        bwdf_icohp_values = site_icohp_bwdf[f"{site_index}"]["icoxx_binned"]
         stats_fns = {
             "max": np.max,
             "mean": np.mean,
@@ -81,24 +86,41 @@ def get_lobster_site_feat(structure_path, ICOXX_path, chrg_path):
             "sum": np.sum,
         }
         site_feats = {
-            f"site_bwdf_{name}": fn(bwdf_values) for name, fn in stats_fns.items()
+            f"site_icohp_bwdf_{name}": fn(bwdf_icohp_values) for name, fn in stats_fns.items()
         }
+        site_feats.update(
+            {
+            "site_icohp_asi": icohp_featurizer.calc_site_asymmetry_index(site_index),
+            }
+        )
+
+        site_icobi_bwdf = icobi_featurizer.calc_site_bwdf(site_index=site_index)
+        bwdf_icobi_values = site_icobi_bwdf[f"{site_index}"]["icoxx_binned"]
+        site_feats.update(
+            {f"site_icobi_bwdf_{name}": fn(bwdf_icobi_values) for name, fn in stats_fns.items()
+             }
+        )
+        site_feats.update(
+            {
+            "site_icobi_asi": icobi_featurizer.calc_site_asymmetry_index(site_index),
+            }
+        )
 
         chargeobj = Charge(filename=chrg_path)
         site_feats.update(
             {
-            "site_asi": icoxx_featurizer.calc_site_asymmetry_index(site_index),
             "charge_loew": chargeobj.loewdin[site_index],
             "charge_mull": chargeobj.mulliken[site_index],
             }
         )
 
         sites_feats.append(list(site_feats.values()))
-    all_sites_feats=torch.tensor(sites_feats, dtype=default_dtype); #print(all_sites_feats.dtype, all_sites_feats.shape)
+        
+    all_sites_feats=torch.tensor(sites_feats, dtype=default_dtype); 
+    if output_feat_labels:
+        siteFeats_labels = list(site_feats.keys())
+        return all_sites_feats, siteFeats_labels
     return all_sites_feats
-    #structure_name = file_paths["structure"].parent.name
-    #index_name = f"{structure_name}_{site_index}"
-    #return pd.DataFrame(data=site_feats, index=[index_name])
 
 # ------------------------------------------------------------
 # Featurizer setup
