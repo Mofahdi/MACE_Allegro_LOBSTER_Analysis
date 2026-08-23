@@ -8,4 +8,4 @@
 #SBATCH --gpus=1
  
  
-python EijAllegro_icoxx_data_plot.py
+python main.py

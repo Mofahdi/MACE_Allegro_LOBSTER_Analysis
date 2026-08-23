@@ -10,6 +10,7 @@ import dcor
 
 def evaluate_distance_correlation_matrix_bootstrap(
     sets: dict[str, np.ndarray],
+    num_samples: int,
     num_bootstrap: int = 200,
     random_state: int = 42,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -52,7 +53,7 @@ def evaluate_distance_correlation_matrix_bootstrap(
 
         for _ in range(num_bootstrap):
             # Bootstrap resample indices with replacement
-            idx = rng.integers(0, n_samples, 50000)
+            idx = rng.integers(0, n_samples, num_samples)
             X_i = sets[i][idx]
             X_j = sets[j][idx]
 
