@@ -29,12 +29,8 @@ df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz
 mace_chunks=[]; mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; #energies=[]; inter_es=[]
 for i, (cont_path, icoxx_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, df['CHRG_dir'].values)):
     #try:
-    start_mat = time.perf_counter()
     matminer_n_feats = get_matminer_site_feats(cont_path)
-    end_mat = time.perf_counter()
-    start_lob = time.perf_counter()
     lobster_n_feats = get_lobster_site_feat(structure_path=cont_path, ICOXX_path=icoxx_path, chrg_path=chrg_dir)
-    end_lob = time.perf_counter()
     matminer_chunks.append(matminer_n_feats)
     lobster_chunks.append(lobster_n_feats)
     matminer_lobster_chunks.append(torch.cat([matminer_n_feats, lobster_n_feats], dim=-1))
@@ -42,15 +38,9 @@ for i, (cont_path, icoxx_path, chrg_dir) in enumerate(zip(df['struc_dir'].values
     ase_atoms=read(cont_path)
     batch=mace_calc._atoms_to_batch(ase_atoms).to(device)
     batch_dict=mace_calc._clone_batch(batch).to_dict()
-    start_mace = time.perf_counter()
     node_descs=torch.from_numpy(mace_calc.get_descriptors(atoms=ase_atoms)).float().to(device)
-    end_mace = time.perf_counter()
     mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0))
     mace_node_chunks.append(node_descs)
-    print(f"Mace Time taken: {end_mace - start_mace:.6f} seconds")
-    print(f"lobs Time taken: {end_lob - start_lob:.6f} seconds")
-    print(f"Mat Time taken: {end_mat - start_mat:.6f} seconds")
-        #exit()
     #except: pass
 
 mace_feats = torch.cat(mace_chunks, dim=0).cpu().numpy()

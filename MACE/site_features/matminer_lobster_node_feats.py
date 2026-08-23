@@ -145,12 +145,6 @@ def get_matminer_site_feats(
 
     multi_feat = MultipleFeaturizer(featurizers=site_featurizers)
 
-
-
-    #exit()
-    #struc=df.loc[0, 'structure']
-
-    #sitefeats=[multi_feat.featurize(struc, 0), multi_feat.featurize(struc, 1)]
     site_features = [
     multi_feat.featurize(structure, i)
     for i in range(len(structure))
@@ -158,19 +152,6 @@ def get_matminer_site_feats(
     node_feats=torch.tensor(site_features)
     #print(node_feats.dtype)
     return node_feats
-    #print(len(site_features[0])); 
-    #print(site_features[0])
-    #print(len(multi_feat.feature_labels()))
-    #print(multi_feat.feature_labels())
-    #exit()
-    #matminer_feat_df = multi_feat.featurize_dataframe(
-     #   structures_df, col_id=["structure"], ignore_errors=True
-    #)
-    #matminer_feat_cleaned_df = matminer_feat_df.loc[
-     #   :, ~matminer_feat_df.columns.duplicated()
-    #]
-    #return matminer_feat_cleaned_df
-    #return matminer_feat_cleaned_df.dropna(axis=1)
 
 '''def get_soap_feats(structures_df):
     structures_df['structure']=structures_df['struc_dir'].apply(lambda x: Structure.from_file(x, sort = False))
