@@ -19,6 +19,8 @@ print('number of edges', Eijs.shape)
 Pcorr_chg, dcor_chg=alleg_icoxx.plot_Eij_chg(save_plot = True, Eii_icoxx_plot_name = 'Eij_chg.jpg', dpi = 800)
 print('Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 
+Pcorr_chg, dcor_chg=alleg_icoxx.plot_Eij_chg_maskD(save_plot = True, Eii_icoxx_plot_name = 'Eij_chg_maskD.jpg', dpi = 800)
+print('maskedD Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 
 
 

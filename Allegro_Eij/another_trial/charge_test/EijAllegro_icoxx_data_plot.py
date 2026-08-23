@@ -106,12 +106,49 @@ class Allegro_ICOXX:
             plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
         plt.show()
 
-        pd.DataFrame({'Chg': self.d.squeeze(), 'Eij': self.Eijs.squeeze()}).to_csv('Chg_Eij_all.csv', index=False)
+        pd.DataFrame({'Chg': self.chg.squeeze(), 'Eij': self.Eijs.squeeze()}).to_csv('Chg_Eij_all.csv', index=False)
 
         scaler = StandardScaler()
         Eijs_scaled = scaler.fit_transform(self.Eijs)
         chg_scaled = scaler.fit_transform(self.chg)
         return torch.corrcoef(torch.stack([self.Eijs.reshape(-1), self.chg.reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, chg_scaled)
+
+    def plot_Eij_chg_maskD(self,
+                        save_plot: bool=True, 
+                        Eii_icoxx_plot_name:str = 'Eij_chg_maskD.png', 
+                        dpi: float = 400):
+        """ plot Eij vs. ICOXX
+        args:
+            save_plot: option to save plot, 
+            Eii_icoxx_plot_name: filename of the plot, 
+            dpi: plot's resolution
+        :return:
+            g: csv file "label+'_Eij_all.csv'" contains ICOXX and Eij raw data
+            coeff: Pearson's correlation coefficient between Eij and ICOXX 
+        """
+
+        mask = (self.d < 4).flatten()
+        plt.figure(figsize=(4,3.5))
+        plt.scatter(self.chg[mask], self.Eijs[mask], c='blue')
+        plt.xlabel('Charge Polarity')
+        plt.ylabel(r'$E_{ij}$', fontsize=12)
+        ax=plt.gca()
+        nx = len(ax.get_xticks())
+        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
+        ny = len(ax.get_yticks())
+        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
+        plt.tight_layout()
+        if save_plot:
+            plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
+        plt.show()
+
+        pd.DataFrame({'Chg': self.chg[mask].squeeze(), 'Eij': self.Eijs[mask].squeeze()}).to_csv('Chg_Eij_maskD.csv', index=False)
+
+        scaler = StandardScaler()
+        Eijs_scaled = scaler.fit_transform(self.Eijs[mask])
+        chg_scaled = scaler.fit_transform(self.chg[mask])
+        return torch.corrcoef(torch.stack([self.Eijs[mask].reshape(-1), self.chg[mask].reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, chg_scaled)
+
 
 
     def plot_Eij_d(self,
