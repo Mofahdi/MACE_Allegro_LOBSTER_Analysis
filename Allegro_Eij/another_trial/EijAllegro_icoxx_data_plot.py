@@ -48,7 +48,7 @@ class Allegro_ICOXX:
             g_allegro=create_DGL_g(ase_atoms=ase_atoms, output=output)
             g_icoxx = Icoxx2Graph(bond_length_cutoff=6).get_graph(path_to_structure=cont_path,
                             path_to_icohplist=icohp_path, path_to_icobilist=icobi_path,
-                        ).to(device)
+                        ).to(self.device)
             g_intersect=intersect_graphs(g1=g_allegro, g2=g_icoxx, edge_key="edge_cell_shift")
 
             Eij_chunks.append(g_intersect.edata['g1_edge_energy']); # [# edges, 1]
