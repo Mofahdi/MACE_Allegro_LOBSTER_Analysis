@@ -22,11 +22,10 @@ from matminer.featurizers.site import (
     LocalPropertyDifference,
     VoronoiFingerprint,
     SiteElementalProperty,
-    
     GeneralizedRadialDistributionFunction,
     OPSiteFingerprint,
 )
-
+from matminer.featurizers.structure import SiteStatsFingerprint
 from matminer.featurizers.structure import (
     CoulombMatrix,
     OrbitalFieldMatrix,
@@ -47,116 +46,6 @@ warnings.filterwarnings("ignore")
 
 default_dtype = torch.float32
 torch.set_default_dtype(default_dtype)
-
-
-def get_lobster_site_feat(structure_path, ICOXX_path, chrg_path):
-    """
-    Get featurized dataframe using path provided containing LOBSTER calc files.
-
-    Uses LobsterPy featurizer implementations.
-
-    Args:
-        path_to_lobster_calc: Path to directory containing LOBSTER calcs output files
-        site_index: site index of structure
-
-    Returns:
-        A pandas DataFrame with site features extracted from LOBSTER calculation files
-    """
-
-    struc=Structure.from_file(structure_path)
-    sites_feats=[]
-    for site_index in range(len(struc)):
-        #site_feat=[]
-        icoxx_featurizer = FeaturizeIcoxxlist(
-        path_to_icoxxlist=ICOXX_path,
-        path_to_structure=structure_path,
-        bin_width=0.1,
-        normalization="counts",
-        max_length=5,
-        )
-
-        chargeobj = Charge(filename=chrg_path)
-        site_bwdf = icoxx_featurizer.calc_site_bwdf(site_index=site_index)
-        bwdf_values = site_bwdf[f"{site_index}"]["icoxx_binned"]
-        stats_fns = {
-            "max": np.max,
-            "mean": np.mean,
-            "std": np.std,
-            "min": np.min,
-            "sum": np.sum,
-        }
-        site_feats = {
-            f"site_bwdf_{name}": fn(bwdf_values) for name, fn in stats_fns.items()
-        }
-        site_feats.update(
-            {
-            "site_asi": icoxx_featurizer.calc_site_asymmetry_index(site_index),
-            "charge_loew": chargeobj.loewdin[site_index],
-            "charge_mull": chargeobj.mulliken[site_index],
-            }
-        )
-        #site_feat.append()
-        #print(list(site_feats.values())); exit()
-        sites_feats.append(list(site_feats.values()))
-    all_sites_feats=torch.tensor(sites_feats, dtype=default_dtype); #print(all_sites_feats.dtype, all_sites_feats.shape)
-    #exit()
-    return all_sites_feats
-    #structure_name = file_paths["structure"].parent.name
-    #index_name = f"{structure_name}_{site_index}"
-    #return pd.DataFrame(data=site_feats, index=[index_name])
-
-# ------------------------------------------------------------
-# Featurizer setup
-# ------------------------------------------------------------
-def get_matminer_site_feats(
-    structure_path: str, site_featurizers: list | None = None, #n_jobs: int = 8
-) -> list:
-    """
-    Get site featurized dataframe using pymatgen structure object .
-
-    Uses Matminers MultipleFeaturizer
-
-    Args:
-        structure: pymatgen structure
-        site_featurizers: list of matminer site based featurizes to apply on input structures_df
-        n_jobs: number of parallel jobs to run for featurization
-
-    Returns:
-        A pandas dataframe with structure and composition based features for sites
-    """
-
-    #structures_df['structure']=structures_df['struc_dir'].apply(lambda x: Structure.from_file(x, sort = False))
-    structure=Structure.from_file(structure_path, sort = False)
-    if site_featurizers is None:
-        site_featurizers = [
-            AGNIFingerprints(), # good
-            AverageBondAngle(VoronoiNN()), # good
-            AverageBondLength(VoronoiNN()), # good
-            BondOrientationalParameter(), # good
-            CoordinationNumber(), # good
-            CrystalNNFingerprint.from_preset("cn"), # CN feats, prob. good, prob better for our use
-            GaussianSymmFunc(), # good   
-            LocalPropertyDifference(properties=("Electronegativity", "CovalentRadius")), #"Number", 
-            VoronoiFingerprint(), # good
-            SiteElementalProperty(properties=("Electronegativity", "CovalentRadius", 'ElectronAffinity', 'AllenElectronegativity')), #"Number", 
-            #SOAP.from_preset("formation_energy"),
-            
-            #ChemicalSRO.from_preset('VoronoiNN'),
-            #ChemEnvSiteFingerprint.from_preset("simple"), # one-hot motifs, good vector, prob. bad for our use
-            #GeneralizedRadialDistributionFunction.from_preset("gaussian"), # same as above
-            #CrystalNNFingerprint.from_preset("ops"), # CN feats, prob. good, prob bad for our use
-            #OPSiteFingerprint(), # CN feats prob. not ok
-        ]
-
-    multi_feat = MultipleFeaturizer(featurizers=site_featurizers)
-
-    #sitefeats=[multi_feat.featurize(struc, 0), multi_feat.featurize(struc, 1)]
-    site_features = [
-    multi_feat.featurize(structure, i)
-    for i in range(len(structure))
-    ]
-    node_feats=torch.tensor(site_features)
-    return node_feats
 
 
 def get_lobster_struc_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, output_feat_labels: bool = False):
@@ -200,20 +89,20 @@ def get_lobster_struc_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, ou
     loew_chg=FeaturizeCharges(path_to_structure=structure_path, path_to_charge=chrg_path, charge_type='loewdin').get_df() # 'mulliken' 'loewdin'
     mulk_chg=FeaturizeCharges(path_to_structure=structure_path, path_to_charge=chrg_path, charge_type='mulliken').get_df() # 'mulliken' 'loewdin'
 
+    all_feat_labels = ['icohp_' + x for x in icohp_stats.columns.tolist()]
+    all_feat_labels.extend(['icobi_' + x for x in icobi_stats.columns.tolist()])
+    all_feat_labels.extend(loew_chg.columns.tolist()); all_feat_labels.extend(mulk_chg.columns.tolist())
 
-    all_cols = ['icohp_' + x for x in icohp_stats.columns.tolist()]
-    all_cols.extend(['icobi_' + x for x in icobi_stats.columns.tolist()])
-    all_cols.extend(loew_chg.columns.tolist()); all_cols.extend(mulk_chg.columns.tolist())
-
-    all_feats = np.concatenate([icohp_stats.values, icobi_stats.values, loew_chg.values, mulk_chg.values], axis=-1)
+    all_feats = np.concatenate([icohp_stats.values, icobi_stats.values, loew_chg.values, mulk_chg.values], axis=-1).astype(np.float32) # 
+    #print(all_feats); exit()
     all_feats = torch.from_numpy(all_feats).float()
     if output_feat_labels:
-        return all_feats, all_cols
+        return all_feats, all_feat_labels
     return all_feats
 
     
 def get_matminer_struc_feats(
-    structure_path: str, site_featurizers: list | None = None, #n_jobs: int = 8
+    structure_path: str, site_featurizers: list | None = None, output_feat_labels: bool = False, #n_jobs: int = 8
 ) -> list:
     """
     Get site featurized dataframe using pymatgen structure object .
@@ -233,15 +122,15 @@ def get_matminer_struc_feats(
     structure=Structure.from_file(structure_path, sort = False)
     if site_featurizers is None:
         site_featurizers = [
-            AGNIFingerprints(), # good
+            AGNIFingerprints(cutoff=5), # good
             AverageBondAngle(VoronoiNN()), # good
             AverageBondLength(VoronoiNN()), # good
-            BondOrientationalParameter(), # good
+            #BondOrientationalParameter(max_l=5), # good
             CoordinationNumber(), # good
             CrystalNNFingerprint.from_preset("cn"), # CN feats, prob. good, prob better for our use
             GaussianSymmFunc(), # good   
             LocalPropertyDifference(properties=("Electronegativity", "CovalentRadius")), #"Number", 
-            VoronoiFingerprint(), # good
+            #VoronoiFingerprint(), # good
             SiteElementalProperty(properties=("Electronegativity", "CovalentRadius", 'ElectronAffinity', 'AllenElectronegativity')), #"Number", 
             #SOAP.from_preset("formation_energy"),
             
@@ -253,16 +142,30 @@ def get_matminer_struc_feats(
         ]
 
     multi_feat = MultipleFeaturizer(featurizers=site_featurizers)
+    ssf = SiteStatsFingerprint(
+        site_featurizer=multi_feat,
+        stats=("mean", "std_dev", "minimum", "maximum"),
+    )
+    all_feat_labels = ssf.feature_labels()
 
-    #sitefeats=[multi_feat.featurize(struc, 0), multi_feat.featurize(struc, 1)]
-    site_features = [
-    multi_feat.featurize(structure, i)
-    for i in range(len(structure))
-    ]
-    node_feats=torch.tensor(site_features)
-    #print(node_feats.dtype)
-    return node_feats
+    feats = ssf.featurize(structure)
+    all_feats = torch.tensor(feats, dtype=torch.float32).unsqueeze(0)
+    if output_feat_labels:
+        return all_feats, all_feat_labels
+    return all_feats 
 
+
+'''    for featurizer in site_featurizers:
+        ssf = SiteStatsFingerprint(
+            site_featurizer=featurizer,
+            stats=("mean", "std_dev", "minimum", "maximum"),
+        )
+
+        features = ssf.featurize(structure)
+        feature_names = ssf.feature_labels()
+
+        all_features.extend(features)
+        all_feature_names.extend(feature_names)'''
 
 '''def get_soap_feats(structures_df):
     structures_df['structure']=structures_df['struc_dir'].apply(lambda x: Structure.from_file(x, sort = False))
@@ -286,9 +189,10 @@ if __name__=='__main__':
     ICOBI_dir=df.loc[0, 'ICOBI_dir'] # ICOHP_dir,ICOBI_dir
     chrg_dir=df.loc[0, 'chrg_dir'] # ICOHP_dir,ICOBI_dir
 
-    get_lobster_struc_feat(structure_path=struc_dir, ICOHP_path=ICOHP_dir, ICOBI_path=ICOBI_dir, chrg_path=chrg_dir, output_feat_labels = False)
+    lob_feats = get_lobster_struc_feat(structure_path=struc_dir, ICOHP_path=ICOHP_dir, ICOBI_path=ICOBI_dir, chrg_path=chrg_dir, output_feat_labels = False)
+    mat_feats=get_matminer_struc_feats(structure_path=struc_dir, output_feat_labels = False, )
 
-
+    #print(lob_feats.shape, mat_feats.shape)
     #get_matminer_struc_feats()
 
     #matminer_n_feats=get_matminer_site_feats(struc); #exit()
