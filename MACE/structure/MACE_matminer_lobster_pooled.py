@@ -24,7 +24,7 @@ df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobste
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
 df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
 
-mace_chunks=[]; mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; #energies=[]; inter_es=[]
+mace_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; #energies=[]; inter_es=[]
 for i, (cont_path, icoxx_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, df['CHRG_dir'].values)):
     ase_atoms=read(cont_path)
     batch=mace_calc._atoms_to_batch(ase_atoms).to(device)
@@ -32,8 +32,7 @@ for i, (cont_path, icoxx_path, chrg_dir) in enumerate(zip(df['struc_dir'].values
     node_descs=torch.from_numpy(mace_calc.get_descriptors(atoms=ase_atoms)).float().to(device)
     #mace_out=mace_model(batch_dict, compute_edge_forces=True)
     #g_mace=create_DGL_g(ase_atoms=ase_atoms, batch_dict=batch_dict, mace_out=mace_out, node_descs=node_descs)
-    mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0))
-    mace_node_chunks.append(node_descs)
+    mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0)) # [1, # feats]
 
     matminer_n_feats = get_matminer_site_feats(cont_path)
     lobster_n_feats = get_lobster_site_feat(structure_path=cont_path, ICOXX_path=icoxx_path, chrg_path=chrg_dir)
@@ -44,7 +43,6 @@ for i, (cont_path, icoxx_path, chrg_dir) in enumerate(zip(df['struc_dir'].values
     #inter_es.append(mace_out['interaction_energy'].item())
 
 mace_feats = torch.cat(mace_chunks, dim=0).cpu().numpy()
-mace_node_feats = torch.cat(mace_node_chunks, dim=0).cpu().numpy()
 matminer_feats = torch.cat(matminer_chunks, dim=0).cpu().numpy()
 lobster_feats = torch.cat(lobster_chunks, dim=0).cpu().numpy()
 matminer_lobster_feats = torch.cat(matminer_lobster_chunks, dim=0).cpu().numpy()
@@ -73,13 +71,13 @@ print(std_mat)
 
 
 dcor_value_matminer = dcor.distance_correlation(
-    mace_node_feats_scaled,
+    mace_feats_scaled,
     matminer_feats_scaled,)
 dcor_value_lobster = dcor.distance_correlation(
-    mace_node_feats_scaled,
+    mace_feats_scaled,
     lobster_feats_scaled,)
 dcor_value_matLobster = dcor.distance_correlation(
-    mace_node_feats_scaled,
+    mace_feats_scaled,
     matminer_lobster_feats_scaled,)
 print(dcor_value_matminer, dcor_value_lobster, dcor_value_matLobster)
 

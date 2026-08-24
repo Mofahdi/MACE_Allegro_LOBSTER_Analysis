@@ -27,21 +27,19 @@ from matminer.featurizers.site import (
     OPSiteFingerprint,
 )
 
-from matminer.featurizers.structure.rdf import (
+from matminer.featurizers.structure import (
     CoulombMatrix,
     OrbitalFieldMatrix,
     SineCoulombMatrix,
     ElectronicRadialDistributionFunction,
 )
-
 #from matminer.featurizers.site.external import SOAP
 from matminer.featurizers.base import MultipleFeaturizer
-from matminer.featurizers.structure import ElectronicRadialDistributionFunction
 
 from pymatgen.analysis.local_env import VoronoiNN
 from pymatgen.io.lobster import Charge
 #from lobsterpy.featurize.batch import BatchSummaryFeaturizer, BatchIcoxxlistFeaturizer
-from lobsterpy.featurize.core import FeaturizeIcoxxlist
+from lobsterpy.featurize.core import FeaturizeIcoxxlist, FeaturizeCharges
 #from lobsterpy.featurize.utils import get_file_paths
 
 import warnings
@@ -158,23 +156,63 @@ def get_matminer_site_feats(
     for i in range(len(structure))
     ]
     node_feats=torch.tensor(site_features)
-    #print(node_feats.dtype)
     return node_feats
-    #print(len(site_features[0])); 
-    #print(site_features[0])
-    #print(len(multi_feat.feature_labels()))
-    #print(multi_feat.feature_labels())
-    #exit()
-    #matminer_feat_df = multi_feat.featurize_dataframe(
-     #   structures_df, col_id=["structure"], ignore_errors=True
-    #)
-    #matminer_feat_cleaned_df = matminer_feat_df.loc[
-     #   :, ~matminer_feat_df.columns.duplicated()
-    #]
-    #return matminer_feat_cleaned_df
-    #return matminer_feat_cleaned_df.dropna(axis=1)
 
-def get_matminer_structure_feats(
+
+def get_lobster_struc_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, output_feat_labels: bool = False):
+    """
+    Get featurized dataframe using path provided containing LOBSTER calc files.
+
+    Uses LobsterPy featurizer implementations.
+
+    Args:
+        path_to_lobster_calc: Path to directory containing LOBSTER calcs output files
+        site_index: site index of structure
+
+    Returns:
+        A pandas DataFrame with site features extracted from LOBSTER calculation files
+    """
+
+    #struc=Structure.from_file(structure_path)
+    icohp_featurizer = FeaturizeIcoxxlist(
+        path_to_icoxxlist=ICOHP_path,
+        path_to_structure=structure_path,
+        bin_width=0.1,
+        normalization="counts",
+        max_length=5,
+        )
+    icohp_asym=icohp_featurizer.get_asymmetry_index_stats_df()
+    icohp_featurizer.get_binned_bwdf_df()
+    icohp_stats=icohp_featurizer.get_stats_df()
+    #print(icohp_stats.columns.tolist())
+
+    icobi_featurizer = FeaturizeIcoxxlist(
+        path_to_icoxxlist=ICOBI_path,
+        path_to_structure=structure_path,
+        bin_width=0.1,
+        normalization="counts",
+        max_length=5,
+        )
+    icobi_asym=icobi_featurizer.get_asymmetry_index_stats_df()
+    icobi_featurizer.get_binned_bwdf_df()
+    icobi_stats=icobi_featurizer.get_stats_df()
+
+    loew_chg=FeaturizeCharges(path_to_structure=structure_path, path_to_charge=chrg_path, charge_type='loewdin').get_df() # 'mulliken' 'loewdin'
+    mulk_chg=FeaturizeCharges(path_to_structure=structure_path, path_to_charge=chrg_path, charge_type='mulliken').get_df() # 'mulliken' 'loewdin'
+
+
+    all_cols = ['icohp_' + x for x in icohp_stats.columns.tolist()]
+    all_cols.extend(['icobi_' + x for x in icobi_stats.columns.tolist()])
+    all_cols.extend(loew_chg.columns.tolist()); all_cols.extend(mulk_chg.columns.tolist())
+
+    all_feats = np.concatenate([icohp_stats.values, icobi_stats.values, loew_chg.values, mulk_chg.values], axis=-1)
+    all_feats = torch.from_numpy(all_feats).float()
+    if output_feat_labels:
+        return all_feats, all_cols
+    return all_feats
+
+    
+def get_matminer_struc_feats(
     structure_path: str, site_featurizers: list | None = None, #n_jobs: int = 8
 ) -> list:
     """
@@ -248,10 +286,15 @@ if __name__=='__main__':
     ICOBI_dir=df.loc[0, 'ICOBI_dir'] # ICOHP_dir,ICOBI_dir
     chrg_dir=df.loc[0, 'chrg_dir'] # ICOHP_dir,ICOBI_dir
 
-    matminer_n_feats=get_matminer_site_feats(struc); #exit()
-    lobster_n_feats=get_lobster_site_feat(structure_path=struc_dir, ICOXX_path=ICOHP_dir, chrg_path=chrg_dir); #exit()
-    matminer_lobster_n_feats = torch.cat([matminer_n_feats, lobster_n_feats], dim=-1)
-    print(matminer_n_feats.shape, lobster_n_feats.shape, matminer_lobster_n_feats.shape)
+    get_lobster_struc_feat(structure_path=struc_dir, ICOHP_path=ICOHP_dir, ICOBI_path=ICOBI_dir, chrg_path=chrg_dir, output_feat_labels = False)
+
+
+    #get_matminer_struc_feats()
+
+    #matminer_n_feats=get_matminer_site_feats(struc); #exit()
+    #lobster_n_feats=get_lobster_site_feat(structure_path=struc_dir, ICOXX_path=ICOHP_dir, chrg_path=chrg_dir); #exit()
+    #matminer_lobster_n_feats = torch.cat([matminer_n_feats, lobster_n_feats], dim=-1)
+    #print(matminer_n_feats.shape, lobster_n_feats.shape, matminer_lobster_n_feats.shape)
     #get_soap_feats(structures_df=df)
     #exit()
     #feats.to_csv('feats.csv', index=False)
