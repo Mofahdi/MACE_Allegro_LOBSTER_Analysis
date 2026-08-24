@@ -26,18 +26,19 @@ df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobste
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
 df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
 
-mace_chunks=[]; mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; 
-for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, df['ICOBI_dir'].values, df['CHRG_dir'].values)):
+mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; 
+for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, 
+                                                                      df['ICOBI_dir'].values, df['CHRG_dir'].values)):
     #try:
-    matminer_n_feats = get_matminer_site_feats(cont_path)
+    matminer_n_feats = get_matminer_site_feats(cont_path) # [# nodes, feats]
     if i==0:
         lobster_n_feats, lobster_feat_labels = get_lobster_site_feat(structure_path=cont_path, 
-                                                ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
-                                                chrg_path=chrg_dir, output_feat_labels=True)
+                                                        ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
+                                                        chrg_path=chrg_dir, output_feat_labels=True)
     else:
         lobster_n_feats = get_lobster_site_feat(structure_path=cont_path, 
-                                                                     ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
-                                                                     chrg_path=chrg_dir, output_feat_labels=False)
+                                                ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
+                                                chrg_path=chrg_dir, output_feat_labels=False) # [# nodes, feats]
     matminer_chunks.append(matminer_n_feats)
     lobster_chunks.append(lobster_n_feats)
     matminer_lobster_chunks.append(torch.cat([matminer_n_feats, lobster_n_feats], dim=-1))
@@ -45,12 +46,13 @@ for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_
     ase_atoms=read(cont_path)
     batch=mace_calc._atoms_to_batch(ase_atoms).to(device)
     batch_dict=mace_calc._clone_batch(batch).to_dict()
-    node_descs=torch.from_numpy(mace_calc.get_descriptors(atoms=ase_atoms)).float().to(device)
-    mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0))
+    node_descs=torch.from_numpy(mace_calc.get_descriptors(atoms=ase_atoms)).float().to(device) # [# nodes, feats]
     mace_node_chunks.append(node_descs)
+    #mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0))
+    #print(torch.mean(node_descs, dim=0).shape); exit()
     #except: pass
 
-mace_feats = torch.cat(mace_chunks, dim=0).cpu().numpy()
+#mace_feats = torch.cat(mace_chunks, dim=0).cpu().numpy()
 mace_node_feats = torch.cat(mace_node_chunks, dim=0).cpu().numpy()
 matminer_feats = torch.cat(matminer_chunks, dim=0).cpu().numpy()
 lobster_feats = torch.cat(lobster_chunks, dim=0).cpu().numpy()
@@ -61,7 +63,7 @@ from sklearn.preprocessing import StandardScaler
 from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
 # Standardize each edge feature
 scaler = StandardScaler()
-mace_feats_scaled = scaler.fit_transform(mace_feats)
+#mace_feats_scaled = scaler.fit_transform(mace_feats)
 mace_node_feats_scaled = scaler.fit_transform(mace_node_feats)
 matminer_feats_scaled = scaler.fit_transform(matminer_feats)
 lobster_feats_scaled = scaler.fit_transform(lobster_feats)
@@ -89,36 +91,19 @@ dcor_value_lobster = dcor.distance_correlation(
 dcor_value_matLobster = dcor.distance_correlation(
     mace_node_feats_scaled,
     matminer_lobster_feats_scaled,)
-print(dcor_value_matminer, dcor_value_lobster, dcor_value_matLobster)
+print('matminer, lobster, matminer+lobster dcors:', dcor_value_matminer, dcor_value_lobster, dcor_value_matLobster)
 
 
-
-dcor_max = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 0])
-dcor_mean = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 1])
-dcor_std = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 2])
-dcor_min = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 3])
-dcor_sum = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 4])
-dcor_asi = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 5])
-dcor_chrg_loew = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 6])
-dcor_chrg_mull = dcor.distance_correlation(
-    mace_node_feats_scaled,
-    lobster_feats_scaled[:, 7])
-
-print(dcor_max, dcor_mean, dcor_std, dcor_min, dcor_sum, dcor_asi, dcor_chrg_loew, dcor_chrg_mull)
+feat_dcor_scores={}
+for i, feat_type in enumerate(lobster_feat_labels):
+    dcor_score=dcor.distance_correlation(mace_node_feats_scaled,
+        lobster_feats_scaled[:, i])
+    feat_dcor_scores.update({feat_type: float(dcor_score)})
+sorted_feat_dcor_scores = dict(
+    sorted(feat_dcor_scores.items(), key=lambda item: item[1], reverse=True)
+)
+print(sorted_feat_dcor_scores)
+#print(dcor_max, dcor_mean, dcor_std, dcor_min, dcor_sum, dcor_asi, dcor_chrg_loew, dcor_chrg_mull)
 
 
 

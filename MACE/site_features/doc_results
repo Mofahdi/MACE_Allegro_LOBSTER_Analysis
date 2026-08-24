@@ -1,0 +1,22 @@
+use 
+MACE  MATMINER   LOBSTER  matminerLobster
+MACE             1.000000  0.720536  0.705184         0.704224
+MATMINER         0.720536  1.000000  0.506425         0.508468
+LOBSTER          0.705184  0.506425  1.000000         1.000000
+matminerLobster  0.704224  0.508468  1.000000         1.000000
+                     MACE  MATMINER   LOBSTER  matminerLobster
+MACE             0.000000  0.005150  0.005135         0.005477
+MATMINER         0.005150  0.000000  0.005370         0.003506
+LOBSTER          0.005135  0.005370  0.000000         0.000000
+matminerLobster  0.005477  0.003506  0.000000         0.000000
+mat, lob, matLob: 0.7164647074222125 0.7034967 0.7034967
+{'site_icohp_bwdf_max': 0.27464208006858826, 'site_icohp_bwdf_mean': 0.3750877380371094, 'site_icohp_bwdf_std': 0.4807296395301819, 
+'site_icohp_bwdf_min': 0.5104037523269653, 'site_icohp_bwdf_sum': 0.3750891089439392, 'site_icohp_asi': 0.4218733608722687, 
+
+'site_icobi_bwdf_max': 0.4493362009525299, 'site_icobi_bwdf_mean': 0.42185232043266296, 'site_icobi_bwdf_std': 0.43004128336906433, 
+'site_icobi_bwdf_min': 0.0, 'site_icobi_bwdf_sum': 0.42185232043266296, 'site_icobi_asi': 0.4502965807914734, 
+
+'charge_loew': 0.8119580149650574, 'charge_mull': 0.808688223361969}
+
+
+{'charge_loew': 0.8119580149650574, 'charge_mull': 0.808688223361969, 'site_icohp_bwdf_min': 0.5104037523269653, 'site_icohp_bwdf_std': 0.4807296395301819, 'site_icobi_asi': 0.4502965807914734, 'site_icobi_bwdf_max': 0.4493362009525299, 'site_icobi_bwdf_std': 0.43004128336906433, 'site_icohp_asi': 0.4218733608722687, 'site_icobi_bwdf_mean': 0.42185232043266296, 'site_icobi_bwdf_sum': 0.42185232043266296, 'site_icohp_bwdf_sum': 0.3750891089439392, 'site_icohp_bwdf_mean': 0.3750877380371094, 'site_icohp_bwdf_max': 0.27464208006858826, 'site_icobi_bwdf_min': 0.0}
