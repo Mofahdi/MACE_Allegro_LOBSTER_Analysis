@@ -153,6 +153,7 @@ class Allegro_ICOXX:
 
     def plot_PCAEij_d_and_dcor(self, 
                               num_dcor_samples: int,
+                              dcor_sample_size: int, 
                               save_plot: bool=True, 
                               PCAEiiFeats_dist_plot_name:str = 'PCAEijFeatureSpace_dist.png', 
                               dpi: float=400):
@@ -192,7 +193,7 @@ class Allegro_ICOXX:
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], 'bond distance': self.d.squeeze(),}).to_csv('Dist_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca, 'd': StandardScaler().fit_transform(self.d)}
-        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20, num_samples=num_dcor_samples)
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=num_dcor_samples, num_samples=dcor_sample_size)
         return mean_mat, std_mat
         #return dcor.distance_correlation(self.EijFeats_pca, StandardScaler().fit_transform(self.d))
 
@@ -200,6 +201,7 @@ class Allegro_ICOXX:
     def plot_PCAEij_icoxx_and_dcor(self, 
                           icohp: bool, 
                           num_dcor_samples: int,
+                          dcor_sample_size: int, 
                           save_plot: bool=True, 
                           PCAEiiFeats_icoxx_plot_name:str = 'PCAEijFeatureSpace_ICOXX.png', 
                           dpi: float=400):
@@ -244,7 +246,7 @@ class Allegro_ICOXX:
         pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], colorBar_label: icoxxs.squeeze(),}).to_csv(label+'_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, icoxx_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca, colorBar_label: StandardScaler().fit_transform(icoxxs)}
-        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20, num_samples=num_dcor_samples)
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=num_dcor_samples, num_samples=dcor_sample_size)
         return mean_mat, std_mat
 
 
