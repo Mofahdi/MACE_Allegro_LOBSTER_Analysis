@@ -149,6 +149,51 @@ class Allegro_ICOXX:
         chg_scaled = scaler.fit_transform(self.chg[mask])
         return torch.corrcoef(torch.stack([self.Eijs[mask].reshape(-1), self.chg[mask].reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, chg_scaled)
 
+    def plot_PCAEij_chg_maskD_and_dcor(self, 
+                              num_dcor_samples: int,
+                              save_plot: bool=True, 
+                              PCAEiiFeats_dist_plot_name:str = 'PCAEijFeatureSpace_dist.png', 
+                              dpi: float=400):
+        """ plot PCA1 vs. PCA2 of Eij features color-coded with ICOXX
+        args:
+            save_plot: option to save plot, 
+            PCAEiiFeats_dist_plot_name: filename of the plot, 
+            dpi: plot's resolution
+        :return:
+            g: csv file 'Dist_PCAEijFeats.csv' contains PCA1 and PCA2 of Eij features and distance raw data
+            coeff: PCA1 and PCA2 variances
+        """
+
+        mask = (self.d < 4).flatten()
+        plt.figure(figsize=(4.5,3.5))
+        plt.scatter(
+            self.EijFeats_pca[:, 0][mask],
+            self.EijFeats_pca[:, 1][mask],
+            c=self.chg[mask],
+            s=5,
+            #cmap="rainbow"
+            )
+        plt.xlabel(r"PCA1 ($x_{ij}$)", fontsize=12)
+        plt.ylabel(r"PCA2 ($x_{ij}$)", fontsize=12)
+        cbar = plt.colorbar(label='Charge Polarity')
+        #nbar=len(cbar.get_xticks())
+        cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
+        ax=plt.gca()
+        nx = len(ax.get_xticks())
+        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
+        ny = len(ax.get_yticks())
+        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
+        plt.tight_layout()
+        if save_plot:
+            plt.savefig(PCAEiiFeats_dist_plot_name, dpi=dpi)
+        plt.show()
+
+        pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0][mask], 'PCA2EijFeats': self.EijFeats_pca[:, 1][mask], 'Chg': self.chg[mask].squeeze(),}).to_csv('Chg_PCAEijFeats.csv', index=False)
+        #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
+        sets={'PCAEijfeats': self.EijFeats_pca[mask], 'd': StandardScaler().fit_transform(self.chg[mask])}
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20, num_samples=num_dcor_samples)
+        return mean_mat, std_mat
+
 
 
     def plot_Eij_d(self,

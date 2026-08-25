@@ -23,6 +23,13 @@ Pcorr_chg, dcor_chg=alleg_icoxx.plot_Eij_chg_maskD(save_plot = True, Eii_icoxx_p
 print('maskedD Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 
 
+XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAEij_chg_maskD_and_dcor(num_dcor_samples=10000,
+                              save_plot=True, 
+                              PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.png', 
+                              dpi=400)
+
+print('\n\nd, Xij dcor (mean, std):'); print(XijD_dcor_mean_mat); print(XijD_dcor_std_mat);
+
 
 
 exit()
