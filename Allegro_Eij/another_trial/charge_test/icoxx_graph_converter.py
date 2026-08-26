@@ -98,9 +98,9 @@ class Icoxx2Graph:
         # Get source and destination node IDs for every edge
         src, dst = g.edges()
         # Compute edge features
-        mask = src != dst
-        #chg_features = torch.abs(h[src] - h[dst]); print(chg_features); exit()
-        chg_features = torch.abs(h[src] - h[dst])/g.edata["bond_dist"]; #print(chg_features); exit()
+        g.edata['mask_chg_e'] = src != dst; 
+        #chg_features = torch.abs(h[src] - h[dst]); print(chg_features.shape); exit()
+        chg_features = torch.abs(h[src] - h[dst]).squeeze()/g.edata["bond_dist"]; #print(chg_features.shape); exit()
         g.edata['chg_loe_abs']=chg_features
         return g
 

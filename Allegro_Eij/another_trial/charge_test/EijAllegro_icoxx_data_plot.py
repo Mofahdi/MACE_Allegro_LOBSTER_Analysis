@@ -38,7 +38,7 @@ class Allegro_ICOXX:
 
     def get_Eijs_EijFeats_icoxxs(self,): # df, model, transforms, device, ICOXX):
         """function to get 'Eijs, EijFeats, icohps, icobis' from Allegro and ICOXX files"""
-        Eij_chunks=[]; EijFeats_chunks=[]; icohp_chunks=[]; icobi_chunks=[]; d_chunks=[]; chg_chunks=[]
+        Eij_chunks=[]; EijFeats_chunks=[]; icohp_chunks=[]; icobi_chunks=[]; d_chunks=[]; chg_chunks=[]; mask_chgE_chunks=[]
         for i, (cont_path, icohp_path, icobi_path, chrg_path) in enumerate(zip(self.df['struc_dir'].values, self.df['ICOHP_dir'].values, 
                                                                                self.df['ICOBI_dir'].values, self.df['CHG_dir'].values)):
             ase_atoms, data = transform_ase_atoms(structure_path=cont_path, 
@@ -59,6 +59,7 @@ class Allegro_ICOXX:
             icobi_chunks.append(g_intersect.edata['g2_ICOBIs'].unsqueeze(-1)) # [# edges, 1]
             d_chunks.append(g_intersect.edata['g2_bond_dist'].unsqueeze(-1)) # [# edges, 1]
             chg_chunks.append(g_intersect.edata['g2_chg_loe_abs'].unsqueeze(-1)) # [# edges, 1]
+            mask_chgE_chunks.append(g_intersect.edata['g2_mask_chg_e'].unsqueeze(-1)) # [# edges, 1]
         
         self.Eijs = torch.cat(Eij_chunks, dim=0).float().cpu() # [# edges, 1]
         self.EijFeats = torch.cat(EijFeats_chunks, dim=0).float().cpu() # [# edges, # channels]
@@ -66,13 +67,13 @@ class Allegro_ICOXX:
         self.icobis = torch.cat(icobi_chunks, dim=0).float().cpu() # [# edges, 1]
         self.d = torch.cat(d_chunks, dim=0).float().cpu() # [# edges, 1]
         self.chg = torch.cat(d_chunks, dim=0).float().cpu() # [# edges, 1]
-        return self.Eijs, self.EijFeats, self.icohps, self.icobis, self.d, self.chg
+        self.mask_chg_es = torch.cat(mask_chgE_chunks, dim=0).squeeze().cpu() # [# edges,]
+        return self.Eijs, self.EijFeats, self.icohps, self.icobis, self.d, self.chg, self.mask_chg_es
 
     def PCA_Xij(self):
         """function to get conduct PCA on Eij features"""
         scaler = StandardScaler()
         EijFeats_scaled = np.array(scaler.fit_transform(self.EijFeats), dtype=np.float32)
-
         # PCA
         pca = PCA(n_components=2)
         self.EijFeats_pca = pca.fit_transform(EijFeats_scaled)
@@ -127,9 +128,9 @@ class Allegro_ICOXX:
             coeff: Pearson's correlation coefficient between Eij and ICOXX 
         """
 
-        mask = (self.d < 4).flatten()
+        #mask = (self.d < 4).flatten()
         plt.figure(figsize=(4,3.5))
-        plt.scatter(self.chg[mask], self.Eijs[mask], c='blue')
+        plt.scatter(self.chg[self.mask_chg_es], self.Eijs[self.mask_chg_es], c='blue')
         plt.xlabel('Charge Polarity')
         plt.ylabel(r'$E_{ij}$', fontsize=12)
         ax=plt.gca()
@@ -142,12 +143,12 @@ class Allegro_ICOXX:
             plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
         plt.show()
 
-        pd.DataFrame({'Chg': self.chg[mask].squeeze(), 'Eij': self.Eijs[mask].squeeze()}).to_csv('Chg_Eij_maskD.csv', index=False)
+        pd.DataFrame({'Chg': self.chg[self.mask_chg_es].squeeze(), 'Eij': self.Eijs[self.mask_chg_es].squeeze()}).to_csv('Chg_Eij_maskD.csv', index=False)
 
         scaler = StandardScaler()
-        Eijs_scaled = scaler.fit_transform(self.Eijs[mask])
-        chg_scaled = scaler.fit_transform(self.chg[mask])
-        return torch.corrcoef(torch.stack([self.Eijs[mask].reshape(-1), self.chg[mask].reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, chg_scaled)
+        Eijs_scaled = scaler.fit_transform(self.Eijs[self.mask_chg_es])
+        chg_scaled = scaler.fit_transform(self.chg[self.mask_chg_es])
+        return torch.corrcoef(torch.stack([self.Eijs[self.mask_chg_es].reshape(-1), self.chg[self.mask_chg_es].reshape(-1)]))[0, 1].item(), dcor.distance_correlation(Eijs_scaled, chg_scaled)
 
     def plot_PCAEij_chg_maskD_and_dcor(self, 
                               num_dcor_samples: int,
@@ -167,9 +168,9 @@ class Allegro_ICOXX:
         #mask = (self.d < 4).flatten()
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
-            self.EijFeats_pca[:, 0],#[mask],
-            self.EijFeats_pca[:, 1],#[mask],
-            c=self.chg,#[mask],
+            self.EijFeats_pca[:, 0][self.mask_chg_es],#[mask],
+            self.EijFeats_pca[:, 1][self.mask_chg_es],#[mask],
+            c=self.chg[self.mask_chg_es],#[mask],
             s=5,
             #cmap="rainbow"
             )
@@ -188,9 +189,10 @@ class Allegro_ICOXX:
             plt.savefig(PCAEiiFeats_dist_plot_name, dpi=dpi)
         plt.show()
 
-        pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], 'Chg': self.chg.squeeze(),}).to_csv('Chg_PCAEijFeats.csv', index=False)
+        pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0][self.mask_chg_es], 'PCA2EijFeats': self.EijFeats_pca[:, 1][self.mask_chg_es], 
+                      'Chg': self.chg[self.mask_chg_es].squeeze(),}).to_csv('Chg_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
-        sets={'PCAEijfeats': self.EijFeats_pca, 'chg': StandardScaler().fit_transform(self.chg)}
+        sets={'PCAEijfeats': self.EijFeats_pca[self.mask_chg_es], 'chg': StandardScaler().fit_transform(self.chg[self.mask_chg_es])}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20, num_samples=num_dcor_samples)
         return mean_mat, std_mat
 

@@ -4,17 +4,18 @@ from EijAllegro_icoxx_data_plot import Allegro_ICOXX
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device = "cpu"
 # initialize class
-alleg_icoxx=Allegro_ICOXX(df_path='5_lo_chg_mpInfo_nonmetals_test2.csv', 
+alleg_icoxx=Allegro_ICOXX(df_path='5_lo_chg_mpInfo_nonmetals.csv', 
                           model_path="../../Allegro-OAM-L-0.1.nequip.zip", 
                           device=device)
 
 # we outputted "Eijs, EijFeats, icohps, icobis" 
 # because if others want to plot the data differently from how we plot.
 # Howerver, our object can plot and will reproduce our work's plots
-Eijs, EijFeats, icohps, icobis, dists, chgs = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
+Eijs, EijFeats, icohps, icobis, dists, chgs, mask_chg_es = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
 PCAEijFeats_var=alleg_icoxx.PCA_Xij()
 print('PCA EijFeats variation:', PCAEijFeats_var)
 print('number of edges', Eijs.shape)
+
 # plot Eij vs. d and get Pearson and dcor correlations
 Pcorr_chg, dcor_chg=alleg_icoxx.plot_Eij_chg(save_plot = True, Eii_icoxx_plot_name = 'Eij_chg.jpg', dpi = 800)
 print('Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
@@ -22,13 +23,15 @@ print('Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 Pcorr_chg, dcor_chg=alleg_icoxx.plot_Eij_chg_maskD(save_plot = True, Eii_icoxx_plot_name = 'Eij_chg_maskD.jpg', dpi = 800)
 print('maskedD Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 
-
-XijChg_dcor_mean_mat, XijChg_dcor_std_mat = alleg_icoxx.plot_PCAEij_chg_maskD_and_dcor(num_dcor_samples=10000,
+XijChg_dcor_mean_mat, XijChg_dcor_std_mat = alleg_icoxx.plot_PCAEij_chg_maskD_and_dcor(num_dcor_samples=50000,
                               save_plot=True, 
                               PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.png', 
                               dpi=400)
 
 print('\n\nChg, Xij dcor (mean, std):'); print(XijChg_dcor_mean_mat); print(XijChg_dcor_std_mat);
+
+
+
 
 
 
