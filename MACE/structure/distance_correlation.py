@@ -36,6 +36,8 @@ def evaluate_distance_correlation_matrix_bootstrap(
         Mean distance correlation matrix across bootstrap samples.
     std_mat : pd.DataFrame
         Standard deviation of distance correlations across bootstrap samples.
+    mean_pvals : pd.DataFrame
+        Mean permutation-test p-values across bootstrap samples.
     """
     rng = np.random.default_rng(random_state)
     names = list(sets.keys())
@@ -43,9 +45,11 @@ def evaluate_distance_correlation_matrix_bootstrap(
 
     mean_mat = pd.DataFrame(index=names, columns=names, dtype=float)
     std_mat = pd.DataFrame(index=names, columns=names, dtype=float)
+    #mean_pvals = pd.DataFrame(index=names, columns=names, dtype=float)
 
     for i, j in itertools.combinations_with_replacement(names, 2):
         dcor_values = []
+       # pval_values = []
 
         for _ in range(num_bootstrap):
             # Bootstrap resample indices with replacement
@@ -55,14 +59,19 @@ def evaluate_distance_correlation_matrix_bootstrap(
 
             # Compute distance correlation and permutation p-value
             val = dcor.distance_correlation(X_i, X_j)
+            #test = dcor.independence.distance_covariance_test(
+             #   X_i, X_j, num_resamples=num_resamples, random_state=random_state
+            #)
 
             dcor_values.append(val)
+            #pval_values.append(test.p_value)
 
         mean_val = np.mean(dcor_values)
         std_val = np.std(dcor_values)
+        #mean_pval = np.mean(pval_values)
 
         mean_mat.loc[i, j] = mean_mat.loc[j, i] = mean_val
         std_mat.loc[i, j] = std_mat.loc[j, i] = std_val
-        
+        #mean_pvals.loc[i, j] = mean_pvals.loc[j, i] = mean_pval
 
-    return mean_mat, std_mat
+    return mean_mat, std_mat #mean_pvals

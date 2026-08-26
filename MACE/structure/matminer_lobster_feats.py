@@ -95,7 +95,7 @@ def get_lobster_struc_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, ou
 
     all_feats = np.concatenate([icohp_stats.values, icobi_stats.values, loew_chg.values, mulk_chg.values], axis=-1).astype(np.float32) # 
     #print(all_feats); exit()
-    all_feats = torch.from_numpy(all_feats).float()
+    #all_feats = torch.from_numpy(all_feats).float()
     if output_feat_labels:
         return all_feats, all_feat_labels
     return all_feats
@@ -148,8 +148,9 @@ def get_matminer_struc_feats(
     )
     all_feat_labels = ssf.feature_labels()
 
-    feats = ssf.featurize(structure)
-    all_feats = torch.tensor(feats, dtype=torch.float32).unsqueeze(0)
+    all_feats = ssf.featurize(structure)
+    all_feats = np.expand_dims(np.asarray(all_feats, dtype=np.float32), axis=0)
+    #all_feats = torch.tensor(feats, dtype=torch.float32).unsqueeze(0)
     if output_feat_labels:
         return all_feats, all_feat_labels
     return all_feats 
@@ -189,8 +190,13 @@ if __name__=='__main__':
     ICOBI_dir=df.loc[0, 'ICOBI_dir'] # ICOHP_dir,ICOBI_dir
     chrg_dir=df.loc[0, 'chrg_dir'] # ICOHP_dir,ICOBI_dir
 
-    lob_feats = get_lobster_struc_feat(structure_path=struc_dir, ICOHP_path=ICOHP_dir, ICOBI_path=ICOBI_dir, chrg_path=chrg_dir, output_feat_labels = False)
-    mat_feats=get_matminer_struc_feats(structure_path=struc_dir, output_feat_labels = False, )
+    lob_feats, lob_labels = get_lobster_struc_feat(structure_path=struc_dir, ICOHP_path=ICOHP_dir, ICOBI_path=ICOBI_dir, chrg_path=chrg_dir, output_feat_labels = True)
+    mat_feats, mat_labels=get_matminer_struc_feats(structure_path=struc_dir, output_feat_labels = True, )
+    #matLob_feats = torch.cat([mat_feats, lob_feats], dim=-1)
+    matLob_feats = np.concatenate([mat_feats, lob_feats], axis=-1)
+    print(lob_feats.shape, len(lob_labels))
+    print(mat_feats.shape, len(mat_labels))
+    print(matLob_feats.shape)
 
     #print(lob_feats.shape, mat_feats.shape)
     #get_matminer_struc_feats()
