@@ -1,16 +1,19 @@
 import os
 import json
-import time
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import dcor
+from matplotlib.ticker import MaxNLocator
 
 import torch, dgl
-#from get_MACE_feats_merge import create_DGL_g, intersect_graphs
-#from graph_converter import Icoxx2Graph
 from mace.calculators.mace import MACECalculator
 from ase.io import read 
 from matminer_lobster_node_feats import get_lobster_site_feat, get_matminer_site_feats
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import dcor
+from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device = "cpu"
@@ -20,7 +23,7 @@ torch.set_default_dtype(default_dtype)
 mace_calc=MACECalculator(model_paths='../mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
 mace_model=mace_calc.models[0]
 
-df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test4.csv')
+df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test.csv')
 df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
 df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster.gz'))
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
@@ -59,16 +62,15 @@ lobster_feats = torch.cat(lobster_chunks, dim=0).cpu().numpy()
 matminer_lobster_feats = torch.cat(matminer_lobster_chunks, dim=0).cpu().numpy()
 #print(matminer_feats.shape, lobster_feats.shape, mace_node_feats.shape)
 
-from sklearn.preprocessing import StandardScaler
-from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
-# Standardize each edge feature
+
+
+# Standardize each node feature
 scaler = StandardScaler()
 #mace_feats_scaled = scaler.fit_transform(mace_feats)
 mace_node_feats_scaled = scaler.fit_transform(mace_node_feats)
 matminer_feats_scaled = scaler.fit_transform(matminer_feats)
 lobster_feats_scaled = scaler.fit_transform(lobster_feats)
 matminer_lobster_feats_scaled = scaler.fit_transform(lobster_feats)
-num_resamples=mace_feats.shape[0]
 
 sets = {
     'MACE': mace_node_feats_scaled,
@@ -77,7 +79,7 @@ sets = {
     'matminerLobster': matminer_lobster_feats_scaled,
     }
 
-mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=30)
+mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, sample_size=2000, num_bootstrap=30)
 #mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=1000, num_bootstrap=20)
 print(mean_mat)
 print(std_mat)
@@ -93,7 +95,6 @@ dcor_value_matLobster = dcor.distance_correlation(
     matminer_lobster_feats_scaled,)
 print('matminer, lobster, matminer+lobster dcors:', dcor_value_matminer, dcor_value_lobster, dcor_value_matLobster)
 
-
 feat_dcor_scores={}
 for i, feat_type in enumerate(lobster_feat_labels):
     dcor_score=dcor.distance_correlation(mace_node_feats_scaled,
@@ -103,18 +104,33 @@ sorted_feat_dcor_scores = dict(
     sorted(feat_dcor_scores.items(), key=lambda item: item[1], reverse=True)
 )
 print(sorted_feat_dcor_scores)
-#print(dcor_max, dcor_mean, dcor_std, dcor_min, dcor_sum, dcor_asi, dcor_chrg_loew, dcor_chrg_mull)
 
 
 
-'''
-            "max": np.max,
-            "mean": np.mean,
-            "std": np.std,
-            "min": np.min,
-            "sum": np.sum,
-            "site_asi": icoxx_featurizer.calc_site_asymmetry_index(site_index),
-            "charge_loew": chargeobj.loewdin[site_index],
-            "charge_mull": chargeobj.mulliken[site_index],
-'''
 
+pca = PCA(n_components=2)
+mace_node_feats_pca = pca.fit_transform(mace_node_feats_scaled)
+dcor_PCAMACE_lowedin=dcor.distance_correlation(mace_node_feats_scaled, lobster_feats[:, -2])
+
+plt.figure(figsize=(4.5,3.5))
+plt.scatter(
+    mace_node_feats_pca[:, 0],
+    mace_node_feats_pca[:, 1],
+    c=lobster_feats[:, -1],
+    s=5,
+    #cmap="rainbow"
+    )
+plt.xlabel(r"PCA1 ($x_{ij}$)", fontsize=12)
+plt.ylabel(r"PCA2 ($x_{ij}$)", fontsize=12)
+cbar = plt.colorbar(label='Charge Polarity')
+#nbar=len(cbar.get_xticks())
+cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
+ax=plt.gca()
+nx = len(ax.get_xticks())
+#ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
+ny = len(ax.get_yticks())
+#ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
+plt.tight_layout()
+#if save_plot:
+plt.savefig('PCAMACE_chg.jpg',) # dpi=dpi)
+plt.show()
