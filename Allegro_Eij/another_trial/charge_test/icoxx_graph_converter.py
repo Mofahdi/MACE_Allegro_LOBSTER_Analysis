@@ -98,7 +98,9 @@ class Icoxx2Graph:
         # Get source and destination node IDs for every edge
         src, dst = g.edges()
         # Compute edge features
-        chg_features = torch.abs(h[src] - h[dst])
+        mask = src != dst
+        #chg_features = torch.abs(h[src] - h[dst]); print(chg_features); exit()
+        chg_features = torch.abs(h[src] - h[dst])/g.edata["bond_dist"]; #print(chg_features); exit()
         g.edata['chg_loe_abs']=chg_features
         return g
 
@@ -157,8 +159,9 @@ class Icoxx2Graph:
 
 
 if __name__=='__main__':
-    g = Icoxx2Graph(bond_length_cutoff=5,).get_graph(path_to_structure='CONTCAR.gz',
-                path_to_icohplist='ICOHPLIST.lobster.gz', path_to_icobilist='ICOBILIST.lobster.gz',
+    g = Icoxx2Graph(bond_length_cutoff=4,).get_graph(path_to_structure='CONTCAR.gz',
+                path_to_icohplist='ICOHPLIST.lobster.gz', 
+                path_to_icobilist='ICOBILIST.lobster.gz', path_to_chagcar='CHARGE.lobster.gz'
             )    
     #print(g.edata['bond_strengths'].shape, g.edata["edge_mask"].shape)
     #print(g.edata['bond_strengths'][g.edata["edge_mask"]].shape)

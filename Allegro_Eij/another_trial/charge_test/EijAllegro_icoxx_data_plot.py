@@ -164,12 +164,12 @@ class Allegro_ICOXX:
             coeff: PCA1 and PCA2 variances
         """
 
-        mask = (self.d < 4).flatten()
+        #mask = (self.d < 4).flatten()
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
-            self.EijFeats_pca[:, 0][mask],
-            self.EijFeats_pca[:, 1][mask],
-            c=self.chg[mask],
+            self.EijFeats_pca[:, 0],#[mask],
+            self.EijFeats_pca[:, 1],#[mask],
+            c=self.chg,#[mask],
             s=5,
             #cmap="rainbow"
             )
@@ -188,9 +188,9 @@ class Allegro_ICOXX:
             plt.savefig(PCAEiiFeats_dist_plot_name, dpi=dpi)
         plt.show()
 
-        pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0][mask], 'PCA2EijFeats': self.EijFeats_pca[:, 1][mask], 'Chg': self.chg[mask].squeeze(),}).to_csv('Chg_PCAEijFeats.csv', index=False)
+        pd.DataFrame({'PCA1EijFeats': self.EijFeats_pca[:, 0], 'PCA2EijFeats': self.EijFeats_pca[:, 1], 'Chg': self.chg.squeeze(),}).to_csv('Chg_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
-        sets={'PCAEijfeats': self.EijFeats_pca[mask], 'd': StandardScaler().fit_transform(self.chg[mask])}
+        sets={'PCAEijfeats': self.EijFeats_pca, 'chg': StandardScaler().fit_transform(self.chg)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20, num_samples=num_dcor_samples)
         return mean_mat, std_mat
 
