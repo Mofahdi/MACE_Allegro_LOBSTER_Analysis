@@ -38,26 +38,38 @@ for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_
         #g_mace=create_DGL_g(ase_atoms=ase_atoms, batch_dict=batch_dict, mace_out=mace_out, node_descs=node_descs)
 
         if i==0:
-            matminer_feats, matminer_feat_labels = get_matminer_struc_feats(cont_path, output_feat_labels=True)
-            lobster_feats, lobster_feat_labels = get_lobster_struc_feat(structure_path=cont_path, ICOHP_path=icohp_path, ICOBI_path=icobi_path, chrg_path=chrg_dir, output_feat_labels=True)
+            matminer_feats_ind, matminer_feat_labels = get_matminer_struc_feats(cont_path, output_feat_labels=True)
+            lobster_feats_ind, lobster_feat_labels = get_lobster_struc_feat(structure_path=cont_path, ICOHP_path=icohp_path, ICOBI_path=icobi_path, chrg_path=chrg_dir, output_feat_labels=True)
         else: 
-            matminer_feats = get_matminer_struc_feats(cont_path, output_feat_labels=False)
-            lobster_feats = get_lobster_struc_feat(structure_path=cont_path, ICOHP_path=icohp_path, ICOBI_path=icobi_path, chrg_path=chrg_dir, output_feat_labels=False)
+            matminer_feats_ind = get_matminer_struc_feats(cont_path, output_feat_labels=False)
+            lobster_feats_ind = get_lobster_struc_feat(structure_path=cont_path, ICOHP_path=icohp_path, ICOBI_path=icobi_path, chrg_path=chrg_dir, output_feat_labels=False)
+    except: continue
 
-        mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0)) # [1, # feats]
-        matminer_chunks.append(matminer_feats)
-        lobster_chunks.append(lobster_feats)
-        matminer_lobster_chunks.append(np.concatenate([matminer_feats, lobster_feats], axis=-1))
-    except: pass
+    mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0)) # [1, # feats]
+    matminer_chunks.append(matminer_feats_ind.squeeze())
+    lobster_chunks.append(lobster_feats_ind.squeeze())
+    matminer_lobster_chunks.append(np.concatenate([matminer_feats_ind, lobster_feats_ind], axis=-1).squeeze())
 
-df_matminer = pd.DataFrame(matminer_feats, columns=matminer_feat_labels)
-df_lobster = pd.DataFrame(matminer_feats, columns=matminer_feat_labels)
-df.dropna(axis=1)
+
+df_matminer = pd.DataFrame(matminer_chunks, columns=matminer_feat_labels)
+df_matminer = df_matminer.dropna(axis=1)
+matminer_feat_labels = df_matminer.columns.tolist()
+matminer_feats = df_matminer.to_numpy()
+
+
+df_lobster = pd.DataFrame(lobster_chunks, columns=lobster_feat_labels)
+df_lobster = df_lobster.dropna(axis=1)
+lobster_feat_labels = df_lobster.columns.tolist()
+lobster_feats = df_lobster.to_numpy()
+
 
 mace_feats = torch.cat(mace_chunks, dim=0).cpu().numpy()
-matminer_feats = torch.cat(matminer_chunks, dim=0).cpu().numpy()
-lobster_feats = torch.cat(lobster_chunks, dim=0).cpu().numpy()
-matminer_lobster_feats = torch.cat(matminer_lobster_chunks, dim=0).cpu().numpy()
+#matminer_feats = torch.cat(matminer_chunks, dim=0).cpu().numpy()
+#lobster_feats = torch.cat(lobster_chunks, dim=0).cpu().numpy()
+#matminer_lobster_feats = torch.cat(matminer_lobster_chunks, dim=0).cpu().numpy()
+
+
+#exit()
 
 from sklearn.preprocessing import StandardScaler
 from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
