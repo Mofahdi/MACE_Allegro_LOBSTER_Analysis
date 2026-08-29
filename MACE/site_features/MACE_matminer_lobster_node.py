@@ -21,7 +21,7 @@ default_dtype = torch.float32
 torch.set_default_dtype(default_dtype)
 
 mace_calc=MACECalculator(model_paths='../mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
-mace_model=mace_calc.models[0]
+#mace_model=mace_calc.models[0]
 
 df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test.csv')
 df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
@@ -29,7 +29,7 @@ df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobste
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
 df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
 
-mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; matminer_lobster_chunks=[]; 
+mace_node_chunks=[]; matminer_chunks=[]; lobster_chunks=[]; #matminer_lobster_chunks=[]; 
 for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_dir'].values, df['ICOHP_dir'].values, 
                                                                       df['ICOBI_dir'].values, df['CHRG_dir'].values)):
     try:
@@ -45,22 +45,23 @@ for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(zip(df['struc_
     except: continue
     matminer_chunks.append(matminer_n_feats)
     lobster_chunks.append(lobster_n_feats)
-    matminer_lobster_chunks.append(torch.cat([matminer_n_feats, lobster_n_feats], dim=-1))
 
     ase_atoms=read(cont_path)
-    batch=mace_calc._atoms_to_batch(ase_atoms).to(device)
-    batch_dict=mace_calc._clone_batch(batch).to_dict()
-    node_descs=torch.from_numpy(mace_calc.get_descriptors(atoms=ase_atoms)).float().to(device) # [# nodes, feats]
-    mace_node_chunks.append(node_descs)
-    #mace_chunks.append(torch.mean(node_descs, dim=0).unsqueeze(0))
-    #print(torch.mean(node_descs, dim=0).shape); exit()
+    mace_descs=torch.from_numpy(mace_calc.get_descriptors(atoms=ase_atoms)).float() # [# nodes, feats]
+    mace_node_chunks.append(mace_descs)
+
+    del ase_atoms; del matminer_n_feats; del lobster_n_feats; del mace_descs;
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 #mace_feats = torch.cat(mace_chunks, dim=0).cpu().numpy()
 mace_node_feats = torch.cat(mace_node_chunks, dim=0).cpu().numpy()
+del mace_node_chunks
 matminer_feats = torch.cat(matminer_chunks, dim=0).cpu().numpy()
+del matminer_chunks
 lobster_feats = torch.cat(lobster_chunks, dim=0).cpu().numpy()
-matminer_lobster_feats = torch.cat(matminer_lobster_chunks, dim=0).cpu().numpy()
-#print(matminer_feats.shape, lobster_feats.shape, mace_node_feats.shape)
+del lobster_chunks
+matminer_lobster_feats =  np.concatenate([matminer_feats, lobster_feats], axis=-1)
 
 
 
@@ -79,7 +80,7 @@ sets = {
     'matminerLobster': matminer_lobster_feats_scaled,
     }
 
-mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, sample_size=2000, num_bootstrap=30)
+mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, sample_size=1000, num_bootstrap=20)
 #mean_mat, std_mat, mean_pvals = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_resamples=1000, num_bootstrap=20)
 print(mean_mat)
 print(std_mat)
