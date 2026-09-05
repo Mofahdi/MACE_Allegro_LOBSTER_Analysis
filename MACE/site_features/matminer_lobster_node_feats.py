@@ -93,7 +93,7 @@ def get_lobster_site_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, out
             "site_icohp_asi": icohp_featurizer.calc_site_asymmetry_index(site_index),
             }
         )
-
+        
         site_icobi_bwdf = icobi_featurizer.calc_site_bwdf(site_index=site_index)
         bwdf_icobi_values = site_icobi_bwdf[f"{site_index}"]["icoxx_binned"]
         site_feats.update(
@@ -109,14 +109,15 @@ def get_lobster_site_feat(structure_path, ICOHP_path, ICOBI_path, chrg_path, out
         chargeobj = Charge(filename=chrg_path)
         site_feats.update(
             {
-            "charge_loew": chargeobj.loewdin[site_index],
             "charge_mull": chargeobj.mulliken[site_index],
+            "charge_loew": chargeobj.loewdin[site_index],
             }
         )
 
         sites_feats.append(list(site_feats.values()))
-        
-    all_sites_feats=torch.tensor(sites_feats, dtype=default_dtype); 
+
+    #all_sites_feats=torch.tensor(sites_feats, dtype=default_dtype); 
+    all_sites_feats = np.array(sites_feats, dtype=np.float32)
     if output_feat_labels:
         siteFeats_labels = list(site_feats.keys())
         return all_sites_feats, siteFeats_labels
@@ -141,7 +142,7 @@ def get_matminer_site_feats(
     Returns:
         A pandas dataframe with structure and composition based features for sites
     """
-
+    #print(structure_path)
     #structures_df['structure']=structures_df['struc_dir'].apply(lambda x: Structure.from_file(x, sort = False))
     structure=Structure.from_file(structure_path, sort = False)
     if site_featurizers is None:
@@ -152,7 +153,7 @@ def get_matminer_site_feats(
             #BondOrientationalParameter(max_l=5), # good
             CoordinationNumber(), # good
             CrystalNNFingerprint.from_preset("cn"), # CN feats, prob. good, prob better for our use
-            GaussianSymmFunc(), # good   
+            #GaussianSymmFunc(), # good   
             LocalPropertyDifference(properties=("Electronegativity", "CovalentRadius")), #"Number", 
             #VoronoiFingerprint(), # good
             SiteElementalProperty(properties=("Electronegativity", "CovalentRadius", 'ElectronAffinity', 'AllenElectronegativity')), #"Number", 
@@ -171,7 +172,7 @@ def get_matminer_site_feats(
     multi_feat.featurize(structure, i)
     for i in range(len(structure))
     ]
-    node_feats=torch.tensor(site_features)
+    node_feats = np.array(site_features, dtype=np.float32)
     #print(node_feats.dtype)
     return node_feats
 
