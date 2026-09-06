@@ -26,7 +26,7 @@ torch.set_default_dtype(default_dtype)
 mace_calc=MACECalculator(model_paths='../../mace-mpa-0-medium.model', model_dtype='float32', device='cuda')
 mace_calc.models[0].eval()
 
-df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test.csv')
+df=pd.read_csv('5_lo_chg_mpInfo_nonmetals.csv')
 df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
 df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster.gz'))
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
@@ -68,20 +68,18 @@ print('finished extracting features')
 
 mace_node_feats = np.concatenate(mace_node_chunks, axis=0)
 del mace_node_chunks; 
-#matminer_feats = np.concatenate(matminer_chunks, axis=0) 
-#del matminer_chunks;
-
-df_lobster = pd.DataFrame(lobster_chunks, columns=lobster_feat_labels)
+df_lobster = pd.DataFrame(np.concatenate(lobster_chunks, axis=0) , columns=lobster_feat_labels)
 df_lobster = df_lobster.dropna(axis=1)
 lobster_feat_labels = df_lobster.columns.tolist()
 lobster_feats = df_lobster.to_numpy()
-#lobster_feats = np.concatenate(lobster_chunks, axis=0) 
 del lobster_chunks
-#matminer_lobster_feats =  np.concatenate([matminer_feats, lobster_feats], axis=-1)
+
+print('[# nodes, MACE feats]:', )
+
+
 
 
 print('started scaling features')
-
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 # Standardize each node feature
@@ -89,12 +87,9 @@ mace_scaler = StandardScaler(copy=False)
 mace_node_feats_scaled = mace_scaler.fit_transform(mace_node_feats)
 lobster_scaler = StandardScaler(copy=False)
 lobster_feats_scaled = lobster_scaler.fit_transform(lobster_feats)
-
 sets = {
     'MACE': mace_node_feats_scaled,
-    #'MATMINER': matminer_feats_scaled,
     'LOBSTER': lobster_feats_scaled, 
-    #'matminerLobster': matminer_lobster_feats_scaled,
     }
 
 print('compute sampled dCor....')
@@ -123,11 +118,19 @@ std_mat.to_json("MACE_lobster_dcor_std.json", orient="records", indent=4)
 # print(sorted_feat_dcor_scores)
 
 
+dcor_PCAMACE_lowedin=dcor.distance_correlation(mace_node_feats_scaled, lobster_feats[:, -1])
+sets = {
+    'MACE': mace_node_feats_scaled,
+    'lowedin_chg': lobster_feats[:, -1], 
+    }
+mean_dcor_MACE_lowedin, std_dcor_MACE_lowedin = evaluate_distance_correlation_matrix_bootstrap(sets=sets, sample_size=500, num_bootstrap=100)
+mean_dcor_MACE_lowedin.to_json("MACE_lobster_dcor_mean.json", orient="records", indent=4)
+std_dcor_MACE_lowedin.to_json("MACE_lobster_dcor_std.json", orient="records", indent=4)
+
+
 print('find PCA of MACE features color-coded with Loewdin charges....')
 pca = PCA(n_components=2, svd_solver="randomized")
 mace_node_feats_pca = pca.fit_transform(mace_node_feats_scaled)
-dcor_PCAMACE_lowedin=dcor.distance_correlation(mace_node_feats_scaled, lobster_feats[:, -1])
-
 plt.figure(figsize=(4.5,3.5))
 plt.scatter(
     mace_node_feats_pca[:, 0],
