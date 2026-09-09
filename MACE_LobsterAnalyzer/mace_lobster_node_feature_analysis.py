@@ -212,7 +212,7 @@ if __name__=='__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     mace_lobs_cls = MACE_LOBSTER_NodeFeatureExtractor(
                                                 df_path='5_lo_chg_mpInfo_nonmetals_test4', 
-                                                model_path='../../../mace-mpa-0-medium.model', 
+                                                model_path='mace-mpa-0-medium.model', 
                                                 device=device,
                                                 )
     mace_lobs_cls.process_df_and_model()
