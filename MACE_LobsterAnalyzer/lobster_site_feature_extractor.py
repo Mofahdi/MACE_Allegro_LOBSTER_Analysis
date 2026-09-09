@@ -105,17 +105,3 @@ def extract_lobster_site_features(
         return all_site_features, feature_labels
 
     return all_site_features
-
-if __name__=='__main__':
-    import pandas as pd
-    df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test4.csv')
-    df['structure']=df['struc_dir'].apply(lambda x: Structure.from_file(x, sort = False))
-
-    struc=df.loc[0, 'structure']
-    struc_dir=df.loc[0, 'struc_dir']
-    ICOHP_dir=df.loc[0, 'ICOHP_dir'] # ICOHP_dir,ICOBI_dir
-    ICOBI_dir=df.loc[0, 'ICOBI_dir'] # ICOHP_dir,ICOBI_dir
-    chrg_dir=df.loc[0, 'chrg_dir'] # ICOHP_dir,ICOBI_dir
-
-    lobster_n_feats=extract_lobster_site_features(structure_path=struc_dir, ICOXX_path=ICOHP_dir, chrg_path=chrg_dir); #exit()
-    print(lobster_n_feats.shape, )

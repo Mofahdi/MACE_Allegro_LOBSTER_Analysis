@@ -9,7 +9,7 @@ if __name__ == "__main__":
         device = 'cpu'
     
     analyzer = MACE_LOBSTER_NodeFeatureExtractor(
-                                                df_path='5_lo_chg_mpInfo_nonmetals.csv', 
+                                                df_path='nonmetals_mp_info.csv', 
                                                 model_path='./mace-mpa-0-medium.model', 
                                                 device=device,
                                                 )

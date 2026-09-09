@@ -47,8 +47,9 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         df['struc_dir'] = df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
         df['ICOHP_dir'] = df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster.gz'))
         df['ICOBI_dir'] = df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
+        df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
+
         self.df = df
-        self.mace_calc: MACECalculator = MACECalculator(model_paths=self.model_path, model_dtype='float32', device=self.device)
 
     def extract_features(self) -> None:
         """Extract MACE and LOBSTER node-level features for all entries in the dataset.
@@ -58,6 +59,8 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         descriptors. The extracted arrays are concatenated and stored on the
         instance for downstream analysis.
         """
+        self.mace_calc = MACECalculator(model_paths=self.model_path, model_dtype='float32', device=self.device)
+
         mace_node_chunks=[]; lobster_chunks=[]; 
         for i, (cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(
                                                                             zip(
@@ -70,16 +73,16 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             try:
                 if i==0:
                     lobster_n_feats, lobster_feat_labels = extract_lobster_site_features(structure_path=cont_path, 
-                                                                    ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
+                                                                    icohp_path=icohp_path, icobi_path=icobi_path, 
                                                                     chrg_path=chrg_dir, output_feat_labels=True)
                 else:
                     lobster_n_feats = extract_lobster_site_features(structure_path=cont_path, 
-                                                            ICOHP_path=icohp_path, ICOBI_path=icobi_path, 
+                                                            icohp_path=icohp_path, icobi_path=icobi_path, 
                                                             chrg_path=chrg_dir, output_feat_labels=False) # [# nodes, feats]    
                 lobster_chunks.append(lobster_n_feats)
 
                 ase_atoms=read(cont_path)
-                mace_descs=mace_calc.get_descriptors(atoms=ase_atoms).astype(np.float32) # [# nodes, feats]
+                mace_descs=self.mace_calc.get_descriptors(atoms=ase_atoms).astype(np.float32) # [# nodes, feats]
                 mace_node_chunks.append(mace_descs)
 
                 del ase_atoms; del lobster_n_feats; del mace_descs;
@@ -129,9 +132,9 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             ``self.mace_node_feats_scaled`` and writes summary JSON outputs to disk.
         """
         mace_scaler = StandardScaler(copy=False)
-        mace_node_feats_scaled = mace_scaler.fit_transform(mace_node_feats)
+        mace_node_feats_scaled = mace_scaler.fit_transform(self.mace_node_feats)
         lobster_scaler = StandardScaler(copy=False)
-        lobster_feats_scaled = lobster_scaler.fit_transform(lobster_feats)
+        lobster_feats_scaled = lobster_scaler.fit_transform(self.lobster_feats)
         sets = {
             'MACE': mace_node_feats_scaled,
             'LOBSTER': lobster_feats_scaled, 
@@ -164,7 +167,7 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         plt.scatter(
             mace_node_feats_pca[:, 0],
             mace_node_feats_pca[:, 1],
-            c=lobster_feats[:, -1],
+            c=self.lobster_feats[:, -1],
             s=5,
             #cmap="rainbow"
             )
@@ -186,7 +189,7 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         plt.scatter(
             mace_node_feats_pca[:, 0],
             mace_node_feats_pca[:, 1],
-            c=lobster_feats[:, -2],
+            c=self.lobster_feats[:, -2],
             s=5,
             #cmap="rainbow"
             )
@@ -206,14 +209,3 @@ class MACE_LOBSTER_NodeFeatureExtractor:
 
 
 
-
-if __name__=='__main__':
-    #df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test4.csv')
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    mace_lobs_cls = MACE_LOBSTER_NodeFeatureExtractor(
-                                                df_path='5_lo_chg_mpInfo_nonmetals_test4', 
-                                                model_path='mace-mpa-0-medium.model', 
-                                                device=device,
-                                                )
-    mace_lobs_cls.process_df_and_model()
-    mace_lobs_cls.MACE_lobster_dCor(sample_size=400, num_bootstrap=100)
