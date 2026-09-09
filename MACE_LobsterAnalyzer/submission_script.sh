@@ -10,5 +10,5 @@
 
 ulimit -s unlimited
 
-python MACE_lobster_node.py
+python run_mace_lobster_analysis.py
 #python MACE_matminer_lobster_node.py
