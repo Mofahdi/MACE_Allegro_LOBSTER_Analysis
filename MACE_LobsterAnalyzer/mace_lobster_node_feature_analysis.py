@@ -171,11 +171,16 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             s=5,
             #cmap="rainbow"
             )
-        plt.xlabel(r"PCA1 (MACE Node Features)", fontsize=12)
-        plt.ylabel(r"PCA2 (MACE Node Features)", fontsize=12)
-        cbar = plt.colorbar(label='Charge Loewdin')
+        plt.xlabel(r"PCA1 (MACE Node Features)", fontsize=11)
+        plt.ylabel(r"PCA2 (MACE Node Features)", fontsize=11)
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
+        cbar = plt.colorbar()
+        cbar.set_label('Loewdin Charge', fontsize=12)
+        cbar.ax.tick_params(labelsize=11)
         #nbar=len(cbar.get_xticks())
         cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
+
         ax=plt.gca()
         nx = len(ax.get_xticks())
         #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
@@ -185,6 +190,8 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         #if save_plot:
         plt.savefig('PCAMACE_2D_LoewdinChg.jpg', dpi=800) # dpi=dpi)
 
+
+
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
             mace_node_feats_pca[:, 0],
@@ -193,11 +200,16 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             s=5,
             #cmap="rainbow"
             )
-        plt.xlabel(r"PCA1 (MACE Node Features)", fontsize=12)
-        plt.ylabel(r"PCA2 (MACE Node Features)", fontsize=12)
-        cbar = plt.colorbar(label='Mulliken Charge')
+        plt.xlabel(r"PCA1 (MACE Node Features)", fontsize=11)
+        plt.ylabel(r"PCA2 (MACE Node Features)", fontsize=11)
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
+        cbar = plt.colorbar()
+        cbar.set_label('Mulliken Charge', fontsize=12)
+        cbar.ax.tick_params(labelsize=11)
         #nbar=len(cbar.get_xticks())
         cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
+
         ax=plt.gca()
         nx = len(ax.get_xticks())
         #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
