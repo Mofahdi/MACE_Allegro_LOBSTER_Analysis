@@ -9,11 +9,17 @@ if __name__ == "__main__":
         device = 'cpu'
     
     analyzer = MACE_LOBSTER_NodeFeatureExtractor(
-                                                df_path='nonmetals_mp_info.csv', 
+                                                df_path='nonmetals_mp_info_test4.csv', 
                                                 model_path='./mace-mpa-0-medium.model', 
                                                 device=device,
                                                 )
     analyzer.process_df_and_model()
     analyzer.extract_features()
     analyzer.compute_distance_correlation(sample_size=400, num_bootstrap=100)
-    analyzer.plot_pca_charge_distributions()
+    analyzer.plot_pca_charge_dcor_relationship(
+                                            plot_name_loewdin = 'PCAMACE_2D_LoewdinChg.jpg', 
+                                            plot_name_mulliken = 'PCAMACE_2D_MullChg.jpg',
+                                            sample_size=400, 
+                                            num_bootstrap=100,
+                                            )
+

@@ -140,43 +140,69 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             'LOBSTER': lobster_feats_scaled, 
             }
 
-        print('computing dCor from sampled data ....')
+        print('\n\ncomputing dCor from sampled data ....')
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, 
                                                                            sample_size = sample_size, 
                                                                            num_bootstrap = num_bootstrap)
         
-        print('\n\ndCor between LOBSTER, MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
+        print('\ndCor between LOBSTER, MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
         mean_mat.to_json("MACE_lobster_dcor_mean.json", orient="records", indent=4)
         std_mat.to_json("MACE_lobster_dcor_std.json", orient="records", indent=4)
 
         self.mace_node_feats_scaled = mace_node_feats_scaled
 
-    def plot_pca_charge_distributions(self) -> None:
-        """Create 2D PCA visualizations for MACE features colored by charge values.
+    def plot_pca_charge_dcor_relationship(
+        self,
+        plot_name_loewdin: str = 'PCAMACE_2D_LoewdinChg.jpg',
+        plot_name_mulliken: str = 'PCAMACE_2D_MullChg.jpg',
+        sample_size: int = 400,
+        num_bootstrap: int = 100,
+    ) -> None:
+        """Project MACE node features into PCA space and quantify their relationship to charge.
 
-        This method projects the standardized MACE node features into two
-        principal components and plots them twice: once colored by the Loewdin
-        charge and once by the Mulliken charge. Both plots are saved as image
-        files on disk.
+        This method standardizes the MACE node-feature matrix, reduces it to the
+        first two principal components, and creates 2D scatter plots colored by
+        Loewdin and Mulliken charges. It then estimates bootstrap-based distance
+        correlation between the PCA embedding and each charge vector and saves the
+        summary statistics as JSON files.
+
+        Parameters
+        ----------
+        plot_name_loewdin : str, optional
+            Output filename for the PCA plot colored by Loewdin charge.
+        plot_name_mulliken : str, optional
+            Output filename for the PCA plot colored by Mulliken charge.
+        sample_size : int, optional
+            Number of node-feature samples used in each bootstrap iteration.
+        num_bootstrap : int, optional
+            Number of bootstrap replicates used to estimate the dCor statistics.
+
+        Returns
+        -------
+        None
+            Saves the PCA plots and the mean/std distance-correlation summaries.
         """
         pca = PCA(n_components=2,) #svd_solver="randomized")
         mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
+        loewdin_charge = self.lobster_feats[:, -1]
+        mulliken_charge = self.lobster_feats[:, -2]
 
+        print('\n\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
             mace_node_feats_pca[:, 0],
             mace_node_feats_pca[:, 1],
-            c=self.lobster_feats[:, -1],
+            c=loewdin_charge,
             s=5,
             #cmap="rainbow"
             )
-        plt.xlabel(r"PCA1 (MACE Node Features)", fontsize=11)
-        plt.ylabel(r"PCA2 (MACE Node Features)", fontsize=11)
+        plt.xlabel(r"PC1 (MACE Node Features)", fontsize=11)
+        plt.ylabel(r"PC2 (MACE Node Features)", fontsize=11)
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
         cbar = plt.colorbar()
-        cbar.set_label('Loewdin Charge', fontsize=12)
+        cbar.set_label('Loewdin Charge (e)', fontsize=12)
         cbar.ax.tick_params(labelsize=11)
         #nbar=len(cbar.get_xticks())
         cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
@@ -188,24 +214,23 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         #if save_plot:
-        plt.savefig('PCAMACE_2D_LoewdinChg.jpg', dpi=800) # dpi=dpi)
-
+        plt.savefig(plot_name_loewdin, dpi=800) # dpi=dpi)
 
 
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
             mace_node_feats_pca[:, 0],
             mace_node_feats_pca[:, 1],
-            c=self.lobster_feats[:, -2],
+            c=mulliken_charge,
             s=5,
             #cmap="rainbow"
             )
-        plt.xlabel(r"PCA1 (MACE Node Features)", fontsize=11)
-        plt.ylabel(r"PCA2 (MACE Node Features)", fontsize=11)
+        plt.xlabel(r"PC1 (MACE Node Features)", fontsize=11)
+        plt.ylabel(r"PC2 (MACE Node Features)", fontsize=11)
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
         cbar = plt.colorbar()
-        cbar.set_label('Mulliken Charge', fontsize=12)
+        cbar.set_label('Mulliken Charge (e)', fontsize=12)
         cbar.ax.tick_params(labelsize=11)
         #nbar=len(cbar.get_xticks())
         cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
@@ -217,7 +242,27 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         #if save_plot:
-        plt.savefig('PCAMACE_2D_MullChg.jpg', dpi=800) # dpi=dpi)
+        plt.savefig(plot_name_mulliken, dpi=800) # dpi=dpi)
+
+
+        sets = {
+            'MACE': mace_node_feats_pca,
+            'Loewdin': loewdin_charge,
+            'Mulliken': mulliken_charge,
+            }
+        print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
+                                                                            sets=sets, 
+                                                                            sample_size = sample_size, 
+                                                                            num_bootstrap = num_bootstrap,
+                                                                            )
+        
+        print('\ndCor between charge and PCA MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
+
+        mean_mat.to_json("MACE_charges_dcor_mean.json", orient="records", indent=4)
+        std_mat.to_json("MACE_charges_dcor_std.json", orient="records", indent=4)
+
+
 
 
 
