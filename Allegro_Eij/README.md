@@ -1,14 +1,16 @@
-# Allegro Eij / ICOXX Analysis
+# Allegro_Eij
 
-This project combines Allegro graph predictions with Lobster ICOXX bond data to analyze the relationship between:
+This folder contains the Allegro-based edge-energy workflow. It is part of a larger project that also includes the `MACE_LobsterAnalyzer` directory for a complementary MACE + LOBSTER site-feature analysis.
+
+The Allegro workflow combines Allegro graph predictions with Lobster ICOXX bond data to study relationships between:
 
 - Allegro edge energies $E_{ij}$
 - bond distance
 - ICOHP values
 - ICOBI values
-- reduced PCA features derived from edge features
+- PCA-reduced edge-feature embeddings
 
-The workflow reads structure metadata, loads the trained Allegro model, intersects the model graph with the ICOXX graph, and then produces plots and distance-correlation summaries.
+The workflow reads a material metadata table, loads the trained Allegro model, intersects the model graph with the ICOXX graph, and produces plots and distance-correlation summaries.
 
 ## Project files
 
@@ -22,7 +24,7 @@ The workflow reads structure metadata, loads the trained Allegro model, intersec
 
 This project expects the following dependencies:
 
-- Python 3.9+
+- Python 3.12.13
 - PyTorch 2.4.0
 - DGL 2.4.0+cu124
 - ASE 3.29.0
