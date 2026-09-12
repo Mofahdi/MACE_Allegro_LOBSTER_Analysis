@@ -93,8 +93,6 @@ class MACE_LOBSTER_NodeFeatureExtractor:
                 print(f"FAILED: {cont_path}")
                 print(f"ERROR: {e}")
 
-        print('done extracting features')
-
         mace_node_feats = np.concatenate(mace_node_chunks, axis=0)
         del mace_node_chunks; 
         df_lobster = pd.DataFrame(np.concatenate(lobster_chunks, axis=0) , columns=lobster_feat_labels)
@@ -105,6 +103,7 @@ class MACE_LOBSTER_NodeFeatureExtractor:
 
         self.mace_node_feats=mace_node_feats
         self.lobster_feats=lobster_feats
+        print('done extracting features')
         print('dimensions of nodes with MACE and lobster features:')
         print('[# nodes, # MACE feats]:', mace_node_feats.shape)
         print('[# nodes, # lobster feats]:', lobster_feats.shape)
@@ -140,12 +139,11 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             'LOBSTER': lobster_feats_scaled, 
             }
 
-        print('\n\ncomputing dCor from sampled data ....')
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, 
                                                                            sample_size = sample_size, 
                                                                            num_bootstrap = num_bootstrap)
         
-        print('\ndCor between LOBSTER, MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
+        print('dCor between LOBSTER, MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
         mean_mat.to_json("MACE_lobster_dcor_mean.json", orient="records", indent=4)
         std_mat.to_json("MACE_lobster_dcor_std.json", orient="records", indent=4)
@@ -188,7 +186,7 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         loewdin_charge = self.lobster_feats[:, -1]
         mulliken_charge = self.lobster_feats[:, -2]
 
-        print('\n\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
+
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
             mace_node_feats_pca[:, 0],
@@ -197,8 +195,8 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             s=5,
             #cmap="rainbow"
             )
-        plt.xlabel(r"PC1 (MACE Node Features)", fontsize=11)
-        plt.ylabel(r"PC2 (MACE Node Features)", fontsize=11)
+        plt.xlabel(r"PC1 of MACE Node Embeddings", fontsize=11)
+        plt.ylabel(r"PC2 of MACE Node Embeddings", fontsize=11)
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
         cbar = plt.colorbar()
@@ -225,8 +223,8 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             s=5,
             #cmap="rainbow"
             )
-        plt.xlabel(r"PC1 (MACE Node Features)", fontsize=11)
-        plt.ylabel(r"PC2 (MACE Node Features)", fontsize=11)
+        plt.xlabel(r"PC1 of MACE Node Embeddings", fontsize=11)
+        plt.ylabel(r"PC2 of MACE Node Embeddings", fontsize=11)
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
         cbar = plt.colorbar()
@@ -250,14 +248,14 @@ class MACE_LOBSTER_NodeFeatureExtractor:
             'Loewdin': loewdin_charge,
             'Mulliken': mulliken_charge,
             }
-        print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
+        
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
                                                                             sets=sets, 
                                                                             sample_size = sample_size, 
                                                                             num_bootstrap = num_bootstrap,
                                                                             )
         
-        print('\ndCor between charge and PCA MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
+        print('dCor between charge and PCA MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
         mean_mat.to_json("MACE_charges_dcor_mean.json", orient="records", indent=4)
         std_mat.to_json("MACE_charges_dcor_std.json", orient="records", indent=4)
