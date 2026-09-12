@@ -60,6 +60,8 @@ class Allegro_ICOXX:
             d_chunks.append(g_intersect.edata['g2_bond_dist'].unsqueeze(-1)) # [# edges, 1]
             chg_chunks.append(g_intersect.edata['g2_chg_loe_abs'].unsqueeze(-1)) # [# edges, 1]
             mask_chgE_chunks.append(g_intersect.edata['g2_mask_chg_e'].unsqueeze(-1)) # [# edges, 1]
+
+            #print(i)
         
         self.Eijs = torch.cat(Eij_chunks, dim=0).float().cpu() # [# edges, 1]
         self.EijFeats = torch.cat(EijFeats_chunks, dim=0).float().cpu() # [# edges, # channels]
@@ -152,6 +154,7 @@ class Allegro_ICOXX:
 
     def plot_PCAEij_chg_maskD_and_dcor(self, 
                               num_dcor_samples: int,
+                              dcor_sample_size: int,
                               save_plot: bool=True, 
                               PCAEiiFeats_dist_plot_name:str = 'PCAEijFeatureSpace_dist.png', 
                               dpi: float=400):
@@ -193,7 +196,7 @@ class Allegro_ICOXX:
                       'Chg': self.chg[self.mask_chg_es].squeeze(),}).to_csv('Chg_PCAEijFeats.csv', index=False)
         #return pca.explained_variance_ratio_, dcor.distance_correlation(X_pca, d_scaled)
         sets={'PCAEijfeats': self.EijFeats_pca[self.mask_chg_es], 'chg': StandardScaler().fit_transform(self.chg[self.mask_chg_es])}
-        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=20, num_samples=num_dcor_samples)
+        mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, num_bootstrap=dcor_sample_size, num_samples=num_dcor_samples)
         return mean_mat, std_mat
 
 

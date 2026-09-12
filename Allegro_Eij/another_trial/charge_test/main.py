@@ -23,10 +23,11 @@ print('Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 Pcorr_chg, dcor_chg=alleg_icoxx.plot_Eij_chg_maskD(save_plot = True, Eii_icoxx_plot_name = 'Eij_chg_maskD.jpg', dpi = 800)
 print('maskedD Eij and chg Pearson and dcor Correlations:',Pcorr_chg, dcor_chg)
 
-XijChg_dcor_mean_mat, XijChg_dcor_std_mat = alleg_icoxx.plot_PCAEij_chg_maskD_and_dcor(num_dcor_samples=50000,
-                              save_plot=True, 
-                              PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.png', 
-                              dpi=400)
+XijChg_dcor_mean_mat, XijChg_dcor_std_mat = alleg_icoxx.plot_PCAEij_chg_maskD_and_dcor(num_dcor_samples=50000, 
+                                                                                       dcor_sample_size=40,
+                                                                                        save_plot=True, 
+                                                                                        PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_chg.png', 
+                                                                                        dpi=400)
 
 print('\n\nChg, Xij dcor (mean, std):'); print(XijChg_dcor_mean_mat); print(XijChg_dcor_std_mat);
 

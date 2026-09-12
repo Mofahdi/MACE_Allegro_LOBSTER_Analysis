@@ -29,7 +29,7 @@ print('Eij and ICOBI Pearson and dcor Correlations:', PCorr_ICOBI, dcor_ICOBI)
 
 # plot PCA(Eij Features) color-coded with bond length (d). Also, get dcor between PCA and d
 XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAEij_d_and_dcor( 
-                                                                        num_dcor_samples=20, # had memory issues processing everything here so got dcor
+                                                                        num_dcor_samples=40, # had memory issues processing everything here so got dcor
                                                                         dcor_sample_size = 50000, # 50000,
                                                                         save_plot=True, 
                                                                         PCAEiiFeats_dist_plot_name = 'PCAEijFeatureSpace_dist.jpg', # PCAEijFeatureSpace_ICOHP PCAEijFeatureSpace_ICOBI
@@ -40,7 +40,7 @@ XijD_dcor_std_mat.to_json("XijD_dcor_std_mat.json", orient="records", indent=4)
 
 # plot PCA(Eij Features) color-coded with ICOHP. Also, get dcor between PCA and ICOHP
 XijICOHP_dcor_mean, XijICOHP_dcor_std = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
-                                                                            num_dcor_samples=20, # had memory issues processing everything here so got dcor
+                                                                            num_dcor_samples=40, # had memory issues processing everything here so got dcor
                                                                             dcor_sample_size = 50000, # 50000,
                                                                             icohp=True, 
                                                                             save_plot=True, 
@@ -52,7 +52,7 @@ XijICOHP_dcor_std.to_json("XijICOHP_dcor_std.json", orient="records", indent=4)
 
 # plot PCA(Eij Features) color-coded with ICOBI. Also, get dcor between PCA and ICOBI
 XijICOBI_dcor_mean, XijICOBI_dcor_std = alleg_icoxx.plot_PCAEij_icoxx_and_dcor(
-                                                                            num_dcor_samples=20, # had memory issues processing everything here so got dcor
+                                                                            num_dcor_samples=40, # had memory issues processing everything here so got dcor
                                                                             dcor_sample_size = 50000, # 50000,
                                                                             icohp=False, 
                                                                             save_plot=True, 

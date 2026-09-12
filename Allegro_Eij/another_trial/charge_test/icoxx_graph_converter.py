@@ -99,9 +99,11 @@ class Icoxx2Graph:
         src, dst = g.edges()
         # Compute edge features
         g.edata['mask_chg_e'] = src != dst; 
-        #chg_features = torch.abs(h[src] - h[dst]); print(chg_features.shape); exit()
-        chg_features = torch.abs(h[src] - h[dst]).squeeze()/g.edata["bond_dist"]; #print(chg_features.shape); exit()
+        chg_features = torch.abs(h[src] - h[dst]); #print(chg_features.shape); exit()
+        #chg_features = (torch.abs(h[src] - h[dst]).squeeze()/g.edata["bond_dist"]).unsqueeze(-1); #print(chg_features.shape); exit()
+        #print(chg_features.shape, chg_features)
         g.edata['chg_loe_abs']=chg_features
+        #exit()
         return g
 
     def get_graph_from_processed_structure(
