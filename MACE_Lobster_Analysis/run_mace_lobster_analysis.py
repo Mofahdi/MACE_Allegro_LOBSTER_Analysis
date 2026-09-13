@@ -16,7 +16,7 @@ if __name__ == "__main__":
     analyzer.process_df_and_model()
     analyzer.extract_features()
     print('\n\ncomputing dCor from sampled data ....')
-    analyzer.compute_distance_correlation(sample_size=400, num_bootstrap=100)
+    analyzer.compute_distance_correlation(sample_size=400, num_bootstrap=80)
 
     print('\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
     print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
@@ -24,6 +24,6 @@ if __name__ == "__main__":
                                             plot_name_loewdin = 'PCAMACE_2D_LoewdinChg.jpg', 
                                             plot_name_mulliken = 'PCAMACE_2D_MullChg.jpg',
                                             sample_size=400, 
-                                            num_bootstrap=100,
+                                            num_bootstrap=80,
                                             )
 

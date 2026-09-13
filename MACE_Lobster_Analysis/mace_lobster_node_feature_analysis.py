@@ -183,6 +183,7 @@ class MACE_LOBSTER_NodeFeatureExtractor:
         """
         pca = PCA(n_components=2,) #svd_solver="randomized")
         mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
+        print('\nvariances in PCA of MACE node embeddings are:', pca.explained_variance_ratio_)
         loewdin_charge = self.lobster_feats[:, -1]
         mulliken_charge = self.lobster_feats[:, -2]
 
@@ -259,6 +260,16 @@ class MACE_LOBSTER_NodeFeatureExtractor:
 
         mean_mat.to_json("MACE_charges_dcor_mean.json", orient="records", indent=4)
         std_mat.to_json("MACE_charges_dcor_std.json", orient="records", indent=4)
+
+        pd.DataFrame(
+            {
+                "PC1 MACE": mace_node_feats_pca[:, 0],
+                "PC2 MACE": mace_node_feats_pca[:, 1],
+                'Loewdin': loewdin_charge,
+                'Mulliken': mulliken_charge, 
+            }
+        ).to_csv("PCA_MACE_Loew_Mull.csv", index=False)
+
 
 
 
