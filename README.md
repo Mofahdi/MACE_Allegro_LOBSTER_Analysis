@@ -5,7 +5,8 @@ This project folder brings together two complementary materials-analysis workflo
 - `Allegro_Eij_ICOXX_Analysis` studies Allegro-predicted edge energies together with LOBSTER ICOXX bond descriptors.
 - `MACE_Lobster_Analysis` studies MACE-derived site descriptors together with LOBSTER charge and bonding features.
 
-The shared goal is to compare different machine-learning representations of the same material systems and quantify how they relate to bonding, charge, and structural descriptors using distance correlation and visualization.
+The shared goal is to compare different machine-learning representations of the same material systems and quantify how they relate to bonding, charge, and structura descriptors using distance correlation and visualization. In both workflows, we test whether edge-based from Allegro and site-based descriptors from MACE implicitly capture chemical rules.
+
 
 ## Project structure
 
