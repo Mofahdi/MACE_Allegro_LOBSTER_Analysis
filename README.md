@@ -79,14 +79,6 @@ Both analysis folders follow a similar overall pipeline:
 5. compare the feature spaces with distance correlation,
 6. visualize the results and save summary statistics.
 
-## Why both are together
-
-Keeping both workflows in the same project makes it easier to:
-
-- compare Allegro and MACE representations on the same dataset,
-- reuse the same analysis conventions,
-- test whether edge-based and site-based descriptors capture similar chemistry,
-- maintain a single project-level documentation entry point.
 
 ## Notes
 
