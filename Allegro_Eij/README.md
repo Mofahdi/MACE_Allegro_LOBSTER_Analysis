@@ -19,6 +19,7 @@ The workflow reads a material metadata table, loads the trained Allegro model, i
 - `icoxx_graph.py` — ICOXX graph conversion utilities
 - `distance_correlation.py` — distance-correlation helper functions
 - `run_allegro_eij_icoxx_analysis.py` — command-line runner for the full analysis
+- `Allegro-OAM-L-0.1.nequip.zip` — Allegro's pretrained model
 
 ## Requirements
 
@@ -53,11 +54,6 @@ mat_path
 .. and so on
 ```
 
-You also need a trained Allegro model package, for example:
-
-```text
-Allegro-OAM-L-0.1.nequip.zip
-```
 
 ## Running the analysis
 
