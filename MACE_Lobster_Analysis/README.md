@@ -49,6 +49,24 @@ This analysis used these packages:
 - lobsterpy 0.6.1
 - MACE 0.3.16
 
+
+## Inputs
+The analysis expects a CSV file containing a column named `mat_path`, where each row points to a structure directory. The script automatically constructs paths such as:
+
+- `CONTCAR.gz`
+- `ICOHPLIST.lobster.gz`
+- `ICOBILIST.lobster.gz`
+
+Example metadata file:
+
+```csv
+mat_path
+/path/to/material_1
+/path/to/material_2
+.. and so on
+```
+
+
 ## Running the analysis
 
 From this directory, run:
