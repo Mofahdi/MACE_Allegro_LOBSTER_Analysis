@@ -141,35 +141,35 @@ class Icoxx2Graph:
         graph.edata["ICOHPs"] = torch.tensor(icohps, dtype=default_dtype)
         graph.edata["ICOBIs"] = torch.tensor(icobis, dtype=default_dtype)
 
-        # sum_filtered_icohps=[]
-        # sum_filtered_icobis=[]
-        # mean_filtered_icohps=[]
-        # mean_filtered_icobis=[]
-        # noise = -0.1
-        # perc = 0.1
-        # for i in range(graph.num_nodes()):
-        #     #eids = graph.in_edges(i, form="eid")
-        #     eids = graph.out_edges(i, form="eid")
-        #     # Retrieve the edge values
-        #     edge_ICOHPs = graph.edata["ICOHPs"][eids]
-        #     edge_ICOBIs = graph.edata["ICOBIs"][eids]
-        #     # Filter based on a condition
-        #     #mask = ((graph.edata["ICOHPs"][eids] < noise) &
-        #      #           (graph.edata["ICOHPs"][eids] < torch.min(graph.edata["ICOHPs"]) * perc))
-        #     mask_COHP = graph.edata["ICOHPs"][eids] < torch.min(graph.edata["ICOHPs"]) * perc
-        #     mask_COBI = graph.edata["ICOBIs"][eids] > torch.max(graph.edata["ICOBIs"]) * perc
-        #     #filtered_eids = eids[mask_COHP]
-        #     filtered_ICOHPs = edge_ICOHPs[mask_COHP]
-        #     filtered_ICOBIs = edge_ICOBIs[mask_COBI]
-        #     mean_filtered_icohps.append(torch.mean(filtered_ICOHPs)); 
-        #     mean_filtered_icobis.append(torch.mean(filtered_ICOBIs))
-        #     sum_filtered_icohps.append(torch.sum(filtered_ICOHPs)); 
-        #     sum_filtered_icobis.append(torch.sum(filtered_ICOBIs))
+        sum_filtered_icohps=[]
+        sum_filtered_icobis=[]
+        mean_filtered_icohps=[]
+        mean_filtered_icobis=[]
+        noise = -0.1
+        perc = 0.15
+        for i in range(graph.num_nodes()):
+            #eids = graph.in_edges(i, form="eid")
+            eids = graph.out_edges(i, form="eid")
+            # Retrieve the edge values
+            edge_ICOHPs = graph.edata["ICOHPs"][eids]
+            edge_ICOBIs = graph.edata["ICOBIs"][eids]
+            # Filter based on a condition
+            #mask = ((graph.edata["ICOHPs"][eids] < noise) &
+             #           (graph.edata["ICOHPs"][eids] < torch.min(graph.edata["ICOHPs"]) * perc))
+            mask_COHP = graph.edata["ICOHPs"][eids] < torch.min(graph.edata["ICOHPs"]) * perc
+            mask_COBI = graph.edata["ICOBIs"][eids] > torch.max(graph.edata["ICOBIs"]) * perc
+            #filtered_eids = eids[mask_COHP]
+            filtered_ICOHPs = edge_ICOHPs[mask_COHP]
+            filtered_ICOBIs = edge_ICOBIs[mask_COBI]
+            mean_filtered_icohps.append(torch.mean(filtered_ICOHPs)); 
+            mean_filtered_icobis.append(torch.mean(filtered_ICOBIs))
+            sum_filtered_icohps.append(torch.sum(filtered_ICOHPs)); 
+            sum_filtered_icobis.append(torch.sum(filtered_ICOBIs))
 
-        # graph.ndata['mean_maskedICOHPs'] = torch.tensor(mean_filtered_icohps)
-        # graph.ndata['mean_maskedICOBIs'] = torch.tensor(mean_filtered_icobis)
-        # graph.ndata['sum_maskedICOHPs'] = torch.tensor(sum_filtered_icohps)
-        # graph.ndata['sum_maskedICOBIs'] = torch.tensor(sum_filtered_icobis)
+        graph.ndata['mean_maskedICOHPs'] = torch.tensor(mean_filtered_icohps)
+        graph.ndata['mean_maskedICOBIs'] = torch.tensor(mean_filtered_icobis)
+        graph.ndata['sum_maskedICOHPs'] = torch.tensor(sum_filtered_icohps)
+        graph.ndata['sum_maskedICOBIs'] = torch.tensor(sum_filtered_icobis)
 
         graph.update_all(fn.copy_e("ICOHPs", "m"), 
                          fn.sum("m", "sum_ICOHPs"))
