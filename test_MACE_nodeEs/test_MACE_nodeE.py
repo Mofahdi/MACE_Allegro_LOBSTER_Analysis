@@ -79,10 +79,10 @@ chg_mull_feats = np.concatenate(chg_mull_chunks, axis=0)
 
 
 df = pd.DataFrame({
-    "MACE_Atomnic_Energies_eV": mace_node_es,
-    "sumICOHPs_eV": sumICOHPs_node_feats,
-    "sumMaskedICOHP": sum_masked_ICOHPs_node_feats,
-    'meanMaskedICOHP': mean_maskedICOHPs_node_feats,
+    "MACE_Atomic_Es": mace_node_es,
+    "sumICOHPs": sumICOHPs_node_feats,
+    "sumEffICOHP": sum_masked_ICOHPs_node_feats,
+    'meanEffICOHP': mean_maskedICOHPs_node_feats,
     "sumICOBI": sumICOBIs_node_feats,
     #"sumMaskedICOBI": sum_masked_ICOHPs_node_feats,
     #'meanMaskedICOBI': mean_maskedICOHPs_node_feats,
@@ -93,6 +93,14 @@ corr = df.corr(method="pearson")
 print(corr)
 
 
+#dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
+#print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
+dcor_mace_sumICOHP = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
+print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOHP)
+dcor_mace_sumICOBI = dcor.distance_correlation(mace_node_feats, sumICOBIs_node_feats)
+print('dcor between mace features and sum ICOBI:', dcor_mace_sumICOBI)
+
+
 plt.figure()
 plt.scatter(
     mace_node_es,
@@ -101,7 +109,7 @@ plt.scatter(
     s=5,
     #cmap="rainbow"
     )
-plt.xlabel(r"MACE Atomnic Energy (eV)", fontsize=12)
+plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
 plt.ylabel(r"sum_ICOHPs", fontsize=12)
 #cbar = plt.colorbar(label='Charge Polarity')
 #nbar=len(cbar.get_xticks())
@@ -126,7 +134,7 @@ plt.scatter(
     s=5,
     #cmap="rainbow"
     )
-plt.xlabel(r"MACE Atomnic Energy (eV)", fontsize=12)
+plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
 plt.ylabel(r"sum_ICOBIs", fontsize=12)
 #cbar = plt.colorbar(label='Charge Polarity')
 #nbar=len(cbar.get_xticks())
@@ -152,7 +160,7 @@ plt.scatter(
     s=5,
     #cmap="rainbow"
     )
-plt.xlabel(r"MACE Atomnic Energy (eV)", fontsize=12)
+plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
 plt.ylabel(r"Loewdin Charge (e)", fontsize=12)
 #cbar = plt.colorbar(label='Charge Polarity')
 #nbar=len(cbar.get_xticks())
@@ -176,7 +184,7 @@ plt.scatter(
     s=5,
     #cmap="rainbow"
     )
-plt.xlabel(r"MACE Atomnic Energy (eV)", fontsize=12)
+plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
 plt.ylabel(r"Mulliken Charge (e)", fontsize=12)
 #cbar = plt.colorbar(label='Charge Polarity')
 #nbar=len(cbar.get_xticks())
