@@ -146,7 +146,7 @@ class Icoxx2Graph:
         mean_filtered_icohps=[]
         mean_filtered_icobis=[]
         noise = -0.1
-        perc = 0.15
+        perc = 0.1
         for i in range(graph.num_nodes()):
             #eids = graph.in_edges(i, form="eid")
             eids = graph.out_edges(i, form="eid")
