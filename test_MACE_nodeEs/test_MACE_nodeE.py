@@ -26,7 +26,7 @@ torch.set_default_dtype(default_dtype)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 #mace_calc = mace_mp(model="medium-mpa-0", device=device,) # default_dtype='float32')
 mace_calculator = MACECalculator(model_paths='mace-mpa-0-medium.model', model_dtype='float32', device=device)
-df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test.csv')
+df=pd.read_csv('nonmetals_mp_info.csv')
 df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
 df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster.gz'))
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
@@ -93,14 +93,6 @@ df = pd.DataFrame({
 })
 corr = df.corr(method="pearson")
 print(corr)
-
-
-#dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
-#print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
-dcor_mace_sumICOHP = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
-print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOHP)
-dcor_mace_sumICOBI = dcor.distance_correlation(mace_node_feats, sumICOBIs_node_feats)
-print('dcor between mace features and sum ICOBI:', dcor_mace_sumICOBI)
 
 
 plt.figure()
@@ -218,11 +210,11 @@ print('Removed nodes with non-finite features or target:', nodes_before_filter -
 clean_mace_node_feats = regression_df.drop(
     columns='target_sum_ICOHP'
 ).to_numpy(dtype=np.float32)
-clean_mean_maskedICOHPs = regression_df['target_sum_ICOHP'].to_numpy()
+clean_sumICOHPs = regression_df['target_sum_ICOHP'].to_numpy()
 
 X_train, X_test, y_train, y_test = train_test_split(
     clean_mace_node_feats,
-    clean_mean_maskedICOHPs,
+    clean_sumICOHPs,
     test_size=0.2,
     random_state=42,
 )
@@ -235,8 +227,8 @@ print('Linear regression R2:', r2_score(y_test, y_pred))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
 joblib.dump(linear_model, "linear_regression_model_sumICOHP.pkl")
 
-plt.figure()
-plt.scatter(y_test, y_pred, s=5)
+plt.figure(figsize=(5, 4))
+plt.scatter(y_test, y_pred, c='b', alpha=0.2)
 plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
 plt.xlabel('Actual Sum ICOHP (eV)')
@@ -262,11 +254,11 @@ print('Removed nodes with non-finite features or target:', nodes_before_filter -
 clean_mace_node_feats = regression_df.drop(
     columns='target_sum_ICOBI'
 ).to_numpy(dtype=np.float32)
-clean_mean_maskedICOHPs = regression_df['target_sum_ICOBI'].to_numpy()
+clean_sumICOBIs = regression_df['target_sum_ICOBI'].to_numpy()
 
 X_train, X_test, y_train, y_test = train_test_split(
     clean_mace_node_feats,
-    clean_mean_maskedICOHPs,
+    clean_sumICOBIs,
     test_size=0.2,
     random_state=42,
 )
@@ -279,8 +271,8 @@ print('Linear regression R2:', r2_score(y_test, y_pred))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
 joblib.dump(linear_model, "linear_regression_model_sumICOBI.pkl")
 
-plt.figure()
-plt.scatter(y_test, y_pred, s=5)
+plt.figure(figsize=(5, 4))
+plt.scatter(y_test, y_pred, c='b', alpha=0.2)
 plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
 plt.xlabel('Actual Sum ICOBI')
@@ -323,8 +315,8 @@ print('Linear regression R2:', r2_score(y_test, y_pred))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
 joblib.dump(linear_model, "linear_regression_model_chgLoew.pkl")
 
-plt.figure()
-plt.scatter(y_test, y_pred, s=5)
+plt.figure(figsize=(5, 4))
+plt.scatter(y_test, y_pred, c='b', alpha=0.2)
 plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
 plt.xlabel('Actual Loewdin Charge (e)')
@@ -368,8 +360,8 @@ print('Linear regression R2:', r2_score(y_test, y_pred))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
 joblib.dump(linear_model, "linear_regression_model_chgMull.pkl")
 
-plt.figure()
-plt.scatter(y_test, y_pred, s=5)
+plt.figure(figsize=(5, 4))
+plt.scatter(y_test, y_pred, c='b', alpha=0.2)
 plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
 plt.xlabel('Actual Mulliken Charge (e)')
@@ -391,13 +383,13 @@ regression_df = regression_df.dropna(axis=0, how='any').reset_index(drop=True)
 print('Removed nodes with non-finite features or target:', nodes_before_filter - len(regression_df), 'out of',nodes_before_filter)
 
 
-#dcor_mace_sumMICOXX = dcor.distance_correlation(mace_node_feats, sum_masked_ICOHPs_node_feats)
-dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
-print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
-dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
-print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOXX)
-dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOBIs_node_feats)
-print('dcor between mace features and sum ICOBI:', sumICOBIs_node_feats)
+# #dcor_mace_sumMICOXX = dcor.distance_correlation(mace_node_feats, sum_masked_ICOHPs_node_feats)
+# dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
+# print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
+# dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
+# print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOXX)
+# dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOBIs_node_feats)
+# print('dcor between mace features and sum ICOBI:', sumICOBIs_node_feats)
 
 
 # plt.figure()
