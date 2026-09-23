@@ -1,8 +1,10 @@
 import os
 import numpy as np
 import pandas as pd
-from ase.io import read
+import joblib
 import matplotlib.pyplot as plt
+
+from ase.io import read
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
@@ -28,14 +30,14 @@ df=pd.read_csv('5_lo_chg_mpInfo_nonmetals_test.csv')
 df['struc_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CONTCAR.gz'))
 df['ICOHP_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOHPLIST.lobster.gz'))
 df['ICOBI_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'ICOBILIST.lobster.gz'))
-#df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
+df['CHRG_dir']=df['mat_path'].apply(lambda x: os.path.join(x, 'CHARGE.lobster.gz'))
 
 mace_node_chunks=[]; mace_node_feats_chunks=[]; sum_ICOHP_chunks=[]; sum_ICOBI_chunks=[]; 
 sum_masked_ICOHP_chunks=[]; mean_maskedICOHPs_chunks=[]; chg_mull_chunks=[]; chg_loew_chunks=[]
 for i, (cont_path, icohp_path, icobi_path, chrg_path) in enumerate(zip(df['struc_dir'].values, 
                                                                       df['ICOHP_dir'].values, 
                                                                       df['ICOBI_dir'].values, 
-                                                                      df['chrg_dir'].values)):
+                                                                      df['CHRG_dir'].values)):
     ase_atoms=read(cont_path)
     ase_atoms.calc = mace_calculator
     #ase_atoms.get_potential_energy()
@@ -202,13 +204,6 @@ plt.close()
 
 
 
-# dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
-# print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
-# dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
-# print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOXX)
-#dcor_mace_sumMICOXX = dcor.distance_correlation(mace_node_feats, sum_masked_ICOHPs_node_feats)
-
-
 
 # Fit a node-level linear model from MACE descriptors to Sum ICOHP.
 regression_df = pd.DataFrame(mace_node_feats)
@@ -238,6 +233,7 @@ y_pred = linear_model.predict(X_test)
 print('Linear regression R2:', r2_score(y_test, y_pred))
 #print('Linear regression RMSE:', np.sqrt(mean_squared_error(y_test, y_pred)))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
+joblib.dump(linear_model, "linear_regression_model_sumICOHP.pkl")
 
 plt.figure()
 plt.scatter(y_test, y_pred, s=5)
@@ -281,6 +277,7 @@ y_pred = linear_model.predict(X_test)
 print('Linear regression R2:', r2_score(y_test, y_pred))
 #print('Linear regression RMSE:', np.sqrt(mean_squared_error(y_test, y_pred)))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
+joblib.dump(linear_model, "linear_regression_model_sumICOBI.pkl")
 
 plt.figure()
 plt.scatter(y_test, y_pred, s=5)
@@ -324,6 +321,7 @@ y_pred = linear_model.predict(X_test)
 print('Linear regression R2:', r2_score(y_test, y_pred))
 #print('Linear regression RMSE:', np.sqrt(mean_squared_error(y_test, y_pred)))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
+joblib.dump(linear_model, "linear_regression_model_chgLoew.pkl")
 
 plt.figure()
 plt.scatter(y_test, y_pred, s=5)
@@ -368,6 +366,7 @@ y_pred = linear_model.predict(X_test)
 print('Linear regression R2:', r2_score(y_test, y_pred))
 #print('Linear regression RMSE:', np.sqrt(mean_squared_error(y_test, y_pred)))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
+joblib.dump(linear_model, "linear_regression_model_chgMull.pkl")
 
 plt.figure()
 plt.scatter(y_test, y_pred, s=5)
@@ -379,6 +378,26 @@ plt.tight_layout()
 plt.savefig('linear_regression_mace_feats_vs_chgMull.jpg', dpi=700)
 plt.close()
 
+
+
+
+regression_df = pd.DataFrame(mace_node_feats)
+regression_df['target_mean_maskedICOHP'] = np.asarray(
+    mean_maskedICOHPs_node_feats
+).reshape(-1)
+regression_df = regression_df.replace([np.inf, -np.inf], np.nan)
+nodes_before_filter = len(regression_df)
+regression_df = regression_df.dropna(axis=0, how='any').reset_index(drop=True)
+print('Removed nodes with non-finite features or target:', nodes_before_filter - len(regression_df), 'out of',nodes_before_filter)
+
+
+#dcor_mace_sumMICOXX = dcor.distance_correlation(mace_node_feats, sum_masked_ICOHPs_node_feats)
+dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
+print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
+dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
+print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOXX)
+dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOBIs_node_feats)
+print('dcor between mace features and sum ICOBI:', sumICOBIs_node_feats)
 
 
 # plt.figure()
@@ -445,3 +464,5 @@ plt.close()
 # plt.tight_layout()
 # plt.savefig('linear_regression_mace_feats_vs_meanMaskICOHPs.jpg', dpi=700)
 # plt.close()
+
+
