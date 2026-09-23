@@ -27,13 +27,23 @@ alleg_icoxx = AllegroEijIcoxxAnalyzer(
 # Extract paired Eij values, edge features, ICOHP/ICOBI terms, and bond distances
 # across all structures after intersecting the Allegro and ICOXX graphs.
 # We also output them here in case someone needs to process them differently
-Eijs, xijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
+ids, Eijs, xijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
 
 # Reduce the Xij feature matrix to a 2D PCA space for visualization and downstream analysis.
 PCAXijFeats_var = alleg_icoxx.PCA_Xij()
 print("PCA EijFeats variation:", PCAXijFeats_var)
 print("number of edges", Eijs.shape[0])
 PCA_12=alleg_icoxx.EijFeats_pca
+
+
+# Plot Eij versus ICOBI as a complementary comparison to the ICOHP analysis.
+PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
+    icohp=False,
+    save_plot=True,
+    Eii_icoxx_plot_name="Eij_ICOBI.jpg",
+    dpi=dpi,
+)
+print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, dcor_ICOBI)
 
 
 
@@ -72,7 +82,7 @@ print("R2:", r2_score(y_test, y_pred))
 
 # Predicted versus actual ICOHP
 plt.figure(figsize=(5, 4))
-plt.scatter(y_test, y_pred, alpha=0.5)
+plt.scatter(y_test, y_pred, c='b', alpha=0.2)
 limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(limits, limits, "k--", label="ideal prediction")
 plt.xlabel("Actual ICOHP (eV)")
@@ -113,7 +123,7 @@ print("R2:", r2_score(y_test, y_pred))
 
 # Predicted versus actual ICOHP
 plt.figure(figsize=(5, 4))
-plt.scatter(y_test, y_pred, alpha=0.5)
+plt.scatter(y_test, y_pred, c='b', alpha=0.2)
 limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(limits, limits, "k--", label="ideal prediction")
 plt.xlabel("Actual ICOBI")
@@ -123,7 +133,14 @@ plt.tight_layout()
 plt.savefig("ICOBI_linear_regression.png", dpi=dpi)
 #plt.show()
 
-
+# Plot Eij versus ICOBI as a complementary comparison to the ICOHP analysis.
+PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
+    icohp=False,
+    save_plot=True,
+    Eii_icoxx_plot_name="Eij_ICOBI.jpg",
+    dpi=dpi,
+)
+print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, dcor_ICOBI)
 
 
 
