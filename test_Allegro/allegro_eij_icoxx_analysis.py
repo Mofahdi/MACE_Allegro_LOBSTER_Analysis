@@ -50,13 +50,16 @@ class AllegroEijIcoxxAnalyzer:
 
     def get_Eijs_EijFeats_icoxxs(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Extract matching Allegro Eij values and ICOXX features across all structures."""
+        mat_id_chunks: list[torch.Tensor] = []
         Eij_chunks: list[torch.Tensor] = []
         EijFeats_chunks: list[torch.Tensor] = []
         icohp_chunks: list[torch.Tensor] = []
         icobi_chunks: list[torch.Tensor] = []
         d_chunks: list[torch.Tensor] = []
 
-        for cont_path, icohp_path, icobi_path in zip(
+        #
+        for mat_id, cont_path, icohp_path, icobi_path in zip(
+            self.df['id'].values,
             self.df["struc_dir"].values,
             self.df["ICOHP_dir"].values,
             self.df["ICOBI_dir"].values,
@@ -82,13 +85,15 @@ class AllegroEijIcoxxAnalyzer:
             icohp_chunks.append(g_intersect.edata['g2_ICOHPs'].unsqueeze(-1)) # [# edges, 1]
             icobi_chunks.append(g_intersect.edata['g2_ICOBIs'].unsqueeze(-1)) # [# edges, 1]
             d_chunks.append(g_intersect.edata['g2_bond_dist'].unsqueeze(-1)) # [# edges, 1]
-        
+            mat_id_chunks.append(np.array([mat_id]*g_intersect.num_edges()))
+
+        self.ids = np.concatenate(mat_id_chunks) # [# edges, 1]
         self.Eijs = torch.cat(Eij_chunks, dim=0).float().cpu() # [# edges, 1]
         self.EijFeats = torch.cat(EijFeats_chunks, dim=0).float().cpu() # [# edges, # channels]
         self.icohps = torch.cat(icohp_chunks, dim=0).float().cpu() # [# edges, 1]
         self.icobis = torch.cat(icobi_chunks, dim=0).float().cpu() # [# edges, 1]
         self.d = torch.cat(d_chunks, dim=0).float().cpu() # [# edges, 1]
-        return self.Eijs, self.EijFeats, self.icohps, self.icobis, self.d
+        return self.ids, self.Eijs, self.EijFeats, self.icohps, self.icobis, self.d
 
     def PCA_Xij(self) -> np.ndarray:
         """Standardize the Eij feature matrix and project it into a 2D PCA space."""
@@ -180,7 +185,7 @@ class AllegroEijIcoxxAnalyzer:
         plt.show()
 
         label = "ICOHP" if icohp else "ICOBI"
-        pd.DataFrame({xlabel: icoxxs.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
+        pd.DataFrame({'id': self.ids, xlabel: icoxxs.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
             label + "_Eij_all.csv",
             index=False,
         )
