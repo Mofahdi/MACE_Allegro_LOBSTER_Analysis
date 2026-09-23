@@ -1,9 +1,12 @@
 import argparse
 import torch
+import joblib
 
 from allegro_eij_icoxx_analysis import AllegroEijIcoxxAnalyzer
 
 parser = argparse.ArgumentParser(description="test LR of Allegro feats.")
+parser.add_argument("--num-dcor-samples", type=int, default=40, help="Number of bootstrap samples for distance-correlation estimation.")
+parser.add_argument("--dcor-sample-size", type=int, default=50000, help="Sample size used within each distance-correlation bootstrap iteration.")
 parser.add_argument("--dpi", type=int, default=800, help="Figure resolution in dots per inch for saved plots.")
 args = parser.parse_args()
 
@@ -15,7 +18,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device ='cpu'
 # Initialize the analysis pipeline with the structure metadata CSV and trained model.
 alleg_icoxx = AllegroEijIcoxxAnalyzer(
-    df_path="nonmetals_mp_info_test.csv",
+    df_path="nonmetals_mp_info.csv",
     model_path="Allegro-OAM-L-0.1.nequip.zip",
     device=device,
 )
@@ -58,7 +61,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 model = LinearRegression()
 model.fit(X_train, y_train)
-
+joblib.dump(model, "icohp_linear_regression_model.pkl")
 y_pred = model.predict(X_test)
 
 #print("Regression coefficients:", model.coef_)
@@ -98,6 +101,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 model = LinearRegression()
 model.fit(X_train, y_train)
+joblib.dump(model, "icobi_linear_regression_model.pkl")
 
 y_pred = model.predict(X_test)
 
