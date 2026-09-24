@@ -18,7 +18,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device ='cpu'
 # Initialize the analysis pipeline with the structure metadata CSV and trained model.
 alleg_icoxx = AllegroEijIcoxxAnalyzer(
-    df_path="nonmetals_mp_info.csv",
+    df_path="nonmetals_mp_info_test3.csv",
     model_path="Allegro-OAM-L-0.1.nequip.zip",
     device=device,
 )
@@ -36,102 +36,33 @@ print("number of edges", Eijs.shape[0])
 PCA_12=alleg_icoxx.EijFeats_pca
 
 
-# Plot Eij versus ICOBI as a complementary comparison to the ICOHP analysis.
-PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
-    icohp=False,
-    save_plot=True,
-    Eii_icoxx_plot_name="Eij_ICOBI.jpg",
-    dpi=dpi,
-)
-print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, dcor_ICOBI)
 
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 print('\n\nICOHP Predictions')
-# PCA_12: shape [number_of_edges, 2]
-# icohps: torch tensor with shape [number_of_edges, 1]
-#X = np.asarray(PCA_12, dtype=np.float32)
-X = np.asarray(xijFeats, dtype=np.float32)
-y = icohps.detach().cpu().numpy().reshape(-1)
-
-# Remove invalid or non-finite samples
-valid = np.isfinite(X).all(axis=1) & np.isfinite(y)
-X = X[valid]
-y = y[valid]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
-
-model = LinearRegression()
-model.fit(X_train, y_train)
-joblib.dump(model, "icohp_linear_regression_model.pkl")
-y_pred = model.predict(X_test)
-
-#print("Regression coefficients:", model.coef_)
-#print("Intercept:", model.intercept_)
-print("MAE:", mean_absolute_error(y_test, y_pred))
-#print("RMSE:", mean_squared_error(y_test, y_pred) ** 0.5)
-print("R2:", r2_score(y_test, y_pred))
-
-# Predicted versus actual ICOHP
-plt.figure(figsize=(5, 4))
-plt.scatter(y_test, y_pred, c='b', alpha=0.2)
-limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
-plt.plot(limits, limits, "k--", label="ideal prediction")
-plt.xlabel("Actual ICOHP (eV)")
-plt.ylabel("Predicted ICOHP (eV)")
-plt.legend()
-plt.tight_layout()
-plt.savefig("ICOHP_linear_regression.png", dpi=dpi)
-#plt.show()
-plt.close()
-
-
+alleg_icoxx.linProb(icohp = True, dpi = dpi)
 
 
 
 print('\n\nICOBI Predictions')
-y = icobis.detach().cpu().numpy().reshape(-1)
+alleg_icoxx.linProb(icohp = False, dpi = dpi)
 
-# Remove invalid or non-finite samples
-valid = np.isfinite(X).all(axis=1) & np.isfinite(y)
-X = X[valid]
-y = y[valid]
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+# Plot Eij versus bond distance and report Pearson and distance-correlation values.
+Pcorr_d, dcor_d = alleg_icoxx.plot_Eij_d(
+    save_plot=True,
+    Eii_icoxx_plot_name="Eij_d.jpg",
+    dpi=dpi,
 )
+print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, dcor_d)
 
-model = LinearRegression()
-model.fit(X_train, y_train)
-joblib.dump(model, "icobi_linear_regression_model.pkl")
-
-y_pred = model.predict(X_test)
-
-#print("Regression coefficients:", model.coef_)
-#print("Intercept:", model.intercept_)
-print("MAE:", mean_absolute_error(y_test, y_pred))
-#print("RMSE:", mean_squared_error(y_test, y_pred) ** 0.5)
-print("R2:", r2_score(y_test, y_pred))
-
-# Predicted versus actual ICOHP
-plt.figure(figsize=(5, 4))
-plt.scatter(y_test, y_pred, c='b', alpha=0.2)
-limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
-plt.plot(limits, limits, "k--", label="ideal prediction")
-plt.xlabel("Actual ICOBI")
-plt.ylabel("Predicted ICOBI")
-plt.legend()
-plt.tight_layout()
-plt.savefig("ICOBI_linear_regression.png", dpi=dpi)
-#plt.show()
+# Plot Eij versus ICOHP and report the corresponding correlation metrics.
+PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(
+    icohp=True,
+    save_plot=True,
+    Eii_icoxx_plot_name="Eij_ICOHP.jpg",
+    dpi=dpi,
+)
+print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, dcor_ICOHP)
 
 # Plot Eij versus ICOBI as a complementary comparison to the ICOHP analysis.
 PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
