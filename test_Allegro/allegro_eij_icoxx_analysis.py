@@ -141,10 +141,10 @@ class AllegroEijIcoxxAnalyzer:
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), self.d.reshape(-1)]))[0, 1].item()
         plt.plot([], [], ' ', label=f'$r$ = {r:.3f}')
         ax.legend(
-            #[f'Pearson $r$ = {r:.3f}'],
             loc='best',
             frameon=True,
             framealpha=1,
+            edgecolor='black',
             borderpad=0.3,
             handlelength=0,
             handletextpad=0,
@@ -204,10 +204,10 @@ class AllegroEijIcoxxAnalyzer:
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), icoxxs.reshape(-1)]))[0, 1].item()
         plt.plot([], [], ' ', label=f'$r$ = {r:.3f}')
         ax.legend(
-            #[f'Pearson $r$ = {r:.3f}'],
             loc='best',
             frameon=True,
             framealpha=1,
+            edgecolor='black',
             borderpad=0.3,
             handlelength=0,
             handletextpad=0,
@@ -288,13 +288,26 @@ class AllegroEijIcoxxAnalyzer:
         plt.xlabel("Actual ICOHP (eV)" if icohp else "Actual ICOBI")
         plt.ylabel("Predicted ICOHP (eV)" if icohp else "Predicted ICOBI")
         ax = plt.gca()
-        ax.text(
-            0.05, 0.9,
-            f"R$^2$ = {r2:.3f}",
-            transform=ax.transAxes,
+        # ax.text(
+        #     0.05, 0.9,
+        #     f"R$^2$ = {r2:.3f}",
+        #     transform=ax.transAxes,
+        #     fontsize=10,
+        #     bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=1)
+        # )
+        plt.plot([], [], ' ', label=f"R$^2$ = {r2:.3f}")
+        ax.legend(
+            loc='best',
+            frameon=True,
+            framealpha=1,
+            edgecolor='black',
+            borderpad=0.3,
+            handlelength=0,
+            handletextpad=0,
+            labelspacing=0, 
             fontsize=10,
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=1)
         )
+
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
         plt.savefig("ICOHP_linearProbe.jpg" if icohp else "ICOBI_linearProbe.jpg", dpi=dpi)

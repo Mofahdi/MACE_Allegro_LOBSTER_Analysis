@@ -10,7 +10,7 @@ parser.add_argument("--dcor-sample-size", type=int, default=50000, help="Sample 
 parser.add_argument("--dpi", type=int, default=800, help="Figure resolution in dots per inch for saved plots.")
 args = parser.parse_args()
 
-# good numbers are: 20 then 50,000, then 800
+# good numbers are: 12 then 50,000, then 800
 num_dcor_samples = args.num_dcor_samples
 dcor_sample_size = args.dcor_sample_size
 dpi = args.dpi
