@@ -53,12 +53,8 @@ for i, (cont_path, icohp_path, icobi_path, chrg_path) in enumerate(zip(df['struc
         path_to_icohplist=os.path.join(icohp_path),
         path_to_icobilist=os.path.join(icobi_path),
     )
-    # sum_ICOHP_chunks.append(torch.unsqueeze(graph_icoxx.ndata['sum_ICOHPs'], dim=0).numpy())
-    # sum_ICOBI_chunks.append(torch.unsqueeze(graph_icoxx.ndata['sum_ICOBIs'], dim=0).numpy())
     sum_ICOHP_chunks.append(graph_icoxx.ndata['sum_ICOHPs'].numpy())
     sum_ICOBI_chunks.append(graph_icoxx.ndata['sum_ICOBIs'].numpy())
-    sum_masked_ICOHP_chunks.append(graph_icoxx.ndata['sum_maskedICOHPs'].numpy())
-    mean_maskedICOHPs_chunks.append(graph_icoxx.ndata['mean_maskedICOHPs'].numpy())
 
     charge_obj = Charge(filename=chrg_path)
     chg_mull = charge_obj.mulliken
@@ -71,130 +67,18 @@ mace_node_feats = np.concatenate(mace_node_feats_chunks, axis=0)
 mace_node_es = np.concatenate(mace_node_chunks, axis=0)
 sumICOHPs_node_feats = np.concatenate(sum_ICOHP_chunks, axis=0)
 sumICOBIs_node_feats = np.concatenate(sum_ICOBI_chunks, axis=0)
-sum_masked_ICOHPs_node_feats = np.concatenate(sum_masked_ICOHP_chunks, axis=0)
-mean_maskedICOHPs_node_feats = np.concatenate(mean_maskedICOHPs_chunks, axis=0)
 chg_loew_feats = np.concatenate(chg_loew_chunks, axis=0)
 chg_mull_feats = np.concatenate(chg_mull_chunks, axis=0)
-#mace_node_feats = torch.cat(mace_node_chunks, dim=0).cpu().numpy()
-#sumICOHPs_node_feats = torch.cat(sum_ICOHP_chunks, dim=0).cpu().numpy()
-#sumICOBIs_node_feats = torch.cat(sum_ICOBI_chunks, dim=0).cpu().numpy()
-
 
 df = pd.DataFrame({
     "MACE_Atomic_Es": mace_node_es,
     "sumICOHPs": sumICOHPs_node_feats,
-    "sumEffICOHP": sum_masked_ICOHPs_node_feats,
-    'meanEffICOHP': mean_maskedICOHPs_node_feats,
     "sumICOBI": sumICOBIs_node_feats,
-    #"sumMaskedICOBI": sum_masked_ICOHPs_node_feats,
-    #'meanMaskedICOBI': mean_maskedICOHPs_node_feats,
     'chg_loew': chg_loew_feats, 
     'chg_mull': chg_mull_feats, 
 })
 corr = df.corr(method="pearson")
 print(corr)
-
-
-plt.figure()
-plt.scatter(
-    mace_node_es,
-    sumICOHPs_node_feats,
-    #c=lobster_feats[:, -1],
-    s=5,
-    #cmap="rainbow"
-    )
-plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
-plt.ylabel(r"sum_ICOHPs", fontsize=12)
-#cbar = plt.colorbar(label='Charge Polarity')
-#nbar=len(cbar.get_xticks())
-#cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-ax=plt.gca()
-nx = len(ax.get_xticks())
-#ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-ny = len(ax.get_yticks())
-#ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-plt.tight_layout()
-#if save_plot:
-plt.savefig('maceEs_vs_sumICOHPs.jpg', dpi=700) # dpi=dpi)
-#plt.show()
-plt.close()
-
-
-plt.figure()
-plt.scatter(
-    mace_node_es,
-    sumICOBIs_node_feats,
-    #c=lobster_feats[:, -1],
-    s=5,
-    #cmap="rainbow"
-    )
-plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
-plt.ylabel(r"sum_ICOBIs", fontsize=12)
-#cbar = plt.colorbar(label='Charge Polarity')
-#nbar=len(cbar.get_xticks())
-#cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-ax=plt.gca()
-nx = len(ax.get_xticks())
-#ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-ny = len(ax.get_yticks())
-#ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-plt.tight_layout()
-#if save_plot:
-plt.savefig('maceEs_vs_sumICOBIs.jpg', dpi=700) # dpi=dpi)
-#plt.show()
-plt.close()
-
-
-
-plt.figure()
-plt.scatter(
-    mace_node_es,
-    chg_loew_feats,
-    #c=lobster_feats[:, -1],
-    s=5,
-    #cmap="rainbow"
-    )
-plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
-plt.ylabel(r"Loewdin Charge (e)", fontsize=12)
-#cbar = plt.colorbar(label='Charge Polarity')
-#nbar=len(cbar.get_xticks())
-#cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-ax=plt.gca()
-nx = len(ax.get_xticks())
-#ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-ny = len(ax.get_yticks())
-#ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-plt.tight_layout()
-#if save_plot:
-plt.savefig('maceEs_vs_LoewChg.jpg', dpi=700) # dpi=dpi)
-#plt.show()
-plt.close()
-
-plt.figure()
-plt.scatter(
-    mace_node_es,
-    chg_mull_feats,
-    #c=lobster_feats[:, -1],
-    s=5,
-    #cmap="rainbow"
-    )
-plt.xlabel(r"MACE Atomic Energy (eV)", fontsize=12)
-plt.ylabel(r"Mulliken Charge (e)", fontsize=12)
-#cbar = plt.colorbar(label='Charge Polarity')
-#nbar=len(cbar.get_xticks())
-#cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-ax=plt.gca()
-nx = len(ax.get_xticks())
-#ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-ny = len(ax.get_yticks())
-#ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-plt.tight_layout()
-#if save_plot:
-plt.savefig('maceEs_vs_MullChg.jpg', dpi=700) # dpi=dpi)
-#plt.show()
-plt.close()
-
-
 
 
 # Fit a node-level linear model from MACE descriptors to Sum ICOHP.
@@ -222,7 +106,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 linear_model = LinearRegression()
 linear_model.fit(X_train, y_train)
 y_pred = linear_model.predict(X_test)
-print('Linear regression R2:', r2_score(y_test, y_pred))
+r2=r2_score(y_test, y_pred)
+print('Linear regression R2:', r2)
 #print('Linear regression RMSE:', np.sqrt(mean_squared_error(y_test, y_pred)))
 print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
 joblib.dump(linear_model, "linear_regression_model_sumICOHP.pkl")
@@ -233,6 +118,14 @@ plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
 plt.xlabel('Actual Sum ICOHP (eV)')
 plt.ylabel('Predicted Sum ICOHP (eV)')
+ax = plt.gca()
+ax.text(
+    0.05, 0.95,
+    f"R$^2$ = {r2:.3f}",
+    transform=ax.transAxes,
+    fontsize=11,
+    bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8)
+)
 plt.tight_layout()
 plt.savefig('linear_regression_mace_feats_vs_sumICOHPs.jpg', dpi=700)
 plt.close()
@@ -277,6 +170,14 @@ plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
 plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
 plt.xlabel('Actual Sum ICOBI')
 plt.ylabel('Predicted Sum ICOBI')
+ax = plt.gca()
+ax.text(
+    0.05, 0.95,
+    f"R$^2$ = {r2:.3f}",
+    transform=ax.transAxes,
+    fontsize=11,
+    bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8)
+)
 plt.tight_layout()
 plt.savefig('linear_regression_mace_feats_vs_sumICOBIs.jpg', dpi=700)
 plt.close()
@@ -369,92 +270,4 @@ plt.ylabel('Predicted Mulliken Charge (e)')
 plt.tight_layout()
 plt.savefig('linear_regression_mace_feats_vs_chgMull.jpg', dpi=700)
 plt.close()
-
-
-
-
-regression_df = pd.DataFrame(mace_node_feats)
-regression_df['target_mean_maskedICOHP'] = np.asarray(
-    mean_maskedICOHPs_node_feats
-).reshape(-1)
-regression_df = regression_df.replace([np.inf, -np.inf], np.nan)
-nodes_before_filter = len(regression_df)
-regression_df = regression_df.dropna(axis=0, how='any').reset_index(drop=True)
-print('Removed nodes with non-finite features or target:', nodes_before_filter - len(regression_df), 'out of',nodes_before_filter)
-
-
-# #dcor_mace_sumMICOXX = dcor.distance_correlation(mace_node_feats, sum_masked_ICOHPs_node_feats)
-# dcor_mace_meanMICOXX = dcor.distance_correlation(mace_node_feats, mean_maskedICOHPs_node_feats)
-# print('dcor between mace features and mean of effective ICOHP:', dcor_mace_meanMICOXX)
-# dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOHPs_node_feats)
-# print('dcor between mace features and sum ICOHP:', dcor_mace_sumICOXX)
-# dcor_mace_sumICOXX = dcor.distance_correlation(mace_node_feats, sumICOBIs_node_feats)
-# print('dcor between mace features and sum ICOBI:', sumICOBIs_node_feats)
-
-
-# plt.figure()
-# plt.scatter(
-#     mace_node_es,
-#     mean_maskedICOHPs_node_feats,
-#     #c=lobster_feats[:, -1],
-#     s=5,
-#     #cmap="rainbow"
-#     )
-# plt.xlabel(r"MACE_nodeE", fontsize=12)
-# plt.ylabel(r"mean Mask ICOHP (eV)", fontsize=12)
-# #cbar = plt.colorbar(label='Charge Polarity')
-# #nbar=len(cbar.get_xticks())
-# #cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-# ax=plt.gca()
-# nx = len(ax.get_xticks())
-# #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-# ny = len(ax.get_yticks())
-# #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-# plt.tight_layout()
-# #if save_plot:
-# plt.savefig('maceEs_vs_meanMaskICOHPs.jpg', dpi=700) # dpi=dpi)
-# #plt.show()
-# plt.close()
-
-
-
-# # Fit a node-level linear model from MACE descriptors to mean masked ICOHP.
-# regression_df = pd.DataFrame(mace_node_feats)
-# regression_df['target_mean_maskedICOHP'] = np.asarray(
-#     mean_maskedICOHPs_node_feats
-# ).reshape(-1)
-# regression_df = regression_df.replace([np.inf, -np.inf], np.nan)
-# nodes_before_filter = len(regression_df)
-# regression_df = regression_df.dropna(axis=0, how='any').reset_index(drop=True)
-# print('Removed nodes with non-finite features or target:', nodes_before_filter - len(regression_df), 'out of',nodes_before_filter)
-
-# clean_mace_node_feats = regression_df.drop(
-#     columns='target_mean_maskedICOHP'
-# ).to_numpy(dtype=np.float32)
-# clean_mean_maskedICOHPs = regression_df['target_mean_maskedICOHP'].to_numpy()
-
-# X_train, X_test, y_train, y_test = train_test_split(
-#     clean_mace_node_feats,
-#     clean_mean_maskedICOHPs,
-#     test_size=0.2,
-#     random_state=42,
-# )
-# linear_model = make_pipeline(StandardScaler(), LinearRegression())
-# linear_model.fit(X_train, y_train)
-# y_pred = linear_model.predict(X_test)
-
-# print('Linear regression R2:', r2_score(y_test, y_pred))
-# print('Linear regression RMSE:', np.sqrt(mean_squared_error(y_test, y_pred)))
-# print('Linear regression MAE:', mean_absolute_error(y_test, y_pred))
-
-# plt.figure()
-# plt.scatter(y_test, y_pred, s=5)
-# plot_limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
-# plt.plot(plot_limits, plot_limits, 'k--', linewidth=1)
-# plt.xlabel('Actual mean masked ICOHP (eV)')
-# plt.ylabel('Predicted mean masked ICOHP (eV)')
-# plt.tight_layout()
-# plt.savefig('linear_regression_mace_feats_vs_meanMaskICOHPs.jpg', dpi=700)
-# plt.close()
-
 
