@@ -312,20 +312,32 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         elif feature_type == 'sum_icohp':
             y = self.df_lobster['site_icohp_sum']
-            xlabel = 'Actual Sum ICOBI'
-            ylabel = 'Predicted Sum ICOBI'
+            xlabel = 'Actual Sum ICOHP (eV)'
+            ylabel = 'Predicted Sum ICOHP (eV)'
 
         elif feature_type == 'sum_icobi':
             y = self.df_lobster['site_icobi_sum']
-            xlabel = 'Actual Sum ICOHP (eV)'
-            ylabel = 'Predicted Sum ICOHP (eV)'
+            xlabel = 'Actual Sum ICOBI'
+            ylabel = 'Predicted Sum ICOBI'
+
+        elif feature_type == 'mean_icohp':
+            y = self.df_lobster['site_icohp_mean']
+            xlabel = 'Actual Mean ICOHP (eV)'
+            ylabel = 'Predicted Mean ICOHP (eV)'
+
+        elif feature_type == 'mean_icobi':
+            y = self.df_lobster['site_icobi_mean']
+            xlabel = 'Actual Mean ICOBI'
+            ylabel = 'Predicted Mean ICOBI'
 
         else:
             raise ValueError("you can only enter one of the following options: " \
             "1- 'charge_loew'," \
             "2- 'chg_mull', " \
             "3- 'sum_icohp', " \
-            "4- 'sum_icobi' ")
+            "4- 'sum_icobi' " \
+            "5- 'mean_icohp' " \
+            "6- 'mean_icobi' " )
 
         # Remove invalid or non-finite samples
         valid = np.isfinite(X).all(axis=1) & np.isfinite(y)
