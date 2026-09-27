@@ -49,38 +49,41 @@ def extract_lobster_site_features(
     structure = Structure.from_file(structure_path)
     site_features: list[list[float]] = []
 
+    icohp_featurizer = FeaturizeIcoxxlist(
+        path_to_icoxxlist=icohp_path,
+        path_to_structure=structure_path,
+        bin_width=0.1,
+        normalization="counts",
+        max_length=5,
+    )
+    icobi_featurizer = FeaturizeIcoxxlist(
+        path_to_icoxxlist=icobi_path,
+        path_to_structure=structure_path,
+        bin_width=0.1,
+        normalization="counts",
+        max_length=5,
+    )
+    charge_obj = Charge(filename=chrg_path)
+
+    stats_fns_icohp = {
+        #   "max": np.max,
+        "mean": np.mean,
+        "std": np.std,
+        "min": np.min,
+        "sum": np.sum,
+    }
+    stats_fns_icobi = {
+        "max": np.max,
+        "mean": np.mean,
+        "std": np.std,
+    #    "min": np.min,
+        "sum": np.sum,
+    }
+
     for site_index in range(len(structure)):
-        icohp_featurizer = FeaturizeIcoxxlist(
-            path_to_icoxxlist=icohp_path,
-            path_to_structure=structure_path,
-            bin_width=0.1,
-            normalization="counts",
-            max_length=6,
-        )
-        icobi_featurizer = FeaturizeIcoxxlist(
-            path_to_icoxxlist=icobi_path,
-            path_to_structure=structure_path,
-            bin_width=0.1,
-            normalization="counts",
-            max_length=6,
-        )
 
         site_icohps = [bond[3] for bond in icohp_featurizer.get_icoxx_neighbors_data(site_index = site_index)['mapped_icoxx_data']]
         site_icobis = [bond[3] for bond in icobi_featurizer.get_icoxx_neighbors_data(site_index = site_index)['mapped_icoxx_data']]
-        stats_fns_icohp = {
-         #   "max": np.max,
-            "mean": np.mean,
-            "std": np.std,
-            "min": np.min,
-            "sum": np.sum,
-        }
-        stats_fns_icobi = {
-            "max": np.max,
-            "mean": np.mean,
-            "std": np.std,
-        #    "min": np.min,
-            "sum": np.sum,
-        }
 
         site_feat_dict = {
             f"site_icohp_{name}": fn(site_icohps)
@@ -91,7 +94,6 @@ def extract_lobster_site_features(
             for name, fn in stats_fns_icobi.items()
         })
 
-        charge_obj = Charge(filename=chrg_path)
         site_feat_dict["charge_mull"] = charge_obj.mulliken[site_index]
         site_feat_dict["charge_loew"] = charge_obj.loewdin[site_index]
 

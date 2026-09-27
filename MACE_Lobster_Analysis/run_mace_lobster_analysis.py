@@ -22,13 +22,8 @@ if __name__ == "__main__":
     analyzer.linProb(feature_type = 'chg_mull', dpi=800)
     print('\nsum_icohp:')
     analyzer.linProb(feature_type = 'sum_icohp', dpi=800)
-    print('\nsum_icobi charge:')
+    print('\nsum_icobi:')
     analyzer.linProb(feature_type = 'sum_icobi', dpi=800)
-
-
-    print('\n\ncomputing dCor from sampled data ....')
-    #exit()
-    analyzer.compute_distance_correlation(sample_size=300, num_bootstrap=50)
 
     print('\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
     print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
@@ -39,3 +34,6 @@ if __name__ == "__main__":
                                             num_bootstrap=50,
                                             )
 
+    print('\n\ncomputing dCor from sampled data ....')
+    #exit()
+    analyzer.compute_distance_correlation(sample_size=300, num_bootstrap=50)
