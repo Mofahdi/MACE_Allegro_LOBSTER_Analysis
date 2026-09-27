@@ -5,6 +5,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
+import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
@@ -67,7 +68,9 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         """
         self.mace_calc = MACECalculator(model_paths=self.model_path, model_dtype='float32', device=self.device)
 
-        mat_id_chunks=[]; mace_node_chunks=[]; lobster_chunks=[]; 
+        mat_id_chunks=[]; 
+        mace_node_chunks=[]; 
+        lobster_chunks=[]; 
         for i, (mat_id, cont_path, icohp_path, icobi_path, chrg_dir) in enumerate(
                                                                             zip(
                                                                                 self.df['id'].values,
@@ -117,6 +120,61 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         print('[# nodes, # MACE feats]:', mace_node_feats.shape)
         print('[# nodes, # lobster feats]:', lobster_feats.shape)
 
+        mace_scaler = StandardScaler(copy=False)
+        self.mace_node_feats_scaled = mace_scaler.fit_transform(self.mace_node_feats)
+        pca = PCA(n_components=2,) #svd_solver="randomized")
+        self.mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
+        print('\nvariances in PCA of MACE node embeddings are:', pca.explained_variance_ratio_)
+
+
+    def plot_Pearson_feats(self) -> None:
+        """Plot the Pearson correlation matrix between PCA-compressed MACE features and LOBSTER features.
+
+        The first two principal components of the MACE node embeddings are appended to the
+        LOBSTER feature dataframe, the pairwise Pearson correlation matrix is computed, and the
+        resulting heatmap is saved to disk as an image and JSON summary.
+
+        Returns
+        -------
+        None
+            Saves a correlation heatmap and the raw correlation table as output files.
+        """
+        new_df: pd.DataFrame = self.df_lobster.copy()
+        new_df.insert(0, 'PC2 MACE', self.mace_node_feats_pca[:, 1])
+        new_df.insert(0, 'PC1 MACE', self.mace_node_feats_pca[:, 0])
+        corr = new_df.corr(method="pearson")
+        #print(corr)
+
+        plt.figure(figsize=(8, 6))
+        ax = sns.heatmap(
+            corr,
+            annot=True,
+            fmt='.2f',
+            cmap='coolwarm',
+            vmin=-1,
+            vmax=1,
+            center=0,
+            linewidths=0.5,
+            linecolor='white',
+            cbar_kws={'label': 'Pearson r',}, #'fontsize': 9},
+            annot_kws={'size': 9}
+        )
+
+        # Colorbar font sizes
+        cbar = ax.collections[0].colorbar
+        cbar.set_label('Pearson r', fontsize=12)  # colorbar label
+        cbar.ax.tick_params(labelsize=11)         # colorbar tick numbers
+
+        #plt.title('Pearson Correlation Matrix', fontsize=16, pad=16)
+        plt.xticks(rotation=45, ha='right', fontsize=10)
+        plt.yticks(rotation=0, fontsize=10)
+        plt.tight_layout()
+        plt.savefig('PearsonCorr.jpg', dpi=300, bbox_inches='tight')
+        plt.close()
+        corr.to_json("Pearson_r_feats.json", orient="records", indent=4)
+
+
+
     def compute_distance_correlation(self, sample_size: int = 400, num_bootstrap: int = 100) -> None:
         """Compute the distance-correlation matrix between MACE and LOBSTER node features.
 
@@ -139,12 +197,10 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             The method stores the standardized MACE features on the instance as
             ``self.mace_node_feats_scaled`` and writes summary JSON outputs to disk.
         """
-        mace_scaler = StandardScaler(copy=False)
-        mace_node_feats_scaled = mace_scaler.fit_transform(self.mace_node_feats)
         lobster_scaler = StandardScaler(copy=False)
         lobster_feats_scaled = lobster_scaler.fit_transform(self.lobster_feats)
         sets = {
-            'MACE': mace_node_feats_scaled,
+            'MACE': self.mace_node_feats_scaled,
             'LOBSTER': lobster_feats_scaled, 
             }
 
@@ -157,9 +213,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         mean_mat.to_json("MACE_lobster_dcor_mean.json", orient="records", indent=4)
         std_mat.to_json("MACE_lobster_dcor_std.json", orient="records", indent=4)
 
-        self.mace_node_feats_scaled = mace_node_feats_scaled
 
-    def plot_pca_charge_dcor_relationship(
+    def plot_pca_charge_and_dcor(
         self,
         plot_name_loewdin: str = 'PCAMACE_2D_LoewdinChg.jpg',
         plot_name_mulliken: str = 'PCAMACE_2D_MullChg.jpg',
@@ -190,9 +245,6 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         None
             Saves the PCA plots and the mean/std distance-correlation summaries.
         """
-        pca = PCA(n_components=2,) #svd_solver="randomized")
-        self.mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
-        print('\nvariances in PCA of MACE node embeddings are:', pca.explained_variance_ratio_)
         loewdin_charge = self.df_lobster['charge_mull']
         mulliken_charge = self.df_lobster['charge_loew']
 
@@ -277,7 +329,6 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 'Mulliken': mulliken_charge, 
             }
         ).to_csv("PCA_MACE_Loew_Mull.csv", index=False)
-
 
 
     def linProb(self, feature_type: str, dpi: int = 800):
