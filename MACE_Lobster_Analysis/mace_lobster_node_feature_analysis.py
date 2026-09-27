@@ -424,8 +424,10 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.scatter(y_test, y_pred, c='b', alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel(xlabel, fontsize=13)
+        plt.ylabel(ylabel, fontsize=13)
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
         ax = plt.gca()
         # ax.text(
         #     0.05, 0.9,
