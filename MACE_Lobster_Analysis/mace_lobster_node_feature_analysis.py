@@ -191,15 +191,15 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             Saves the PCA plots and the mean/std distance-correlation summaries.
         """
         pca = PCA(n_components=2,) #svd_solver="randomized")
-        mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
+        self.mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
         print('\nvariances in PCA of MACE node embeddings are:', pca.explained_variance_ratio_)
         loewdin_charge = self.df_lobster['charge_mull']
         mulliken_charge = self.df_lobster['charge_loew']
 
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
-            mace_node_feats_pca[:, 0],
-            mace_node_feats_pca[:, 1],
+            self.mace_node_feats_pca[:, 0],
+            self.mace_node_feats_pca[:, 1],
             c=loewdin_charge,
             s=5,
             #cmap="rainbow"
@@ -226,8 +226,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         plt.figure(figsize=(4.5,3.5))
         plt.scatter(
-            mace_node_feats_pca[:, 0],
-            mace_node_feats_pca[:, 1],
+            self.mace_node_feats_pca[:, 0],
+            self.mace_node_feats_pca[:, 1],
             c=mulliken_charge,
             s=5,
             #cmap="rainbow"
@@ -253,7 +253,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
         sets = {
-            'MACE': mace_node_feats_pca,
+            'MACE': self.mace_node_feats_pca,
             'Loewdin': loewdin_charge,
             'Mulliken': mulliken_charge,
             }
@@ -271,8 +271,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         pd.DataFrame(
             {
-                "PC1 MACE": mace_node_feats_pca[:, 0],
-                "PC2 MACE": mace_node_feats_pca[:, 1],
+                "PC1 MACE": self.mace_node_feats_pca[:, 0],
+                "PC2 MACE": self.mace_node_feats_pca[:, 1],
                 'Loewdin': loewdin_charge,
                 'Mulliken': mulliken_charge, 
             }
