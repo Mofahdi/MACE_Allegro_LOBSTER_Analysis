@@ -54,14 +54,14 @@ def extract_lobster_site_features(
         path_to_structure=structure_path,
         bin_width=0.1,
         normalization="counts",
-        max_length=5,
+        max_length=5.5,
     )
     icobi_featurizer = FeaturizeIcoxxlist(
         path_to_icoxxlist=icobi_path,
         path_to_structure=structure_path,
         bin_width=0.1,
         normalization="counts",
-        max_length=5,
+        max_length=5.5,
     )
     charge_obj = Charge(filename=chrg_path)
 
