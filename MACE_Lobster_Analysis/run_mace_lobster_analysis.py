@@ -50,20 +50,21 @@ analyzer.linProb(feature_type = 'mean_icobi', dpi=dpi)
 
 print('\n\ncomputing dCor from sampled data ....')
 #exit()
-analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples)
+analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
 
 print('\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
 print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
-analyzer.plot_pca_charge_and_dcor(
+analyzer.plot_2DPCMACE_charge_and_dcor(
                                     plot_name_loewdin = 'PCAMACE_2D_LoewdinChg.jpg', 
                                     plot_name_mulliken = 'PCAMACE_2D_MullChg.jpg',
                                     sample_size=dcor_sample_size, 
                                     num_bootstrap=num_dcor_samples,
+                                    dpi=dpi,
                                     )
 
 print('\nPlotting PC1-PC2 of MACE node features vs. charge....')
-analyzer.plot_PCMACE_chg(chrg_type='chg_loew', dpi=dpi)
-analyzer.plot_PCMACE_chg(chrg_type='chg_mull', dpi=dpi)
+analyzer.plot_1DPCMACE_chg(chrg_type='chg_loew', dpi=dpi)
+analyzer.plot_1DPCMACE_chg(chrg_type='chg_mull', dpi=dpi)
 
 
 
