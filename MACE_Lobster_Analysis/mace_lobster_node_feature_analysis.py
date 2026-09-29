@@ -145,9 +145,11 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         corr = new_df.corr(method="pearson")
         #print(corr)
 
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
         plt.figure(figsize=(8, 6))
         ax = sns.heatmap(
             corr,
+            mask=mask,
             annot=True,
             fmt='.2f',
             cmap='coolwarm',
@@ -169,88 +171,17 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.xticks(rotation=45, ha='right', fontsize=10)
         plt.yticks(rotation=0, fontsize=10)
         plt.tight_layout()
-        plt.savefig('PearsonCorr.jpg', dpi=dpi, bbox_inches='tight')
+        plt.savefig('./LobsterFeats/PearsonCorr.jpg', dpi=dpi, bbox_inches='tight')
         plt.close()
-        corr.to_json("Pearson_r_feats.json", orient="records", indent=4)
+        corr.to_json("./LobsterFeats/Pearson_r_feats.json", orient="records", indent=4)
 
 
 
-    def plot_PCMACE_chg(self, chrg_type, dpi):
-
-        new_df: pd.DataFrame = self.df_lobster.copy()
-        new_df.insert(0, 'PC2_MACE', self.mace_node_feats_pca[:, 1])
-        new_df.insert(0, 'PC1_MACE', self.mace_node_feats_pca[:, 0])
-        # charge_loew   charge_mull
-        if chrg_type == 'chg_loew':
-            chrg_dat = new_df['charge_loew']
-            ylabel = 'Loewdin Charge (e)'
-
-        elif chrg_type == 'chg_mull':
-            chrg_dat = new_df['charge_mull']
-            ylabel = 'Mulliken Charge (e)'
-        
-        else:
-            raise ValueError("you can only enter one of the following options: " \
-            "1- 'charge_loew'," \
-            "2- 'chg_mull', " )
-        
-        plt.figure(figsize=(4.4,3.5))
-        plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
-        plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
-        plt.ylabel(ylabel, fontsize=12) #fontsize=12
-        plt.xticks(fontsize=11)
-        plt.yticks(fontsize=11)
-        ax=plt.gca()
-        ax = plt.gca()
-        r = chrg_dat.corr(new_df["PC1_MACE"])
-        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
-        ax.legend(
-            loc='best',
-            frameon=True,
-            framealpha=1,
-            edgecolor='black',
-            borderpad=0.3,
-            handlelength=0,
-            handletextpad=0,
-            labelspacing=0, 
-            fontsize=10,
-        )
-        plt.tight_layout()
-        #if save_plot:
-        plt.show()
-        plt.savefig(chrg_type+'_PC1_MACE.jpg', dpi=dpi)
-        plt.close()
-
-        
-        plt.figure(figsize=(4.4,3.5))
-        plt.scatter(new_df["PC2_MACE"], chrg_dat, c='blue', alpha=0.1)
-        plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
-        plt.ylabel(ylabel, fontsize=12) #fontsize=12
-        plt.xticks(fontsize=11)
-        plt.yticks(fontsize=11)
-        ax=plt.gca()
-        ax = plt.gca()
-        r = chrg_dat.corr(new_df["PC2_MACE"])
-        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
-        ax.legend(
-            loc='best',
-            frameon=True,
-            framealpha=1,
-            edgecolor='black',
-            borderpad=0.3,
-            handlelength=0,
-            handletextpad=0,
-            labelspacing=0, 
-            fontsize=10,
-        )
-        plt.tight_layout()
-        #if save_plot:
-        plt.show()
-        plt.savefig(chrg_type+'_PC2_MACE.jpg', dpi=dpi)
-        plt.close()
-
-
-    def compute_distance_correlation(self, sample_size: int = 400, num_bootstrap: int = 100) -> None:
+    def compute_distance_correlation(
+            self, sample_size: int = 400, 
+            num_bootstrap: int = 100, 
+            dpi: int = 800,
+            ) -> None:
         """Compute the distance-correlation matrix between MACE and LOBSTER node features.
 
         The method standardizes the extracted MACE and LOBSTER feature matrices,
@@ -275,8 +206,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         lobster_scaler = StandardScaler(copy=False)
         lobster_feats_scaled = lobster_scaler.fit_transform(self.lobster_feats)
         sets = {
-            'MACE': self.mace_node_feats_scaled,
-            'LOBSTER': lobster_feats_scaled, 
+            'MACE Node\nEmbeddings': self.mace_node_feats_scaled,
+            'LOBSTER Features\n(Charge + ICOXX)': lobster_feats_scaled, 
             }
 
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(sets=sets, 
@@ -285,16 +216,39 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         
         print('dCor between LOBSTER, MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
-        mean_mat.to_json("MACE_lobster_dcor_mean.json", orient="records", indent=4)
-        std_mat.to_json("MACE_lobster_dcor_std.json", orient="records", indent=4)
+        mean_mat.to_json("./LobsterFeats/MACE_lobster_dcor_mean.json", orient="records", indent=4)
+        std_mat.to_json("./LobsterFeats/MACE_lobster_dcor_std.json", orient="records", indent=4)
 
 
-    def plot_pca_charge_and_dcor(
+        mask = np.triu(np.ones_like(mean_mat, dtype=bool), k=1)
+        plt.figure(figsize=(4, 3))
+        ax = sns.heatmap(
+            mean_mat,
+            mask=mask,
+            annot=True,
+            fmt=".2f",
+            annot_kws={"size": 12},
+            cmap="coolwarm",
+            vmin=0,
+            vmax=1,
+            square=True,
+            linewidths=0.5,
+            cbar_kws={"label": "Mean dCor"},
+        )
+        #ax.set_title("MACE–LOBSTER Mean Distance Correlation")
+        plt.tight_layout()
+        plt.savefig("./LobsterFeats/MACE_lobster_mean_dcor.jpg", dpi=dpi, bbox_inches="tight")
+        plt.close()
+
+
+
+    def plot_2DPCMACE_charge_and_dcor(
         self,
         plot_name_loewdin: str = 'PCAMACE_2D_LoewdinChg.jpg',
         plot_name_mulliken: str = 'PCAMACE_2D_MullChg.jpg',
         sample_size: int = 400,
         num_bootstrap: int = 100,
+        dpi: int = 800,
     ) -> None:
         """Project MACE node features into PCA space and quantify their relationship to charge.
 
@@ -348,7 +302,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         #if save_plot:
-        plt.savefig(plot_name_loewdin, dpi=800) # dpi=dpi)
+        plt.savefig('./chrg_analysis/'+plot_name_loewdin, dpi=800) # dpi=dpi)
 
 
         plt.figure(figsize=(4.5,3.5))
@@ -376,7 +330,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         #if save_plot:
-        plt.savefig(plot_name_mulliken, dpi=800) # dpi=dpi)
+        plt.savefig('./chrg_analysis/'+plot_name_mulliken, dpi=800) # dpi=dpi)
 
 
         sets = {
@@ -393,8 +347,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         
         print('dCor between charge and PC1-PC2 MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
-        mean_mat.to_json("MACE_charges_dcor_mean.json", orient="records", indent=4)
-        std_mat.to_json("MACE_charges_dcor_std.json", orient="records", indent=4)
+        mean_mat.to_json('./chrg_analysis/'+"MACE_charges_dcor_mean.json", orient="records", indent=4)
+        std_mat.to_json('./chrg_analysis/'+"MACE_charges_dcor_std.json", orient="records", indent=4)
 
         pd.DataFrame(
             {
@@ -403,7 +357,84 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 'Loewdin': loewdin_charge,
                 'Mulliken': mulliken_charge, 
             }
-        ).to_csv("PCA_MACE_Loew_Mull.csv", index=False)
+        ).to_csv('./chrg_analysis/'+"PCA_MACE_Loew_Mull.csv", index=False)
+
+
+
+    def plot_1DPCMACE_chg(self, chrg_type, dpi):
+
+        new_df: pd.DataFrame = self.df_lobster.copy()
+        new_df.insert(0, 'PC2_MACE', self.mace_node_feats_pca[:, 1])
+        new_df.insert(0, 'PC1_MACE', self.mace_node_feats_pca[:, 0])
+        # charge_loew   charge_mull
+        if chrg_type == 'chg_loew':
+            chrg_dat = new_df['charge_loew']
+            ylabel = 'Loewdin Charge (e)'
+
+        elif chrg_type == 'chg_mull':
+            chrg_dat = new_df['charge_mull']
+            ylabel = 'Mulliken Charge (e)'
+        
+        else:
+            raise ValueError("you can only enter one of the following options: " \
+            "1- 'charge_loew'," \
+            "2- 'chg_mull', " )
+        
+        plt.figure(figsize=(4.4,3.5))
+        plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
+        plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
+        plt.ylabel(ylabel, fontsize=12) #fontsize=12
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
+        ax=plt.gca()
+        ax = plt.gca()
+        r = chrg_dat.corr(new_df["PC1_MACE"])
+        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+        ax.legend(
+            loc='best',
+            frameon=True,
+            framealpha=1,
+            edgecolor='black',
+            borderpad=0.3,
+            handlelength=0,
+            handletextpad=0,
+            labelspacing=0, 
+            fontsize=10,
+        )
+        plt.tight_layout()
+        #if save_plot:
+        plt.show()
+        plt.savefig('./chrg_analysis/'+chrg_type+'_PC1_MACE.jpg', dpi=dpi)
+        plt.close()
+
+        
+        plt.figure(figsize=(4.4,3.5))
+        plt.scatter(new_df["PC2_MACE"], chrg_dat, c='blue', alpha=0.1)
+        plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
+        plt.ylabel(ylabel, fontsize=12) #fontsize=12
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
+        ax=plt.gca()
+        ax = plt.gca()
+        r = chrg_dat.corr(new_df["PC2_MACE"])
+        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+        ax.legend(
+            loc='best',
+            frameon=True,
+            framealpha=1,
+            edgecolor='black',
+            borderpad=0.3,
+            handlelength=0,
+            handletextpad=0,
+            labelspacing=0, 
+            fontsize=10,
+        )
+        plt.tight_layout()
+        #if save_plot:
+        plt.show()
+        plt.savefig('./chrg_analysis/'+chrg_type+'_PC2_MACE.jpg', dpi=dpi)
+        plt.close()
+
 
 
     def linProb(self, feature_type: str, dpi: int = 800):
@@ -477,14 +508,14 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-        joblib.dump(model, feature_type+"_linear_regression_model.pkl")
+        joblib.dump(model, './LinearProbe/'+feature_type+"_linear_regression_model.pkl")
         y_pred = model.predict(X_test)
 
         pd.DataFrame({
                         'id': ids_test, 
                         'true_'+feature_type: y_test,
                         'pred_'+feature_type: y_pred,
-                      }).to_csv(feature_type+'_LinProb_results.csv',
+                      }).to_csv('./LinearProbe/'+feature_type+'_LinProb_results.csv',
                                 index=False,)
         
         #print("Regression coefficients:", model.coef_)
@@ -526,7 +557,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
-        plt.savefig(feature_type+"_linearProbe.jpg", dpi=dpi)
+        plt.savefig('./LinearProbe/'+feature_type+"_linearProbe.jpg", dpi=dpi)
         #plt.show()
         plt.close()
 
