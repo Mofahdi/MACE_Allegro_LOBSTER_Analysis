@@ -3,7 +3,8 @@ import dcor
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import joblib 
+import joblib
+import seaborn as sns 
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -21,7 +22,7 @@ if __name__ == "__main__":
         device = 'cpu'
     
     analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                                df_path='nonmetals_mp_info_test2.csv', 
+                                                df_path='nonmetals_mp_info_test3.csv', 
                                                 model_path='./mace-mpa-0-medium.model', 
                                                 device=device,
                                                 )
@@ -32,12 +33,70 @@ if __name__ == "__main__":
     pca = PCA(n_components=2,) #svd_solver="randomized")
     mace_node_feats_pca = pca.fit_transform(mace_node_feats_scaled)
 
+    lobster_df=analyzer.df_lobster
+    
     new_df = analyzer.df_lobster
-    new_df['mace_pca0'] = mace_node_feats_pca[:, 0]
-    new_df['mace_pca1'] = mace_node_feats_pca[:, 1]
+    new_df.insert(0, 'PC2_MACE', mace_node_feats_pca[:, 1])
+    new_df.insert(0, 'PC1_MACE', mace_node_feats_pca[:, 0])
     corr = new_df.corr(method="pearson")
-    print(corr)
+    #print(corr)
 
+    # charge_loew   charge_mull
+
+    plt.figure(figsize=(4.4,3.5))
+    plt.scatter(mace_node_feats_pca[:, 0], new_df["charge_loew"], c='blue', alpha=0.1)
+    plt.xlabel(r'PC1 (MACE Node Embeddings)')
+    plt.ylabel(r'Loewdin Charge (e)',) #fontsize=12
+    ax=plt.gca()
+    ax = plt.gca()
+    r = new_df["charge_loew"].corr(new_df["PC1_MACE"])
+    plt.plot([], [], ' ', label=f'$r$ = {r:.3f}')
+    ax.legend(
+        loc='best',
+        frameon=True,
+        framealpha=1,
+        edgecolor='black',
+        borderpad=0.3,
+        handlelength=0,
+        handletextpad=0,
+        labelspacing=0, 
+        fontsize=10,
+    )
+    plt.tight_layout()
+    #if save_plot:
+    plt.show()
+    plt.savefig('loew_mace.jpg', dpi=300)
+    plt.close()
+
+
+    plt.figure(figsize=(8, 6))
+    ax = sns.heatmap(
+        corr,
+        annot=True,
+        fmt='.2f',
+        cmap='coolwarm',
+        vmin=-1,
+        vmax=1,
+        center=0,
+        linewidths=0.5,
+        linecolor='white',
+        cbar_kws={'label': 'Pearson r',}, #'fontsize': 9},
+        annot_kws={'size': 9}
+    )
+
+    # Colorbar font sizes
+    cbar = ax.collections[0].colorbar
+    cbar.set_label('Pearson r', fontsize=12)  # colorbar label
+    cbar.ax.tick_params(labelsize=11)         # colorbar tick numbers
+
+    #plt.title('Pearson Correlation Matrix', fontsize=16, pad=16)
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    plt.yticks(rotation=0, fontsize=10)
+    plt.tight_layout()
+    plt.savefig('PearsonCorr.jpg', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    exit()
 
     print('\n\nLinear Probing Loewdin charge, Mulliken charge, sum_icohp, and sum_icobi ....')
     print('Loewdin charge:')
@@ -49,7 +108,7 @@ if __name__ == "__main__":
     print('\nsum_icobi charge:')
     analyzer.linProb(feature_type = 'sum_icobi', dpi=300)
 
-    lobster_df=analyzer.df_lobster
+
 
 
 
