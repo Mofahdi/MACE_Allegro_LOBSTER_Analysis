@@ -127,7 +127,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         print('\nvariances in PCA of MACE node embeddings are:', pca.explained_variance_ratio_)
 
 
-    def plot_Pearson_feats(self) -> None:
+    def plot_Pearson_feats(self, dpi) -> None:
         """Plot the Pearson correlation matrix between PCA-compressed MACE features and LOBSTER features.
 
         The first two principal components of the MACE node embeddings are appended to the
@@ -169,10 +169,85 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.xticks(rotation=45, ha='right', fontsize=10)
         plt.yticks(rotation=0, fontsize=10)
         plt.tight_layout()
-        plt.savefig('PearsonCorr.jpg', dpi=300, bbox_inches='tight')
+        plt.savefig('PearsonCorr.jpg', dpi=dpi, bbox_inches='tight')
         plt.close()
         corr.to_json("Pearson_r_feats.json", orient="records", indent=4)
 
+
+
+    def plot_PCMACE_chg(self, chrg_type, dpi):
+
+        new_df: pd.DataFrame = self.df_lobster.copy()
+        new_df.insert(0, 'PC2_MACE', self.mace_node_feats_pca[:, 1])
+        new_df.insert(0, 'PC1_MACE', self.mace_node_feats_pca[:, 0])
+        # charge_loew   charge_mull
+        if chrg_type == 'chg_loew':
+            chrg_dat = new_df['charge_loew']
+            ylabel = 'Loewdin Charge (e)'
+
+        elif chrg_type == 'chg_mull':
+            chrg_dat = new_df['charge_mull']
+            ylabel = 'Mulliken Charge (e)'
+        
+        else:
+            raise ValueError("you can only enter one of the following options: " \
+            "1- 'charge_loew'," \
+            "2- 'chg_mull', " )
+        
+        plt.figure(figsize=(4.4,3.5))
+        plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
+        plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
+        plt.ylabel(ylabel, fontsize=12) #fontsize=12
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
+        ax=plt.gca()
+        ax = plt.gca()
+        r = chrg_dat.corr(new_df["PC1_MACE"])
+        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+        ax.legend(
+            loc='best',
+            frameon=True,
+            framealpha=1,
+            edgecolor='black',
+            borderpad=0.3,
+            handlelength=0,
+            handletextpad=0,
+            labelspacing=0, 
+            fontsize=10,
+        )
+        plt.tight_layout()
+        #if save_plot:
+        plt.show()
+        plt.savefig(chrg_type+'_PC1_MACE.jpg', dpi=dpi)
+        plt.close()
+
+        
+        plt.figure(figsize=(4.4,3.5))
+        plt.scatter(new_df["PC2_MACE"], chrg_dat, c='blue', alpha=0.1)
+        plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
+        plt.ylabel(ylabel, fontsize=12) #fontsize=12
+        plt.xticks(fontsize=11)
+        plt.yticks(fontsize=11)
+        ax=plt.gca()
+        ax = plt.gca()
+        r = chrg_dat.corr(new_df["PC2_MACE"])
+        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+        ax.legend(
+            loc='best',
+            frameon=True,
+            framealpha=1,
+            edgecolor='black',
+            borderpad=0.3,
+            handlelength=0,
+            handletextpad=0,
+            labelspacing=0, 
+            fontsize=10,
+        )
+        plt.tight_layout()
+        #if save_plot:
+        plt.show()
+        plt.savefig(chrg_type+'_PC2_MACE.jpg', dpi=dpi)
+        plt.close()
 
 
     def compute_distance_correlation(self, sample_size: int = 400, num_bootstrap: int = 100) -> None:
@@ -305,7 +380,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
         sets = {
-            'MACE': self.mace_node_feats_pca,
+            'PC1-PC2 MACE': self.mace_node_feats_pca,
             'Loewdin': loewdin_charge,
             'Mulliken': mulliken_charge,
             }
@@ -316,7 +391,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                                                                             num_bootstrap = num_bootstrap,
                                                                             )
         
-        print('dCor between charge and PCA MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
+        print('dCor between charge and PC1-PC2 MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
         mean_mat.to_json("MACE_charges_dcor_mean.json", orient="records", indent=4)
         std_mat.to_json("MACE_charges_dcor_std.json", orient="records", indent=4)
@@ -424,8 +499,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.scatter(y_test, y_pred, c='b', alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
-        plt.xlabel(xlabel, fontsize=13)
-        plt.ylabel(ylabel, fontsize=13)
+        plt.xlabel(xlabel, fontsize=12)
+        plt.ylabel(ylabel, fontsize=12)
         plt.xticks(fontsize=11)
         plt.yticks(fontsize=11)
         ax = plt.gca()
@@ -436,7 +511,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         #     fontsize=10,
         #     bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=1)
         # )
-        plt.plot([], [], ' ', label=f"R$^2$ = {r2:.3f}")
+        plt.plot([], [], ' ', label=f"R$^2$ = {r2:.2f}")
         ax.legend(
             loc='best',
             frameon=True,

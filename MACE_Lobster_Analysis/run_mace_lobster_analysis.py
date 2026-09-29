@@ -22,13 +22,13 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info.csv', 
+                                            df_path='nonmetals_mp_info_test4.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )
 analyzer.process_df_and_model()
 analyzer.extract_features()
-analyzer.plot_Pearson_feats()
+analyzer.plot_Pearson_feats(dpi=dpi)
 
 print('\n\nLinear Probing Loewdin charge, Mulliken charge, sum_icohp, and sum_icobi ....')
 print('Loewdin charge:')
@@ -60,6 +60,11 @@ analyzer.plot_pca_charge_and_dcor(
                                     sample_size=dcor_sample_size, 
                                     num_bootstrap=num_dcor_samples,
                                     )
+
+print('\nPlotting PC1-PC2 of MACE node features vs. charge....')
+analyzer.plot_PCMACE_chg(chrg_type='chg_loew', dpi=dpi)
+analyzer.plot_PCMACE_chg(chrg_type='chg_mull', dpi=dpi)
+
 
 
 
