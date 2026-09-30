@@ -22,7 +22,7 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info_test4.csv', 
+                                            df_path='nonmetals_mp_info.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )
@@ -55,8 +55,8 @@ analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstra
 print('\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
 print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
 analyzer.plot_2DPCMACE_charge_and_dcor(
-                                    plot_name_loewdin = 'PCAMACE_2D_LoewdinChg.jpg', 
-                                    plot_name_mulliken = 'PCAMACE_2D_MullChg.jpg',
+                                    plot_name_loewdin = '2DPCAMACE_LoewdinChg.jpg', 
+                                    plot_name_mulliken = '2DPCAMACE_MullChg.jpg',
                                     sample_size=dcor_sample_size, 
                                     num_bootstrap=num_dcor_samples,
                                     dpi=dpi,
