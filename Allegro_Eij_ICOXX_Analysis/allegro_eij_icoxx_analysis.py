@@ -39,6 +39,15 @@ class AllegroEijIcoxxAnalyzer:
         self.device: torch.device = device
         self.process_df_and_model()
 
+        # paths of where the analysis results are stored to distiguish results from each other
+        self.lp=os.path.join(os.getcwd(), 'LinearProbe')
+        if not os.path.isdir(self.lp):
+            os.mkdir(self.lp)
+
+        self.EijAnalysis=os.path.join(os.getcwd(), 'EijAnalysis')
+        if not os.path.isdir(self.EijAnalysis):
+            os.mkdir(self.EijAnalysis)
+
 
     def process_df_and_model(self) -> None:
         """Load the structure dataframe and initialize the Allegro model transforms."""
@@ -115,14 +124,14 @@ class AllegroEijIcoxxAnalyzer:
     def plot_Eij_d(
         self,
         save_plot: bool = True,
-        Eii_icoxx_plot_name: str = "Eij_d.png",
+        Eij_icoxx_plot_name: str = "Eij_d.png",
         dpi: float = 400,
     ) -> tuple[float, float]:
         """Plot Eij against bond distance and return correlation metrics.
 
         Args:
             save_plot: If True, save the figure to disk.
-            Eii_icoxx_plot_name: File name used when saving the figure.
+            Eij_icoxx_plot_name: File name used when saving the figure.
             dpi: Resolution used for saved plots.
 
         Returns:
@@ -139,7 +148,7 @@ class AllegroEijIcoxxAnalyzer:
         #ny = len(ax.get_yticks())
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), self.d.reshape(-1)]))[0, 1].item()
-        plt.plot([], [], ' ', label=f'$r$ = {r:.3f}')
+        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
         ax.legend(
             loc='best',
             frameon=True,
@@ -153,11 +162,11 @@ class AllegroEijIcoxxAnalyzer:
         )
         plt.tight_layout()
         if save_plot:
-            plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, Eij_icoxx_plot_name), dpi=dpi)
         plt.show()
 
         pd.DataFrame({"bond distance": self.d.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
-            "Dist_Eij_all.csv",
+            os.path.join(self.EijAnalysis, "Dist_Eij_all.csv"),
             index=False,
         )
 
@@ -174,7 +183,7 @@ class AllegroEijIcoxxAnalyzer:
         self,
         icohp: bool = True,
         save_plot: bool = True,
-        Eii_icoxx_plot_name: str = "Eij_ICOXX.png",
+        Eij_icoxx_plot_name: str = "Eij_ICOXX.png",
         dpi: float = 400,
     ) -> tuple[float, float]:
         """Plot Eij against ICOHP or ICOBI and return correlation metrics.
@@ -182,7 +191,7 @@ class AllegroEijIcoxxAnalyzer:
         Args:
             icohp: When True, use ICOHP; otherwise use ICOBI.
             save_plot: If True, save the figure to disk.
-            Eii_icoxx_plot_name: File name used when saving the figure.
+            Eij_icoxx_plot_name: File name used when saving the figure.
             dpi: Resolution used for saved plots.
 
         Returns:
@@ -202,7 +211,7 @@ class AllegroEijIcoxxAnalyzer:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         ax = plt.gca()
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), icoxxs.reshape(-1)]))[0, 1].item()
-        plt.plot([], [], ' ', label=f'$r$ = {r:.3f}')
+        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
         ax.legend(
             loc='best',
             frameon=True,
@@ -216,12 +225,12 @@ class AllegroEijIcoxxAnalyzer:
         )
         plt.tight_layout()
         if save_plot:
-            plt.savefig(Eii_icoxx_plot_name, dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, Eij_icoxx_plot_name), dpi=dpi)
         plt.show()
 
         label = "ICOHP" if icohp else "ICOBI"
         pd.DataFrame({'id': self.ids, xlabel: icoxxs.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
-            label + "_Eij_all.csv",
+            os.path.join(self.EijAnalysis, label + "_Eij_all.csv"),
             index=False,
         )
 
@@ -263,14 +272,14 @@ class AllegroEijIcoxxAnalyzer:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-        joblib.dump(model, "icohp_linear_regression_model.pkl" if icohp else "icobi_linear_regression_model.pkl")
+        joblib.dump(model, os.path.join(self.lp, "icohp_linear_regression_model.pkl" if icohp else "icobi_linear_regression_model.pkl"))
         y_pred = model.predict(X_test)
 
         pd.DataFrame({
                         'id': ids_test, 
                         'true_icohp' if icohp else 'true_icobi': y_test,
                         'pred_icohp' if icohp else 'pred_icobi': y_pred,
-                      }).to_csv('icohp_LinProb_results.csv' if icohp else 'icobi_LinProb_results.csv',
+                      }).to_csv(os.path.join(self.lp, 'icohp_LinProb_results.csv' if icohp else 'icobi_LinProb_results.csv'),
                                 index=False,)
         
         #print("Regression coefficients:", model.coef_)
@@ -295,7 +304,7 @@ class AllegroEijIcoxxAnalyzer:
         #     fontsize=10,
         #     bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=1)
         # )
-        plt.plot([], [], ' ', label=f"R$^2$ = {r2:.3f}")
+        plt.plot([], [], ' ', label=f"R$^2$ = {r2:.2f}")
         ax.legend(
             loc='best',
             frameon=True,
@@ -310,7 +319,7 @@ class AllegroEijIcoxxAnalyzer:
 
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
-        plt.savefig("ICOHP_linearProbe.jpg" if icohp else "ICOBI_linearProbe.jpg", dpi=dpi)
+        plt.savefig(os.path.join(self.lp, "ICOHP_linearProbe.jpg" if icohp else "ICOBI_linearProbe.jpg"), dpi=dpi)
         #plt.show()
         plt.close()
 
@@ -330,7 +339,7 @@ class AllegroEijIcoxxAnalyzer:
                 estimation.
             dcor_sample_size: Sample size for each bootstrap draw.
             save_plot: If True, save the figure to disk.
-            PCAEiiFeats_dist_plot_name: Output filename for the saved figure.
+            PCAXijFeats_dist_plot_name: Output filename for the saved figure.
             dpi: Saved-figure resolution.
 
         Returns:
@@ -357,7 +366,7 @@ class AllegroEijIcoxxAnalyzer:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         if save_plot:
-            plt.savefig(PCAXijFeats_dist_plot_name, dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, PCAXijFeats_dist_plot_name), dpi=dpi)
         plt.show()
 
         pd.DataFrame(
@@ -366,7 +375,7 @@ class AllegroEijIcoxxAnalyzer:
                 "PCA2XijFeats": self.EijFeats_pca[:, 1],
                 "bond distance": self.d.squeeze(),
             }
-        ).to_csv("Dist_PCAXijFeats.csv", index=False)
+        ).to_csv(os.path.join(self.EijAnalysis,"Dist_PCAXijFeats.csv"), index=False)
         sets = {"PCAXijfeats": self.EijFeats_pca, "d": StandardScaler().fit_transform(self.d)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
@@ -386,7 +395,22 @@ class AllegroEijIcoxxAnalyzer:
         PCAXijFeats_icoxx_plot_name: str = "PCAXijFeatureSpace_ICOXX.png",
         dpi: float = 400,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Plot the PCA manifold of xij features against ICOHP/ICOBI values."""
+        """Plot the PCA manifold of xij features against ICOHP/ICOBI values.
+
+        Args:
+            icohp: (bool): If True, colormap ICOHP; otherwise colormap ICOBI.
+            num_dcor_samples: Number of bootstrap samples used for distance-correlation
+                estimation.
+            dcor_sample_size: Sample size for each bootstrap draw.
+            save_plot: If True, save the figure to disk.
+            PCAXijFeats_icoxx_plot_name: Output filename for the saved figure.
+            dpi: Saved-figure resolution.
+
+        Returns:
+            Mean and standard-deviation distance-correlation matrices for the PCA and
+            distance variables.
+        """
+
         icoxxs = self.icohps if icohp else self.icobis
         colorBar_label = "ICOHP (eV)" if icohp else "ICOBI"
 
@@ -410,7 +434,7 @@ class AllegroEijIcoxxAnalyzer:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         if save_plot:
-            plt.savefig(PCAXijFeats_icoxx_plot_name, dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, PCAXijFeats_icoxx_plot_name), dpi=dpi)
         plt.show()
 
         label = "ICOHP" if icohp else "ICOBI"
@@ -420,7 +444,7 @@ class AllegroEijIcoxxAnalyzer:
                 "PCA2XijFeats": self.EijFeats_pca[:, 1],
                 colorBar_label: icoxxs.squeeze(),
             }
-        ).to_csv(label + "_PCAXijFeats.csv", index=False)
+        ).to_csv(os.path.join(self.EijAnalysis, label + "_PCAXijFeats.csv"), index=False)
         sets = {"PCAXijfeats": self.EijFeats_pca, colorBar_label: StandardScaler().fit_transform(icoxxs)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
