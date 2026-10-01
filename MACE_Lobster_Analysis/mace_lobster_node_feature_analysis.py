@@ -141,6 +141,11 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         self.mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
         print('\nvariances in PCA of MACE node embeddings are:', pca.explained_variance_ratio_)
 
+        self.df_all: pd.DataFrame = self.df_lobster.copy()
+        self.df_all.insert(0, 'PC2_MACE', self.mace_node_feats_pca[:, 1])
+        self.df_all.insert(0, 'PC1_MACE', self.mace_node_feats_pca[:, 0])
+
+
 
     def plot_Pearson_feats(self, dpi) -> None:
         """Plot the Pearson correlation matrix between PCA-compressed MACE features and LOBSTER features.
@@ -154,14 +159,12 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         None
             Saves a correlation heatmap and the raw correlation table as output files.
         """
-        new_df: pd.DataFrame = self.df_lobster.copy()
-        new_df.insert(0, 'PC2 MACE', self.mace_node_feats_pca[:, 1])
-        new_df.insert(0, 'PC1 MACE', self.mace_node_feats_pca[:, 0])
+        new_df: pd.DataFrame = self.df_all.copy()
         corr = new_df.corr(method="pearson")
         #print(corr)
 
         mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(10, 8))
         ax = sns.heatmap(
             corr,
             mask=mask,
@@ -174,17 +177,17 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             linewidths=0.5,
             linecolor='white',
             cbar_kws={'label': 'Pearson r',}, #'fontsize': 9},
-            annot_kws={'size': 9}
+            annot_kws={'size': 12}
         )
 
         # Colorbar font sizes
         cbar = ax.collections[0].colorbar
-        cbar.set_label('Pearson r', fontsize=12)  # colorbar label
-        cbar.ax.tick_params(labelsize=11)         # colorbar tick numbers
+        cbar.set_label('Pearson Correlation', fontsize=14)  # colorbar label
+        cbar.ax.tick_params(labelsize=12)         # colorbar tick numbers
 
         #plt.title('Pearson Correlation Matrix', fontsize=16, pad=16)
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(rotation=0, fontsize=10)
+        plt.xticks(rotation=45, ha='right', fontsize=14)
+        plt.yticks(rotation=0, fontsize=14)
         plt.tight_layout()
         plt.savefig(os.path.join(self.lobster_corr, 'PCAMACE_lobster_Pearson.jpg'), dpi=dpi, bbox_inches='tight')
         plt.close()
@@ -289,63 +292,42 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         None
             Saves the PCA plots and the mean/std distance-correlation summaries.
         """
-        loewdin_charge = self.df_lobster['charge_mull']
-        mulliken_charge = self.df_lobster['charge_loew']
+        loewdin_charge = self.df_all['charge_mull']
+        mulliken_charge = self.df_all['charge_loew']
+        ylabels= ['Loewdin Charge (e)', 'Mulliken Charge (e)']
+        plot_names = [plot_name_loewdin, plot_name_mulliken]
 
-        plt.figure(figsize=(4.5,3.5))
-        plt.scatter(
-            self.mace_node_feats_pca[:, 0],
-            self.mace_node_feats_pca[:, 1],
-            c=loewdin_charge,
-            s=5,
-            #cmap="rainbow"
-            )
-        plt.xlabel(r"PC1 (MACE Node Embeddings)", fontsize=11)
-        plt.ylabel(r"PC2 (MACE Node Embeddings)", fontsize=11)
-        plt.xticks(fontsize=11)
-        plt.yticks(fontsize=11)
-        cbar = plt.colorbar()
-        cbar.set_label('Loewdin Charge (e)', fontsize=12)
-        cbar.ax.tick_params(labelsize=11)
-        #nbar=len(cbar.get_xticks())
-        cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-
-        ax=plt.gca()
-        nx = len(ax.get_xticks())
-        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-        ny = len(ax.get_yticks())
-        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-        plt.tight_layout()
-        #if save_plot:
-        plt.savefig(os.path.join(self.chrg_corr, plot_name_loewdin), dpi=dpi) # dpi=dpi)
-
-
-        plt.figure(figsize=(4.5,3.5))
-        plt.scatter(
-            self.mace_node_feats_pca[:, 0],
-            self.mace_node_feats_pca[:, 1],
-            c=mulliken_charge,
-            s=5,
-            #cmap="rainbow"
-            )
-        plt.xlabel(r"PC1 (MACE Node Embeddings)", fontsize=11)
-        plt.ylabel(r"PC2 (MACE Node Embeddings)", fontsize=11)
-        plt.xticks(fontsize=11)
-        plt.yticks(fontsize=11)
-        cbar = plt.colorbar()
-        cbar.set_label('Mulliken Charge (e)', fontsize=12)
-        cbar.ax.tick_params(labelsize=11)
-        #nbar=len(cbar.get_xticks())
-        cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
-
-        ax=plt.gca()
-        nx = len(ax.get_xticks())
-        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-        ny = len(ax.get_yticks())
-        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-        plt.tight_layout()
-        #if save_plot:
-        plt.savefig(os.path.join(self.chrg_corr, plot_name_mulliken), dpi=dpi) # dpi=dpi)
+        for i, (chg_label, plt_name) in enumerate(zip(ylabels, plot_names)):
+            if i==0:
+                color_dat = loewdin_charge.copy()
+            if i==1:
+                color_dat = mulliken_charge.copy()
+            
+            plt.figure(figsize=(4.5,3.5))
+            plt.scatter(
+                self.df_all['PC1_MACE'], #self.mace_node_feats_pca[:, 0],
+                self.df_all['PC2_MACE'], #self.mace_node_feats_pca[:, 1],
+                c=color_dat,
+                s=5,
+                #cmap="rainbow"
+                )
+            plt.xlabel(r"PC1 (MACE Node Embeddings)", fontsize=11)
+            plt.ylabel(r"PC2 (MACE Node Embeddings)", fontsize=11)
+            plt.xticks(fontsize=11)
+            plt.yticks(fontsize=11)
+            cbar = plt.colorbar()
+            cbar.set_label(chg_label, fontsize=12)
+            cbar.ax.tick_params(labelsize=11)
+            #nbar=len(cbar.get_xticks())
+            cbar.ax.yaxis.set_major_locator(MaxNLocator(nbins=len(cbar.ax.get_yticks())+1))
+            ax=plt.gca()
+            nx = len(ax.get_xticks())
+            #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
+            ny = len(ax.get_yticks())
+            #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
+            plt.tight_layout()
+            #if save_plot:
+            plt.savefig(os.path.join(self.chrg_corr, plt_name), dpi=dpi) # dpi=dpi)
 
 
         sets = {
@@ -367,8 +349,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         pd.DataFrame(
             {
-                "PC1 MACE": self.mace_node_feats_pca[:, 0],
-                "PC2 MACE": self.mace_node_feats_pca[:, 1],
+                "PC1 MACE": self.df_all['PC1_MACE'],
+                "PC2 MACE": self.df_all['PC2_MACE'],
                 'Loewdin': loewdin_charge,
                 'Mulliken': mulliken_charge, 
             }
@@ -376,79 +358,87 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_1DPCMACE_chg(self, chrg_type, dpi):
+    def plot_1DPCMACE_chg(self, dpi):
+        new_df: pd.DataFrame = self.df_all.copy()
 
-        new_df: pd.DataFrame = self.df_lobster.copy()
-        new_df.insert(0, 'PC2_MACE', self.mace_node_feats_pca[:, 1])
-        new_df.insert(0, 'PC1_MACE', self.mace_node_feats_pca[:, 0])
-        # charge_loew   charge_mull
-        if chrg_type == 'chg_loew':
-            chrg_dat = new_df['charge_loew']
-            ylabel = 'Loewdin Charge (e)'
+        chrg_types=['chg_loew', 'chg_mull']
+        chrg_labels=['Loewdin Charge (e)', 'Mulliken Charge (e)']
 
-        elif chrg_type == 'chg_mull':
-            chrg_dat = new_df['charge_mull']
-            ylabel = 'Mulliken Charge (e)'
-        
-        else:
-            raise ValueError("you can only enter one of the following options: " \
-            "1- 'charge_loew'," \
-            "2- 'chg_mull', " )
-        
-        plt.figure(figsize=(4.4,3.5))
-        plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
-        plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
-        plt.ylabel(ylabel, fontsize=12) #fontsize=12
-        plt.xticks(fontsize=11)
-        plt.yticks(fontsize=11)
-        ax=plt.gca()
-        ax = plt.gca()
-        r = chrg_dat.corr(new_df["PC1_MACE"])
-        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
-        ax.legend(
-            loc='best',
-            frameon=True,
-            framealpha=1,
-            edgecolor='black',
-            borderpad=0.3,
-            handlelength=0,
-            handletextpad=0,
-            labelspacing=0, 
-            fontsize=10,
-        )
-        plt.tight_layout()
-        #if save_plot:
-        plt.show()
-        plt.savefig(os.path.join(self.chrg_corr, chrg_type+'_PC1_MACE.jpg'), dpi=dpi)
-        plt.close()
+        for i, (chrg_type, chrg_label) in enumerate(zip(chrg_types, chrg_labels)):
+            if chrg_type =='chg_loew':
+                chrg_dat = new_df['charge_loew']
+            if chrg_type =='chg_mull':
+                chrg_dat = new_df['charge_mull']
+            
+            plt.figure(figsize=(4.4,3.5))
+            plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
+            plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
+            plt.ylabel(chrg_label, fontsize=12) #fontsize=12
+            plt.xticks(fontsize=11)
+            plt.yticks(fontsize=11)
+            ax=plt.gca()
+            ax = plt.gca()
+            r = chrg_dat.corr(new_df["PC1_MACE"])
+            plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+            ax.legend(
+                loc='best',
+                frameon=True,
+                framealpha=1,
+                edgecolor='black',
+                borderpad=0.3,
+                handlelength=0,
+                handletextpad=0,
+                labelspacing=0, 
+                fontsize=10,
+            )
+            plt.tight_layout()
+            #if save_plot:
+            plt.show()
+            plt.savefig(os.path.join(self.chrg_corr, chrg_type+'_PC1_MACE.jpg'), dpi=dpi)
+            plt.close()
 
-        
-        plt.figure(figsize=(4.4,3.5))
-        plt.scatter(new_df["PC2_MACE"], chrg_dat, c='blue', alpha=0.1)
-        plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
-        plt.ylabel(ylabel, fontsize=12) #fontsize=12
-        plt.xticks(fontsize=11)
-        plt.yticks(fontsize=11)
-        ax=plt.gca()
-        ax = plt.gca()
-        r = chrg_dat.corr(new_df["PC2_MACE"])
-        plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
-        ax.legend(
-            loc='best',
-            frameon=True,
-            framealpha=1,
-            edgecolor='black',
-            borderpad=0.3,
-            handlelength=0,
-            handletextpad=0,
-            labelspacing=0, 
-            fontsize=10,
-        )
-        plt.tight_layout()
-        #if save_plot:
-        plt.show()
-        plt.savefig(os.path.join(self.chrg_corr, chrg_type+'_PC2_MACE.jpg'), dpi=dpi)
-        plt.close()
+
+
+    def plot_PC2MACE_sumICOXX(self, icoxx_type, dpi):
+
+        new_df: pd.DataFrame = self.df_all.copy()
+
+        icoxx_types = ['icohp', 'icobi']
+        icoxx_labels = ['Sum ICOHP (eV)', 'Sum ICOBI']
+
+        for i, (icoxx_type, icoxx_label) in enumerate(zip(icoxx_types, icoxx_labels)):
+            if icoxx_type == 'icohp':
+                icoxx_data=new_df['site_icohp_sum'].copy()
+            if icoxx_type == 'icobi':
+                icoxx_data=new_df['site_icobi_sum'].copy()
+
+            plt.figure(figsize=(4.4,3.5))
+            plt.scatter(self.mace_node_feats_pca[:, 1], icoxx_data, c='blue', alpha=0.1)
+            plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
+            plt.ylabel(icoxx_label, fontsize=12) #fontsize=12
+            plt.xticks(fontsize=11)
+            plt.yticks(fontsize=11)
+            ax=plt.gca()
+            ax = plt.gca()
+            r = icoxx_data.corr(new_df["PC2_MACE"])
+            plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+            ax.legend(
+                loc='best',
+                frameon=True,
+                framealpha=1,
+                edgecolor='black',
+                borderpad=0.3,
+                handlelength=0,
+                handletextpad=0,
+                labelspacing=0, 
+                fontsize=10,
+            )
+            plt.tight_layout()
+            #if save_plot:
+            plt.show()
+            plt.savefig(os.path.join(self.lobster_corr, 'sum_'+icoxx_type+'_PC2_MACE.jpg'), dpi=dpi)
+            plt.close()
+
 
 
 

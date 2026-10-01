@@ -22,7 +22,7 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info.csv', 
+                                            df_path='nonmetals_mp_info_test4.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )
@@ -62,10 +62,14 @@ analyzer.plot_2DPCMACE_charge_and_dcor(
                                     dpi=dpi,
                                     )
 
-print('\nPlotting PC1-PC2 of MACE node features vs. charge....')
-analyzer.plot_1DPCMACE_chg(chrg_type='chg_loew', dpi=dpi)
-analyzer.plot_1DPCMACE_chg(chrg_type='chg_mull', dpi=dpi)
+print('\nPlotting charge vs. PC1-PC2 of MACE node features....')
+#analyzer.plot_1DPCMACE_chg(chrg_type='chg_loew', dpi=dpi)
+#analyzer.plot_1DPCMACE_chg(chrg_type='chg_mull', dpi=dpi)
+#analyzer.plot_1DPCMACE_chg(chrg_type='chg_loew', dpi=dpi)
+analyzer.plot_1DPCMACE_chg(dpi=dpi)
 
-
+print('\nPlotting sumICOXX vs. PC2 of MACE node feature....')
+analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icohp', dpi=dpi)
+analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icobi', dpi=dpi)
 
 
