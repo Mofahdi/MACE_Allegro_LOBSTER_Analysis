@@ -144,6 +144,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         self.df_all: pd.DataFrame = self.df_lobster.copy()
         self.df_all.insert(0, 'PC2_MACE', self.mace_node_feats_pca[:, 1])
         self.df_all.insert(0, 'PC1_MACE', self.mace_node_feats_pca[:, 0])
+        self.df_all.to_csv(os.path.join(self.lobster_corr, 'Pearson_data.csv'), index=False)
 
 
 
@@ -164,7 +165,9 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         #print(corr)
 
         mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
-        plt.figure(figsize=(10, 8))
+        #plt.figure(figsize=(10, 6))
+        #plt.figure(figsize=(6.5, 4.5))
+        plt.figure(figsize=(10, 6))
         ax = sns.heatmap(
             corr,
             mask=mask,
@@ -176,18 +179,18 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             center=0,
             linewidths=0.5,
             linecolor='white',
-            cbar_kws={'label': 'Pearson r',}, #'fontsize': 9},
+            #cbar_kws={'label': 'Pearson r',}, #'fontsize': 9},
             annot_kws={'size': 12}
         )
 
         # Colorbar font sizes
         cbar = ax.collections[0].colorbar
-        cbar.set_label('Pearson Correlation', fontsize=14)  # colorbar label
-        cbar.ax.tick_params(labelsize=12)         # colorbar tick numbers
+        cbar.set_label('Pearson Correlation', fontsize=13)  # colorbar label
+        cbar.ax.tick_params(labelsize=13)         # colorbar tick numbers
 
         #plt.title('Pearson Correlation Matrix', fontsize=16, pad=16)
-        plt.xticks(rotation=45, ha='right', fontsize=14)
-        plt.yticks(rotation=0, fontsize=14)
+        plt.xticks(rotation=45, ha='right', fontsize=13)
+        plt.yticks(rotation=0, fontsize=13)
         plt.tight_layout()
         plt.savefig(os.path.join(self.lobster_corr, 'PCAMACE_lobster_Pearson.jpg'), dpi=dpi, bbox_inches='tight')
         plt.close()
@@ -239,7 +242,10 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
         mask = np.triu(np.ones_like(mean_mat, dtype=bool), k=1)
-        plt.figure(figsize=(4, 3))
+        #plt.figure(figsize=(3.8, 3.8))
+        #plt.figure(figsize=(3.2, 3.2))
+        #plt.figure(figsize=(4, 4))
+        plt.figure(figsize=(3.2, 3.2))
         ax = sns.heatmap(
             mean_mat,
             mask=mask,
@@ -253,6 +259,16 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             linewidths=0.5,
             cbar_kws={"label": "Mean dCor"},
         )
+        #Colorbar font sizes
+        cbar = ax.collections[0].colorbar
+        cbar.set_label('Mean dCor', fontsize=10)  # colorbar label
+        cbar.ax.tick_params(labelsize=8)         # colorbar tick numbers
+
+        #plt.title('Pearson Correlation Matrix', fontsize=16, pad=16)
+        #plt.xticks(rotation=45, ha='right', fontsize=13)
+        plt.xticks(fontsize=8)
+        plt.yticks(fontsize=8)
+
         #ax.set_title("MACE–LOBSTER Mean Distance Correlation")
         plt.tight_layout()
         plt.savefig(os.path.join(self.lobster_corr, "MACE_lobster_mean_dcor.jpg"), dpi=dpi, bbox_inches="tight")
@@ -262,8 +278,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
     def plot_2DPCMACE_charge_and_dcor(
         self,
-        plot_name_loewdin: str = 'PCAMACE_2D_LoewdinChg.jpg',
-        plot_name_mulliken: str = 'PCAMACE_2D_MullChg.jpg',
+        #plot_name_loewdin: str = ,
+        #plot_name_mulliken: str = ,
         sample_size: int = 400,
         num_bootstrap: int = 100,
         dpi: int = 800,
@@ -278,10 +294,10 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         Parameters
         ----------
-        plot_name_loewdin : str, optional
-            Output filename for the PCA plot colored by Loewdin charge.
-        plot_name_mulliken : str, optional
-            Output filename for the PCA plot colored by Mulliken charge.
+        # plot_name_loewdin : str, optional
+        #     Output filename for the PCA plot colored by Loewdin charge.
+        # plot_name_mulliken : str, optional
+        #     Output filename for the PCA plot colored by Mulliken charge.
         sample_size : int, optional
             Number of node-feature samples used in each bootstrap iteration.
         num_bootstrap : int, optional
@@ -295,7 +311,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         loewdin_charge = self.df_all['charge_mull']
         mulliken_charge = self.df_all['charge_loew']
         ylabels= ['Loewdin Charge (e)', 'Mulliken Charge (e)']
-        plot_names = [plot_name_loewdin, plot_name_mulliken]
+        plot_names = ['2DPCAMACE_LoewdinChg.jpg', '2DPCAMACE_MullChg.jpg']
 
         for i, (chg_label, plt_name) in enumerate(zip(ylabels, plot_names)):
             if i==0:
@@ -303,7 +319,10 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             if i==1:
                 color_dat = mulliken_charge.copy()
             
-            plt.figure(figsize=(4.5,3.5))
+            #plt.figure(figsize=(4.5,3.5))
+            #plt.figure(figsize=(3.8 ,3.8))
+            #plt.figure(figsize=(4.4, 3.5))
+            plt.figure(figsize=(4.4, 3.5))
             plt.scatter(
                 self.df_all['PC1_MACE'], #self.mace_node_feats_pca[:, 0],
                 self.df_all['PC2_MACE'], #self.mace_node_feats_pca[:, 1],
@@ -328,6 +347,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             plt.tight_layout()
             #if save_plot:
             plt.savefig(os.path.join(self.chrg_corr, plt_name), dpi=dpi) # dpi=dpi)
+            plt.close()
 
 
         sets = {
@@ -358,25 +378,38 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_1DPCMACE_chg(self, dpi):
+    def plot_1DPCMACE_chg(self, dpi: int) -> None:
+        """Plot the relationship between the first MACE principal component and charge values.
+
+        Parameters
+        ----------
+        dpi : int
+            Output image resolution in dots per inch for each saved plot.
+
+        Returns
+        -------
+        None
+            Saves one scatter plot per charge type to disk and displays each figure.
+        """
         new_df: pd.DataFrame = self.df_all.copy()
 
         chrg_types=['chg_loew', 'chg_mull']
         chrg_labels=['Loewdin Charge (e)', 'Mulliken Charge (e)']
 
         for i, (chrg_type, chrg_label) in enumerate(zip(chrg_types, chrg_labels)):
-            if chrg_type =='chg_loew':
+            if chrg_type == 'chg_loew':
                 chrg_dat = new_df['charge_loew']
-            if chrg_type =='chg_mull':
+            if chrg_type == 'chg_mull':
                 chrg_dat = new_df['charge_mull']
             
-            plt.figure(figsize=(4.4,3.5))
+            #plt.figure(figsize=(4.4,3.5))
+            #plt.figure(figsize=(3.8, 3.8))
+            plt.figure(figsize=(4.4, 3.5))
             plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
             plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
             plt.ylabel(chrg_label, fontsize=12) #fontsize=12
             plt.xticks(fontsize=11)
             plt.yticks(fontsize=11)
-            ax=plt.gca()
             ax = plt.gca()
             r = chrg_dat.corr(new_df["PC1_MACE"])
             plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
@@ -399,8 +432,19 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_PC2MACE_sumICOXX(self, icoxx_type, dpi):
+    def plot_PC2MACE_sumICOXX(self, dpi: int) -> None:
+        """Plot the second MACE principal component versus summed ICOHP/ICOBI values.
 
+        Parameters
+        ----------
+        dpi : int
+            Output image resolution in dots per inch for the saved scatter plots.
+
+        Returns
+        -------
+        None
+            Saves one PCA-vs-sum-ICOXX summary figure for each considered property.
+        """
         new_df: pd.DataFrame = self.df_all.copy()
 
         icoxx_types = ['icohp', 'icobi']
@@ -408,11 +452,13 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         for i, (icoxx_type, icoxx_label) in enumerate(zip(icoxx_types, icoxx_labels)):
             if icoxx_type == 'icohp':
-                icoxx_data=new_df['site_icohp_sum'].copy()
+                icoxx_data = new_df['site_icohp_sum'].copy()
             if icoxx_type == 'icobi':
-                icoxx_data=new_df['site_icobi_sum'].copy()
+                icoxx_data = new_df['site_icobi_sum'].copy()
 
-            plt.figure(figsize=(4.4,3.5))
+            #plt.figure(figsize=(4.4,3.5))
+            #plt.figure(figsize=(3.8, 3.8))
+            plt.figure(figsize=(4.3, 3.5))
             plt.scatter(self.mace_node_feats_pca[:, 1], icoxx_data, c='blue', alpha=0.1)
             plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
             plt.ylabel(icoxx_label, fontsize=12) #fontsize=12
@@ -442,23 +488,24 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def linProb(self, feature_type: str, dpi: int = 800):
-        """
-        Train a linear model for ICOHP or ICOBI prediction.
+    def linProb(self, feature_type: str, dpi: int = 800) -> None:
+        """Train a linear regression model to predict a target scalar property from MACE descriptors.
 
-        Args:
-            feature_type (bool): If True, predict ICOHP; otherwise predict ICOBI.
-            dpi (int): DPI for the saved regression plot.
+        Parameters
+        ----------
+        feature_type : str
+            Name of the target variable to predict. Supported values are
+            ``'chg_loew'``, ``'chg_mull'``, ``'sum_icohp'``, ``'sum_icobi'``,
+            ``'mean_icohp'``, and ``'mean_icobi'``.
+        dpi : int, optional
+            Resolution used when saving the predicted-versus-actual plot.
 
-        Returns:
-            None. Prints MAE and R^2, saves the model, and saves the
-            actual-vs-predicted plot.
+        Returns
+        -------
+        None
+            Trains a linear model, saves the fitted model and predictions, prints
+            MAE and R^2, and saves the actual-vs-predicted diagnostic plot.
         """
-        # self.ids = np.concatenate(mat_id_chunks) 
-        # self.mace_node_feats=mace_node_feats
-        # self.lobster_feats=lobster_feats
-        # self.df_lobster = df_lobster
-        # 'site_icohp_sum', 'site_icobi_sum', 'charge_mull', 'charge_loew'
         ids = self.ids
         X = np.asarray(self.mace_node_feats, dtype=np.float32)
 
