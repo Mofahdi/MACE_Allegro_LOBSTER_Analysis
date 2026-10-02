@@ -1,6 +1,5 @@
 import torch
 import argparse
-import matplotlib.pyplot as plt
 from mace_lobster_node_feature_analysis import MACE_LOBSTER_NodeFeatureAnalysis
 
 parser = argparse.ArgumentParser(description="Run the MACE/Lobster analysis workflow.")
@@ -22,13 +21,14 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info_test4.csv', 
+                                            df_path='nonmetals_mp_info.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )
 analyzer.process_df_and_model()
 analyzer.extract_features()
 analyzer.plot_Pearson_feats(dpi=dpi)
+#exit()
 
 print('\n\nLinear Probing Loewdin charge, Mulliken charge, sum_icohp, and sum_icobi ....')
 print('Loewdin charge:')
@@ -49,27 +49,22 @@ analyzer.linProb(feature_type = 'mean_icobi', dpi=dpi)
 
 
 print('\n\ncomputing dCor from sampled data ....')
-#exit()
 analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
 
 print('\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
 print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
 analyzer.plot_2DPCMACE_charge_and_dcor(
-                                    plot_name_loewdin = '2DPCAMACE_LoewdinChg.jpg', 
-                                    plot_name_mulliken = '2DPCAMACE_MullChg.jpg',
                                     sample_size=dcor_sample_size, 
                                     num_bootstrap=num_dcor_samples,
                                     dpi=dpi,
                                     )
 
 print('\nPlotting charge vs. PC1-PC2 of MACE node features....')
-#analyzer.plot_1DPCMACE_chg(chrg_type='chg_loew', dpi=dpi)
-#analyzer.plot_1DPCMACE_chg(chrg_type='chg_mull', dpi=dpi)
-#analyzer.plot_1DPCMACE_chg(chrg_type='chg_loew', dpi=dpi)
 analyzer.plot_1DPCMACE_chg(dpi=dpi)
 
 print('\nPlotting sumICOXX vs. PC2 of MACE node feature....')
-analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icohp', dpi=dpi)
-analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icobi', dpi=dpi)
+analyzer.plot_PC2MACE_sumICOXX(dpi=dpi)
+#analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icohp', dpi=dpi)
+
 
 
