@@ -180,7 +180,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             linewidths=0.5,
             linecolor='white',
             #cbar_kws={'label': 'Pearson r',}, #'fontsize': 9},
-            annot_kws={'size': 12}
+            annot_kws={'size': 13}
         )
 
         # Colorbar font sizes
@@ -245,7 +245,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         #plt.figure(figsize=(3.8, 3.8))
         #plt.figure(figsize=(3.2, 3.2))
         #plt.figure(figsize=(4, 4))
-        plt.figure(figsize=(3.2, 3.2))
+        plt.figure(figsize=(3.5, 3.5))
         ax = sns.heatmap(
             mean_mat,
             mask=mask,
@@ -261,13 +261,13 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         )
         #Colorbar font sizes
         cbar = ax.collections[0].colorbar
-        cbar.set_label('Mean dCor', fontsize=10)  # colorbar label
+        cbar.set_label('Mean dCor', fontsize=11)  # colorbar label
         cbar.ax.tick_params(labelsize=8)         # colorbar tick numbers
 
         #plt.title('Pearson Correlation Matrix', fontsize=16, pad=16)
         #plt.xticks(rotation=45, ha='right', fontsize=13)
-        plt.xticks(fontsize=8)
-        plt.yticks(fontsize=8)
+        plt.xticks(fontsize=9)
+        plt.yticks(fontsize=9)
 
         #ax.set_title("MACE–LOBSTER Mean Distance Correlation")
         plt.tight_layout()
@@ -379,7 +379,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
     def plot_1DPCMACE_chg(self, dpi: int) -> None:
-        """Plot the relationship between the first MACE principal component and charge values.
+        """Plot both MACE principal components against Loewdin and Mulliken charge values.
 
         Parameters
         ----------
@@ -389,46 +389,53 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         Returns
         -------
         None
-            Saves one scatter plot per charge type to disk and displays each figure.
+            Saves a scatter plot for each principal-component and charge-type pair.
         """
         new_df: pd.DataFrame = self.df_all.copy()
 
-        chrg_types=['chg_loew', 'chg_mull']
-        chrg_labels=['Loewdin Charge (e)', 'Mulliken Charge (e)']
+        # the order here: column in df, label in plot, plot name suffix
+        components = [
+            ("PC1_MACE", "PC1 (MACE Node Embeddings)", "PC1"),
+            ("PC2_MACE", "PC2 (MACE Node Embeddings)", "PC2"),
+        ]
 
-        for i, (chrg_type, chrg_label) in enumerate(zip(chrg_types, chrg_labels)):
-            if chrg_type == 'chg_loew':
-                chrg_dat = new_df['charge_loew']
-            if chrg_type == 'chg_mull':
-                chrg_dat = new_df['charge_mull']
-            
-            #plt.figure(figsize=(4.4,3.5))
-            #plt.figure(figsize=(3.8, 3.8))
-            plt.figure(figsize=(4.4, 3.5))
-            plt.scatter(new_df["PC1_MACE"], chrg_dat, c='blue', alpha=0.1)
-            plt.xlabel(r'PC1 (MACE Node Embeddings)', fontsize=12)
-            plt.ylabel(chrg_label, fontsize=12) #fontsize=12
-            plt.xticks(fontsize=11)
-            plt.yticks(fontsize=11)
-            ax = plt.gca()
-            r = chrg_dat.corr(new_df["PC1_MACE"])
-            plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
-            ax.legend(
-                loc='best',
-                frameon=True,
-                framealpha=1,
-                edgecolor='black',
-                borderpad=0.3,
-                handlelength=0,
-                handletextpad=0,
-                labelspacing=0, 
-                fontsize=10,
-            )
-            plt.tight_layout()
-            #if save_plot:
-            plt.show()
-            plt.savefig(os.path.join(self.chrg_corr, chrg_type+'_PC1_MACE.jpg'), dpi=dpi)
-            plt.close()
+        # the order here: charge type, column in df, label in plot
+        charge_targets = [
+            ("chg_loew", "charge_loew", "Loewdin Charge (e)"),
+            ("chg_mull", "charge_mull", "Mulliken Charge (e)"),
+        ]
+
+        for pc_column, pc_label, pc_suffix in components:
+            for chrg_type, charge_column, chrg_label in charge_targets:
+                chrg_dat: pd.Series = new_df[charge_column]
+
+                plt.figure(figsize=(4.4, 3.5))
+                #plt.scatter(new_df[pc_column], chrg_dat, c='blue', alpha=0.1)
+                plt.scatter(new_df[pc_column], chrg_dat, c="#2A9D8F", alpha=0.1)
+                plt.xlabel(pc_label, fontsize=12)
+                plt.ylabel(chrg_label, fontsize=12)
+                plt.xticks(fontsize=11)
+                plt.yticks(fontsize=11)
+                ax = plt.gca()
+                r = chrg_dat.corr(new_df[pc_column])
+                plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
+                ax.legend(
+                    loc='best',
+                    frameon=True,
+                    framealpha=1,
+                    edgecolor='black',
+                    borderpad=0.3,
+                    handlelength=0,
+                    handletextpad=0,
+                    labelspacing=0,
+                    fontsize=10,
+                )
+                plt.tight_layout()
+                plt.savefig(
+                    os.path.join(self.chrg_corr, f'{chrg_type}_{pc_suffix}_MACE.jpg'),
+                    dpi=dpi,
+                )
+                plt.close()
 
 
 
