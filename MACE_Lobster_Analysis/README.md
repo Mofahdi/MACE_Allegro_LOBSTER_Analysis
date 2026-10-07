@@ -1,113 +1,130 @@
-# MACE LOBSTER Analyzer
+# MACE + LOBSTER Site Feature Analysis
 
-This directory contains a small analysis pipeline that combines MACE-based node descriptors with LOBSTER-derived site features and quantifies their relationship using distance correlation (dCor).
+This directory contains a feature-analysis pipeline that combines MACE node embeddings with site-level LOBSTER descriptors to study relationships between learned atomic representations and bonding/charge quantities.
 
-The workflow is designed to:
+The workflow includes:
 
-- read a material metadata table,
-- load structure and LOBSTER output files for each material,
-- extract site-level features from ICOHP/ICOBI and charge data,
-- compute MACE descriptors for each atomic site,
-- standardize and compare the feature spaces,
-- project MACE embeddings to 2D PCA and color them by charge values,
-- compute bootstrap-based distance correlation between PCA/MACE features and charge vectors.
+- reading a material metadata CSV,
+- constructing paths to structure and LOBSTER files,
+- extracting site-level LOBSTER features (charge, ICOHP, ICOBI, etc.),
+- computing MACE descriptors for each atomic site,
+- reducing MACE descriptors with PCA,
+- comparing MACE and LOBSTER feature spaces with bootstrap distance correlation,
+- fitting linear models for charge and ICOXX predictions,
+- generating scatter plots and correlation heatmaps.
 
-## Contents
+## Repository contents
 
 - `run_mace_lobster_analysis.py`
-  Entry point for the full workflow.
+  Workflow entry point for the analysis.
 
 - `mace_lobster_node_feature_analysis.py`
-  Main analysis class and feature extraction logic.
+  Main analysis class with feature extraction, PCA, plotting, and regression routines.
 
 - `lobster_site_feature_extractor.py`
-  Extracts site-level LOBSTER descriptors and charge features.
+  Helper used to extract LOBSTER-derived site features.
 
 - `distance_correlation.py`
-  Bootstrap-based distance-correlation estimator.
+  Bootstrap-based distance-correlation implementation.
 
 - `nonmetals_mp_info.csv`
   Material metadata table used by the pipeline.
 
 - `mace-mpa-0-medium.model`
-  Pretrained MACE model used to generate descriptors.
+  MACE model used for descriptor generation.
 
+## Expected input format
 
-## Dependencies
+The workflow expects a CSV file with a column named `mat_path`. Each entry should point to a material directory containing the required structure and LOBSTER files.
 
-This analysis used these packages:
-
-- Python 3.12.13
-- PyTorch 2.4.0
-- DGL 2.4.0+cu124
-- ASE 3.29.0
-- scikit-learn 1.9.0
-- pandas 2.3.3
-- NumPy 2.5.2
-- matplotlib 3.11.1
-- pymatgen 2026.5.4
-- lobsterpy 0.6.1
-- MACE 0.3.16
-
-
-## Inputs
-The analysis expects a CSV file containing a column named `mat_path`, where each row points to a structure directory. The script automatically constructs paths such as:
-
-- `CONTCAR.gz`
-- `ICOHPLIST.lobster.gz`
-- `ICOBILIST.lobster.gz`
-
-Example metadata file:
+Example:
 
 ```csv
 mat_path
 /path/to/material_1
 /path/to/material_2
-.. and so on
 ```
 
+The script automatically constructs paths such as:
 
-## Running the analysis
+- `CONTCAR.gz`
+- `ICOHPLIST.lobster.gz`
+- `ICOBILIST.lobster.gz`
+- `CHARGE.lobster.gz`
 
-From this directory, run:
+## Run the analysis
+
+From this directory, execute:
+
+```bash
+python run_mace_lobster_analysis.py --num-dcor-samples 50 --dcor-sample-size 300 --dpi 800
+```
+
+The default arguments are defined in the script, so this also works:
 
 ```bash
 python run_mace_lobster_analysis.py
 ```
 
-This script will:
+## What the script does
 
-1. initialize the analyzer with the material metadata file,
-2. extract MACE and LOBSTER features for all sites,
-3. compute the MACE–LOBSTER dCor matrix,
-4. run PCA on the MACE node embeddings,
-5. save charge-colored PCA plots,
-6. compute dCor between PCA features and the charge values.
+The workflow currently performs the following sequence:
 
-## Output files
+1. Initializes `MACE_LOBSTER_NodeFeatureAnalysis`.
+2. Extracts MACE descriptors and LOBSTER site features.
+3. Builds the combined dataframe with PCA coordinates.
+4. Generates Pearson correlation heatmaps for all features and PCA terms.
+5. Fits linear regression models for:
+   - `chg_loew`
+   - `chg_mull`
+   - `sum_icohp`
+   - `sum_icobi`
+   - `mean_icohp`
+   - `mean_icobi`
+6. Computes bootstrap distance-correlation summaries from sampled data using `compute_distance_correlation(...)`.
+7. Evaluates the relationship between MACE PCA axes and charge vectors using `plot_pc_space_and_charge_dcor(...)`.
+8. Produces charge-vs-PC plots and sum-ICOXX-vs-PC plots to visualize the learned feature structure.
 
-The script writes the following artifacts:
+In the current run script, the dCor step is explicitly called after the linear-probing fits and before the PCA charge and ICOXX scatter plots are generated.
+
+## Generated outputs
+
+The script writes output files to the current working directory and to subdirectories created automatically:
+
+- `MACE_Lobster_corr/`
+  Correlation and dCor heatmap outputs.
+
+- `MACE_chrg_corr/`
+  Charge-related PCA plots and charge dCor summaries.
+
+- `LinearProbe/`
+  Linear-regression models and prediction CSVs.
+
+Representative outputs include:
+
+- `PCAMACE_lobster_Pearson.jpg`
+- `MACE_lobster_mean_dcor.jpg`
+- `MACE_lobster_std_dcor.jpg`
+- `2DPCAMACE_LoewdinChg.jpg`
+- `2DPCAMACE_MullChg.jpg`
+- `chg_loew_PC1_MACE.jpg`
+- `chg_mull_PC2_MACE.jpg`
+- `sum_icohp_PC2_MACE.jpg`
+- `sum_icobi_PC2_MACE.jpg`
+- `chg_loew_linearProbe.jpg`
+
+The script also saves JSON summaries such as:
 
 - `MACE_lobster_dcor_mean.json`
-  Mean distance-correlation matrix between MACE and LOBSTER features.
-
 - `MACE_lobster_dcor_std.json`
-  Standard deviation of the bootstrap distance-correlation matrix.
+- `PCAMACE_charges_dcor_mean.json`
+- `PCAMACE_charges_dcor_std.json`
 
-- `MACE_charges_dcor_mean.json`
-  Mean distance-correlation values between PCA/MACE features and charge vectors.
-
-- `MACE_charges_dcor_std.json`
-  Standard deviation of the charge-related dCor estimates.
-
-- `PCAMACE_2D_LoewdinChg.jpg`
-  PCA embedding colored by Loewdin charge.
-
-- `PCAMACE_2D_MullChg.jpg`
-  PCA embedding colored by Mulliken charge.
+These dCor summaries are generated from the bootstrap sample size and bootstrap count configured in the run script (`--dcor-sample-size` and `--num-dcor-samples`).
 
 ## Notes
 
-- The metadata table must contain a `mat_path` column pointing to directories with the required LOBSTER and structure files.
-- The script expects the corresponding structure files to be present in each material directory, including files such as `CONTCAR.gz`, `ICOHPLIST.lobster.gz`, `ICOBILIST.lobster.gz`, and `CHARGE.lobster.gz`.
-- The pipeline is most useful for comparing how MACE node embeddings align with site charge information and LOBSTER-derived bonding descriptors.
+- This pipeline assumes a working MACE installation and access to the corresponding model file.
+- The metadata file must contain valid paths to each material directory and the expected LOBSTER/structure files.
+- Output directories are created automatically if they do not exist.
+- The full analysis is intended for comparing MACE node embeddings with site-level charge and bonding information derived from LOBSTER outputs.

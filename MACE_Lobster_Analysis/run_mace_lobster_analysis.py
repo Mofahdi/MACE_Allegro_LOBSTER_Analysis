@@ -47,8 +47,8 @@ print('\nmean_icobi:')
 analyzer.fit_linProb(feature_type = 'mean_icobi', dpi=dpi)
 
 
-# print('\n\ncomputing dCor from sampled data ....')
-# analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
+print('\n\ncomputing dCor from sampled data ....')
+analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
 
 
 print('\nPlotting PCA of MACE node embeddings color-coded with Loewdin and Mulliken charges....')
