@@ -54,14 +54,14 @@ class Icoxx2Graph:
             CONTCAR_path=path_to_structure,
             r_cutoff=self.bond_length_cutoff,
             ICOXX_path=path_to_icohplist,
-            test_bond_len=False,
+            #test_bond_len=False,
         )
 
         mapped_icobi_data_reverse, _ = icoxx_struc_fxn(
             CONTCAR_path=path_to_structure,
             r_cutoff=self.bond_length_cutoff,
             ICOXX_path=path_to_icobilist,
-            test_bond_len=False,
+            #test_bond_len=False,
         )
 
         src_ids: list[int] = []

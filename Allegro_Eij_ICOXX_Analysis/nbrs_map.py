@@ -112,7 +112,7 @@ def reverse_missed_inter(
     mapped_icoxx_data: list[MappedBond],
     missing_interactions: list[BondEntry],
     icoxx_dict_pairsS_l: dict[tuple[tuple[int, ...], tuple[int, ...]], tuple[float, float]],
-    test_bond_len: bool = False,
+    #test_bond_len: bool = False,
 ) -> tuple[list[MappedBond], list[BondEntry]]:
     """Assign ICOXX values to reversed atom pairs when they match the same bond.
 
@@ -132,17 +132,17 @@ def reverse_missed_inter(
         reversed_key = (reversed_pair, reversed_translation)
         if reversed_key in icoxx_dict_pairsS_l:
             icoxx_bond_length, icoxx_value = icoxx_dict_pairsS_l[reversed_key]
-            if test_bond_len:
-                if round(np.absolute(ase_site[1] - icoxx_bond_length), 5) <= 1e-3:
-                    all_info = (*ase_site, icoxx_value)
-                    if all_info not in mapped_icoxx_data:
-                        mapped_icoxx_data.append(all_info)
-                        missing_interactions.remove(ase_site)
-            else:
-                all_info = (*ase_site, icoxx_value)
-                if all_info not in mapped_icoxx_data:
-                    mapped_icoxx_data.append(all_info)
-                    missing_interactions.remove(ase_site)
+            # if test_bond_len:
+            #     if round(np.absolute(ase_site[1] - icoxx_bond_length), 5) <= 1e-3:
+            #         all_info = (*ase_site, icoxx_value)
+            #         if all_info not in mapped_icoxx_data:
+            #             mapped_icoxx_data.append(all_info)
+            #             missing_interactions.remove(ase_site)
+            # else:
+            all_info = (*ase_site, icoxx_value)
+            if all_info not in mapped_icoxx_data:
+                mapped_icoxx_data.append(all_info)
+                missing_interactions.remove(ase_site)
     return mapped_icoxx_data, missing_interactions
 
 
@@ -173,7 +173,7 @@ def icoxx_struc_fxn(
     CONTCAR_path: str,
     r_cutoff: float,
     ICOXX_path: str,
-    test_bond_len: bool = False,
+    #test_bond_len: bool = False,
     #missing_check: bool = False,
     #missing_cutoff: float = 4.0,
     #missing_icoxx: float = 0.0,
@@ -197,13 +197,13 @@ def icoxx_struc_fxn(
     mapped_icoxx_data, missing_interactions = compare_pairs(
         struc_list_pairs_S_l=ase_struc_list,
         icoxx_dict_pairsS_l=icoxx_dict_pairsS_l,
-        test_bond_len=test_bond_len,
+        #test_bond_len=test_bond_len,
     )
     mapped_icoxx_data_reverse, missing_interactions_reverse = reverse_missed_inter(
         mapped_icoxx_data=mapped_icoxx_data,
         missing_interactions=missing_interactions,
         icoxx_dict_pairsS_l=icoxx_dict_pairsS_l,
-        test_bond_len=test_bond_len,
+        #test_bond_len=test_bond_len,
     )
 
     # if missing_check:
