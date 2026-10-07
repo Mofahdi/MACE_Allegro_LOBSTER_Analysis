@@ -40,7 +40,7 @@ print("number of edges", Eijs.shape[0])
 # Plot Eij versus bond distance and report Pearson and distance-correlation values.
 Pcorr_d, dcor_d = alleg_icoxx.plot_Eij_d(
     save_plot=True,
-    Eij_icoxx_plot_name="Eij_d.jpg",
+    Eij_icoxx_plot_name="Eij_vs_distance.png",
     dpi=dpi,
 )
 print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, dcor_d)
@@ -49,7 +49,7 @@ print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, dcor_d)
 PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(
     icohp=True,
     save_plot=True,
-    Eij_icoxx_plot_name="Eij_ICOHP.jpg",
+    Eij_icoxx_plot_name="Eij_vs_ICOHP.png",
     dpi=dpi,
 )
 print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, dcor_ICOHP)
@@ -58,7 +58,7 @@ print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, dcor_ICOHP)
 PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
     icohp=False,
     save_plot=True,
-    Eij_icoxx_plot_name="Eij_ICOBI.jpg",
+    Eij_icoxx_plot_name="Eij_vs_ICOBI.png",
     dpi=dpi,
 )
 print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, dcor_ICOBI)
@@ -77,14 +77,14 @@ XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAXijFeats_d_and_dcor(
     num_dcor_samples=num_dcor_samples,
     dcor_sample_size=dcor_sample_size,
     save_plot=True,
-    PCAXijFeats_dist_plot_name="PCAXijFeatureSpace_dist.jpg",
+    PCAXijFeats_dist_plot_name="PCA_feature_space_distance.png",
     dpi=dpi,
 )
 print("\n\nd, Xij dcor (mean, std):")
 print(XijD_dcor_mean_mat)
 print(XijD_dcor_std_mat)
-XijD_dcor_mean_mat.to_json(os.path.join(alleg_icoxx.EijAnalysis, "XijD_dcor_mean_mat.json"), orient="records", indent=4)
-XijD_dcor_std_mat.to_json(os.path.join(alleg_icoxx.EijAnalysis, "XijD_dcor_std_mat.json"), orient="records", indent=4)
+XijD_dcor_mean_mat.to_json(os.path.join(alleg_icoxx.EijAnalysis, "PCA_distance_dcor_mean.json"), orient="records", indent=4)
+XijD_dcor_std_mat.to_json(os.path.join(alleg_icoxx.EijAnalysis, "PCA_distance_dcor_std.json"), orient="records", indent=4)
 
 # Repeat the PCA-coloring workflow using ICOHP as the color value to compare it with distance.
 XijICOHP_dcor_mean, XijICOHP_dcor_std = alleg_icoxx.plot_PCAXij_icoxx_and_dcor(
@@ -92,14 +92,14 @@ XijICOHP_dcor_mean, XijICOHP_dcor_std = alleg_icoxx.plot_PCAXij_icoxx_and_dcor(
     dcor_sample_size=dcor_sample_size,
     icohp=True,
     save_plot=True,
-    PCAXijFeats_icoxx_plot_name="PCAXijFeatureSpace_ICOHP.jpg",
+    PCAXijFeats_icoxx_plot_name="PCA_feature_space_ICOHP.png",
     dpi=dpi,
 )
 print("\n\nICOHP, Xij dcor (mean, std):")
 print(XijICOHP_dcor_mean)
 print(XijICOHP_dcor_std)
-XijICOHP_dcor_mean.to_json(os.path.join(alleg_icoxx.EijAnalysis, "XijICOHP_dcor_mean.json"), orient="records", indent=4)
-XijICOHP_dcor_std.to_json(os.path.join(alleg_icoxx.EijAnalysis, "XijICOHP_dcor_std.json"), orient="records", indent=4)
+XijICOHP_dcor_mean.to_json(os.path.join(alleg_icoxx.EijAnalysis, "PCA_ICOHP_dcor_mean.json"), orient="records", indent=4)
+XijICOHP_dcor_std.to_json(os.path.join(alleg_icoxx.EijAnalysis, "PCA_ICOHP_dcor_std.json"), orient="records", indent=4)
 
 # Repeat the PCA-coloring workflow using ICOBI as the color value for comparison.
 XijICOBI_dcor_mean, XijICOBI_dcor_std = alleg_icoxx.plot_PCAXij_icoxx_and_dcor(
@@ -107,14 +107,14 @@ XijICOBI_dcor_mean, XijICOBI_dcor_std = alleg_icoxx.plot_PCAXij_icoxx_and_dcor(
     dcor_sample_size=dcor_sample_size,
     icohp=False,
     save_plot=True,
-    PCAXijFeats_icoxx_plot_name="PCAXijFeatureSpace_ICOBI.jpg",
+    PCAXijFeats_icoxx_plot_name="PCA_feature_space_ICOBI.png",
     dpi=dpi,
 )
 print("\n\nICOBI, Xij dcor (mean, std):")
 print(XijICOBI_dcor_mean)
 print(XijICOBI_dcor_std)
-XijICOBI_dcor_mean.to_json(os.path.join(alleg_icoxx.EijAnalysis, "XijICOBI_dcor_mean.json"), orient="records", indent=4)
-XijICOBI_dcor_std.to_json(os.path.join(alleg_icoxx.EijAnalysis, "XijICOBI_dcor_std.json"), orient="records", indent=4)
+XijICOBI_dcor_mean.to_json(os.path.join(alleg_icoxx.EijAnalysis, "PCA_ICOBI_dcor_mean.json"), orient="records", indent=4)
+XijICOBI_dcor_std.to_json(os.path.join(alleg_icoxx.EijAnalysis, "PCA_ICOBI_dcor_std.json"), orient="records", indent=4)
 
 
 
