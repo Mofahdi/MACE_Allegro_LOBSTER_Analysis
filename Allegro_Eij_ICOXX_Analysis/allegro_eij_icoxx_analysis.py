@@ -111,7 +111,7 @@ class AllegroEijIcoxxAnalyzer:
 
 
     def PCA_Xij(self) -> np.ndarray:
-        """Standardize the Eij feature matrix and project it into a 2D PCA space."""
+        """Standardize the xij features and project it into a 2D PCA space."""
         scaler = StandardScaler()
         EijFeats_scaled = np.array(scaler.fit_transform(self.EijFeats), dtype=np.float32)
 
@@ -171,13 +171,18 @@ class AllegroEijIcoxxAnalyzer:
             index=False,
         )
 
-        scaler = StandardScaler()
-        Eijs_scaled = scaler.fit_transform(self.Eijs)
-        d_scaled = scaler.fit_transform(self.d)
         return (
             r,
-            dcor.distance_correlation(Eijs_scaled, d_scaled),
+            dcor.distance_correlation(self.Eijs, self.d),
         )
+
+        # scaler = StandardScaler()
+        # Eijs_scaled = scaler.fit_transform(self.Eijs)
+        # d_scaled = scaler.fit_transform(self.d)
+        # return (
+        #     r,
+        #     dcor.distance_correlation(Eijs_scaled, d_scaled),
+        # )
 
 
     def plot_Eij_icoxx(
@@ -237,13 +242,17 @@ class AllegroEijIcoxxAnalyzer:
             index=False,
         )
 
-        scaler = StandardScaler()
-        Eijs_scaled = scaler.fit_transform(self.Eijs)
-        icoxxs_scaled = scaler.fit_transform(icoxxs)
         return (
             r,
-            dcor.distance_correlation(Eijs_scaled, icoxxs_scaled),
+            dcor.distance_correlation(self.Eijs, icoxxs),
         )
+        # scaler = StandardScaler()
+        # Eijs_scaled = scaler.fit_transform(self.Eijs)
+        # icoxxs_scaled = scaler.fit_transform(icoxxs)
+        # return (
+        #     r,
+        #     dcor.distance_correlation(Eijs_scaled, icoxxs_scaled),
+        # )
 
 
     def fit_linProb(self, icohp: bool, dpi: int):
@@ -381,7 +390,7 @@ class AllegroEijIcoxxAnalyzer:
                 "bond distance": self.d.squeeze(),
             }
         ).to_csv(os.path.join(self.EijAnalysis, "PCA_feature_space_distance_data.csv"), index=False)
-        sets = {"PCAXijfeats": self.EijFeats_pca, "d": StandardScaler().fit_transform(self.d)}
+        sets = {"PCAXijfeats": self.EijFeats_pca, 'd': self.d } #"d": StandardScaler().fit_transform(self.d)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
             num_bootstrap=num_dcor_samples,
@@ -450,7 +459,7 @@ class AllegroEijIcoxxAnalyzer:
                 colorBar_label: icoxxs.squeeze(),
             }
         ).to_csv(os.path.join(self.EijAnalysis, f"PCA_feature_space_{label.lower()}_data.csv"), index=False)
-        sets = {"PCAXijfeats": self.EijFeats_pca, colorBar_label: StandardScaler().fit_transform(icoxxs)}
+        sets = {"PCAXijfeats": self.EijFeats_pca, colorBar_label: icoxxs} #StandardScaler().fit_transform(icoxxs)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
             num_bootstrap=num_dcor_samples,
