@@ -1,7 +1,7 @@
 import os
 import json
+import pickle
 import psutil
-import joblib
 import numpy as np
 import pandas as pd
 
@@ -581,7 +581,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-        joblib.dump(model, os.path.join(self.lp, feature_type+"_linear_regression_model.pkl"))
+        with open(os.path.join(self.lp, feature_type + "_linear_regression_model.pkl"), 'wb') as f:
+            pickle.dump(model, f)
         y_pred = model.predict(X_test)
 
         pd.DataFrame({

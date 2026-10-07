@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import os
+import pickle
 import dcor
 import numpy as np
 import pandas as pd
 import torch
-import joblib
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -275,7 +275,9 @@ class AllegroEijIcoxxAnalyzer:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-        joblib.dump(model, os.path.join(self.lp, "icohp_linear_regression_model.pkl" if icohp else "icobi_linear_regression_model.pkl"))
+        model_path = os.path.join(self.lp, "icohp_linear_regression_model.pkl" if icohp else "icobi_linear_regression_model.pkl")
+        with open(model_path, "wb") as f:
+            pickle.dump(model, f)
         y_pred = model.predict(X_test)
 
         pd.DataFrame({
