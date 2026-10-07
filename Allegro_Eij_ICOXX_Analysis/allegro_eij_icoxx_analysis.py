@@ -139,7 +139,8 @@ class AllegroEijIcoxxAnalyzer:
         """
 
         plt.figure(figsize=(4.4,3.5))
-        plt.scatter(self.d, self.Eijs, c='blue', alpha=0.1)
+        #plt.scatter(self.d, self.Eijs, c='blue', alpha=0.1)
+        plt.scatter(self.d, self.Eijs, c="#E6A700", alpha=0.1, s = 10)
         plt.xlabel('Bond Distance (Å)')
         plt.ylabel(r'Allegro $E_{ij}$ (eV)',) #fontsize=12)
         ax=plt.gca()
@@ -200,8 +201,10 @@ class AllegroEijIcoxxAnalyzer:
 
         icoxxs = self.icohps if icohp else self.icobis
         xlabel = 'ICOHP (eV)' if icohp else 'ICOBI'
+        color = '#D52F2F' if icohp else "#2966E7"
+
         plt.figure(figsize=(4.4,3.5))
-        plt.scatter(icoxxs, self.Eijs, c='blue', alpha=0.1)
+        plt.scatter(icoxxs, self.Eijs, c='blue', alpha=0.1, s = 10)
         plt.xlabel(xlabel)
         plt.ylabel(r'Allegro $E_{ij}$ (eV)', ) #fontsize=12
         ax=plt.gca()
