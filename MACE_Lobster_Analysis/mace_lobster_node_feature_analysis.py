@@ -148,7 +148,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_Pearson_feats(self, dpi) -> None:
+    def plot_pearson_heatmap(self, dpi) -> None:
         """Plot the Pearson correlation matrix between PCA-compressed MACE features and LOBSTER features.
 
         The first two principal components of the MACE node embeddings are appended to the
@@ -276,7 +276,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_2DPCMACE_charge_and_dcor(
+    def plot_pc_space_and_charge_dcor(
         self,
         #plot_name_loewdin: str = ,
         #plot_name_mulliken: str = ,
@@ -378,7 +378,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_1DPCMACE_chg(self, dpi: int) -> None:
+    def plot_pc1_pc2_vs_charge(self, dpi: int) -> None:
         """Plot both MACE principal components against Loewdin and Mulliken charge values.
 
         Parameters
@@ -410,8 +410,9 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 chrg_dat: pd.Series = new_df[charge_column]
 
                 plt.figure(figsize=(4.4, 3.5))
-                #plt.scatter(new_df[pc_column], chrg_dat, c='blue', alpha=0.1)
-                plt.scatter(new_df[pc_column], chrg_dat, c="#2A9D8F", alpha=0.1)
+                #plt.scatter(new_df[pc_column], chrg_dat, c='blue', alpha=0.1) 
+                #plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00A651", alpha=0.1)
+                plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00C853", alpha=0.1)
                 plt.xlabel(pc_label, fontsize=12)
                 plt.ylabel(chrg_label, fontsize=12)
                 plt.xticks(fontsize=11)
@@ -439,7 +440,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_PC2MACE_sumICOXX(self, dpi: int) -> None:
+    def plot_pc2_vs_sum_icoxx(self, dpi: int) -> None:
         """Plot the second MACE principal component versus summed ICOHP/ICOBI values.
 
         Parameters
@@ -460,18 +461,23 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         for i, (icoxx_type, icoxx_label) in enumerate(zip(icoxx_types, icoxx_labels)):
             if icoxx_type == 'icohp':
                 icoxx_data = new_df['site_icohp_sum'].copy()
+                #color = "#E4432E"
+                color = "#D52F2F"
             if icoxx_type == 'icobi':
                 icoxx_data = new_df['site_icobi_sum'].copy()
+                #color = "#286AD4"
+                color = "#2966E7"
 
             #plt.figure(figsize=(4.4,3.5))
             #plt.figure(figsize=(3.8, 3.8))
             plt.figure(figsize=(4.3, 3.5))
-            plt.scatter(self.mace_node_feats_pca[:, 1], icoxx_data, c='blue', alpha=0.1)
+            #plt.scatter(new_df['PC2_MACE'], icoxx_data, c='blue', alpha=0.1)
+            plt.scatter(new_df['PC2_MACE'], icoxx_data, s = 10, c=color, alpha=0.1)
             plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
             plt.ylabel(icoxx_label, fontsize=12) #fontsize=12
             plt.xticks(fontsize=11)
             plt.yticks(fontsize=11)
-            ax=plt.gca()
+            #ax=plt.gca()
             ax = plt.gca()
             r = icoxx_data.corr(new_df["PC2_MACE"])
             plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
@@ -495,7 +501,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def linProb(self, feature_type: str, dpi: int = 800) -> None:
+    def fit_linProb(self, feature_type: str, dpi: int = 800) -> None:
         """Train a linear regression model to predict a target scalar property from MACE descriptors.
 
         Parameters
@@ -520,31 +526,39 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             y = self.df_lobster['charge_loew']
             xlabel = 'Actual Loewdin Charge (e)'
             ylabel = 'Predicted Loewdin Charge (e)'
+            color = "#00C853"
 
         elif feature_type == 'chg_mull':
             y = self.df_lobster['charge_mull']
             xlabel = 'Actual Mulliken Charge (e)'
             ylabel = 'Predicted Mulliken Charge (e)'
+            color = "#00C853"
 
         elif feature_type == 'sum_icohp':
             y = self.df_lobster['site_icohp_sum']
             xlabel = 'Actual Sum ICOHP (eV)'
             ylabel = 'Predicted Sum ICOHP (eV)'
+            #color = "#C83F3F"
+            color = '#D52F2F'
 
         elif feature_type == 'sum_icobi':
             y = self.df_lobster['site_icobi_sum']
             xlabel = 'Actual Sum ICOBI'
             ylabel = 'Predicted Sum ICOBI'
+            #color = "#2979FF"
+            color = "#2966E7"
 
         elif feature_type == 'mean_icohp':
             y = self.df_lobster['site_icohp_mean']
             xlabel = 'Actual Mean ICOHP (eV)'
             ylabel = 'Predicted Mean ICOHP (eV)'
+            color = "#D52F2F"
 
         elif feature_type == 'mean_icobi':
             y = self.df_lobster['site_icobi_mean']
             xlabel = 'Actual Mean ICOBI'
             ylabel = 'Predicted Mean ICOBI'
+            color = "#2966E7"
 
         else:
             raise ValueError("you can only enter one of the following options: " \
@@ -586,7 +600,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         # Predicted versus actual ICOHP
         plt.figure(figsize=(4.4, 3.5)) #(5, 4)
-        plt.scatter(y_test, y_pred, c='b', alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
+        #plt.scatter(y_test, y_pred, c='b', alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
+        plt.scatter(y_test, y_pred, c=color, alpha=0.1, s = 10) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
         plt.xlabel(xlabel, fontsize=12)
