@@ -38,7 +38,16 @@ This project is built around the following stack:
 
 ## Installation
 
-First install DGL with the correct PyTorch/CUDA wheel for this environment:
+First create an environment and activate it
+
+```bash
+conda create -n allegro_icoxx python=3.12.13
+```
+```bash
+conda activate allegro_icoxx
+```
+
+Then, install DGL with the correct PyTorch/CUDA wheel for this environment:
 
 ```bash
 pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/cu124/repo.html
@@ -141,35 +150,35 @@ The pipeline creates two output folders in the current working directory if they
 
 This folder contains scatter plots and tabular summaries such as:
 
-- `Eij_d.jpg`
-- `Eij_ICOHP.jpg`
-- `Eij_ICOBI.jpg`
-- `PCAXijFeatureSpace_dist.jpg`
-- `PCAXijFeatureSpace_ICOHP.jpg`
-- `PCAXijFeatureSpace_ICOBI.jpg`
-- `Dist_Eij_all.csv`
-- `ICOHP_Eij_all.csv`
-- `ICOBI_Eij_all.csv`
-- `Dist_PCAXijFeats.csv`
-- `ICOHP_PCAXijFeats.csv`
-- `ICOBI_PCAXijFeats.csv`
-- `XijD_dcor_mean_mat.json`
-- `XijD_dcor_std_mat.json`
-- `XijICOHP_dcor_mean.json`
-- `XijICOHP_dcor_std.json`
-- `XijICOBI_dcor_mean.json`
-- `XijICOBI_dcor_std.json`
+- `Eij_vs_distance.png`
+- `Eij_vs_ICOHP.png`
+- `Eij_vs_ICOBI.png`
+- `PCA_feature_space_distance.png`
+- `PCA_feature_space_ICOHP.png`
+- `PCA_feature_space_ICOBI.png`
+- `Eij_vs_distance_data.csv`
+- `Eij_vs_ICOHP_data.csv`
+- `Eij_vs_ICOBI_data.csv`
+- `PCA_feature_space_distance_data.csv`
+- `PCA_feature_space_ICOHP_data.csv`
+- `PCA_feature_space_ICOBI_data.csv`
+- `PCA_distance_dcor_mean.json`
+- `PCA_distance_dcor_std.json`
+- `PCA_ICOHP_dcor_mean.json`
+- `PCA_ICOHP_dcor_std.json`
+- `PCA_ICOBI_dcor_mean.json`
+- `PCA_ICOBI_dcor_std.json`
 
 ### `LinearProbe/` outputs
 
 This folder stores the trained linear-regression models and evaluation tables:
 
-- `icohp_linear_regression_model.pkl`
-- `icobi_linear_regression_model.pkl`
-- `icohp_LinProb_results.csv`
-- `icobi_LinProb_results.csv`
-- `ICOHP_linearProbe.jpg`
-- `ICOBI_linearProbe.jpg`
+- `linear_probe_ICOHP_model.pkl`
+- `linear_probe_ICOBI_model.pkl`
+- `linear_probe_ICOHP_results.csv`
+- `linear_probe_ICOBI_results.csv`
+- `linear_probe_ICOHP.png`
+- `linear_probe_ICOBI.png`
 
 ## Notes and caveats
 

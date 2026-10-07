@@ -124,7 +124,7 @@ class AllegroEijIcoxxAnalyzer:
     def plot_Eij_d(
         self,
         save_plot: bool = True,
-        Eij_icoxx_plot_name: str = "Eij_d.png",
+        Eij_icoxx_plot_name: str = "Eij_vs_distance.png",
         dpi: float = 400,
     ) -> tuple[float, float]:
         """Plot Eij against bond distance and return correlation metrics.
@@ -167,7 +167,7 @@ class AllegroEijIcoxxAnalyzer:
         plt.show()
 
         pd.DataFrame({"bond distance": self.d.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
-            os.path.join(self.EijAnalysis, "Dist_Eij_all.csv"),
+            os.path.join(self.EijAnalysis, "Eij_vs_distance_data.csv"),
             index=False,
         )
 
@@ -184,7 +184,7 @@ class AllegroEijIcoxxAnalyzer:
         self,
         icohp: bool = True,
         save_plot: bool = True,
-        Eij_icoxx_plot_name: str = "Eij_ICOXX.png",
+        Eij_icoxx_plot_name: str = "Eij_vs_ICOHP.png",
         dpi: float = 400,
     ) -> tuple[float, float]:
         """Plot Eij against ICOHP or ICOBI and return correlation metrics.
@@ -233,7 +233,7 @@ class AllegroEijIcoxxAnalyzer:
 
         label = "ICOHP" if icohp else "ICOBI"
         pd.DataFrame({'id': self.ids, xlabel: icoxxs.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
-            os.path.join(self.EijAnalysis, label + "_Eij_all.csv"),
+            os.path.join(self.EijAnalysis, f"Eij_vs_{label.lower()}_data.csv"),
             index=False,
         )
 
@@ -275,16 +275,16 @@ class AllegroEijIcoxxAnalyzer:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-        model_path = os.path.join(self.lp, "icohp_linear_regression_model.pkl" if icohp else "icobi_linear_regression_model.pkl")
+        model_path = os.path.join(self.lp, "linear_probe_ICOHP_model.pkl" if icohp else "linear_probe_ICOBI_model.pkl")
         with open(model_path, "wb") as f:
             pickle.dump(model, f)
         y_pred = model.predict(X_test)
 
         pd.DataFrame({
-                        'id': ids_test, 
+                        'id': ids_test,
                         'true_icohp' if icohp else 'true_icobi': y_test,
                         'pred_icohp' if icohp else 'pred_icobi': y_pred,
-                      }).to_csv(os.path.join(self.lp, 'icohp_LinProb_results.csv' if icohp else 'icobi_LinProb_results.csv'),
+                      }).to_csv(os.path.join(self.lp, 'linear_probe_ICOHP_results.csv' if icohp else 'linear_probe_ICOBI_results.csv'),
                                 index=False,)
         
         #print("Regression coefficients:", model.coef_)
@@ -324,7 +324,7 @@ class AllegroEijIcoxxAnalyzer:
 
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lp, "ICOHP_linearProbe.jpg" if icohp else "ICOBI_linearProbe.jpg"), dpi=dpi)
+        plt.savefig(os.path.join(self.lp, "linear_probe_ICOHP.png" if icohp else "linear_probe_ICOBI.png"), dpi=dpi)
         #plt.show()
         plt.close()
 
@@ -334,7 +334,7 @@ class AllegroEijIcoxxAnalyzer:
         num_dcor_samples: int,
         dcor_sample_size: int,
         save_plot: bool = True,
-        PCAXijFeats_dist_plot_name: str = "PCAXijFeatureSpace_dist.png",
+        PCAXijFeats_dist_plot_name: str = "PCA_feature_space_distance.png",
         dpi: float = 400,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Plot the PCA manifold of xij features against bond distance.
@@ -380,7 +380,7 @@ class AllegroEijIcoxxAnalyzer:
                 "PCA2XijFeats": self.EijFeats_pca[:, 1],
                 "bond distance": self.d.squeeze(),
             }
-        ).to_csv(os.path.join(self.EijAnalysis,"Dist_PCAXijFeats.csv"), index=False)
+        ).to_csv(os.path.join(self.EijAnalysis, "PCA_feature_space_distance_data.csv"), index=False)
         sets = {"PCAXijfeats": self.EijFeats_pca, "d": StandardScaler().fit_transform(self.d)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
@@ -397,7 +397,7 @@ class AllegroEijIcoxxAnalyzer:
         num_dcor_samples: int,
         dcor_sample_size: int,
         save_plot: bool = True,
-        PCAXijFeats_icoxx_plot_name: str = "PCAXijFeatureSpace_ICOXX.png",
+        PCAXijFeats_icoxx_plot_name: str = "PCA_feature_space_ICOHP.png",
         dpi: float = 400,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Plot the PCA manifold of xij features against ICOHP/ICOBI values.
@@ -449,7 +449,7 @@ class AllegroEijIcoxxAnalyzer:
                 "PCA2XijFeats": self.EijFeats_pca[:, 1],
                 colorBar_label: icoxxs.squeeze(),
             }
-        ).to_csv(os.path.join(self.EijAnalysis, label + "_PCAXijFeats.csv"), index=False)
+        ).to_csv(os.path.join(self.EijAnalysis, f"PCA_feature_space_{label.lower()}_data.csv"), index=False)
         sets = {"PCAXijfeats": self.EijFeats_pca, colorBar_label: StandardScaler().fit_transform(icoxxs)}
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
