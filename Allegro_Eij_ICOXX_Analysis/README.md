@@ -104,10 +104,7 @@ python run_allegro_eij_icoxx_analysis.py \
 The default arguments are defined in the script, so this also works:
 
 ```bash
-python run_allegro_eij_icoxx_analysis.py \
-  --num-dcor-samples 20 \
-  --dcor-sample-size 50000 \
-  --dpi 800
+python run_allegro_eij_icoxx_analysis.py 
 ```
 
 
