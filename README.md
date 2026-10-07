@@ -67,26 +67,32 @@ Allegro-OAM-L-0.1.nequip.zip
 The Allegro workflow creates:
 
 - `EijAnalysis/` with plots and summary files such as:
-  - `Eij_d.jpg`
-  - `Eij_ICOHP.jpg`
-  - `Eij_ICOBI.jpg`
-  - `PCAXijFeatureSpace_dist.jpg`
-  - `PCAXijFeatureSpace_ICOHP.jpg`
-  - `PCAXijFeatureSpace_ICOBI.jpg`
-  - `Dist_Eij_all.csv`
-  - `ICOHP_Eij_all.csv`
-  - `ICOBI_Eij_all.csv`
-  - `XijD_dcor_mean_mat.json`
-  - `XijICOHP_dcor_mean.json`
-  - `XijICOBI_dcor_mean.json`
+- `Eij_vs_distance.png`
+- `Eij_vs_ICOHP.png`
+- `Eij_vs_ICOBI.png`
+- `PCA_feature_space_distance.png`
+- `PCA_feature_space_ICOHP.png`
+- `PCA_feature_space_ICOBI.png`
+- `Eij_vs_distance_data.csv`
+- `Eij_vs_ICOHP_data.csv`
+- `Eij_vs_ICOBI_data.csv`
+- `PCA_feature_space_distance_data.csv`
+- `PCA_feature_space_ICOHP_data.csv`
+- `PCA_feature_space_ICOBI_data.csv`
+- `PCA_distance_dcor_mean.json`
+- `PCA_distance_dcor_std.json`
+- `PCA_ICOHP_dcor_mean.json`
+- `PCA_ICOHP_dcor_std.json`
+- `PCA_ICOBI_dcor_mean.json`
+- `PCA_ICOBI_dcor_std.json`
 
 - `LinearProbe/` with fitted models and predictions such as:
-  - `icohp_linear_regression_model.pkl`
-  - `icobi_linear_regression_model.pkl`
-  - `icohp_LinProb_results.csv`
-  - `icobi_LinProb_results.csv`
-  - `ICOHP_linearProbe.jpg`
-  - `ICOBI_linearProbe.jpg`
+- `linear_probe_ICOHP_model.pkl`
+- `linear_probe_ICOBI_model.pkl`
+- `linear_probe_ICOHP_results.csv`
+- `linear_probe_ICOBI_results.csv`
+- `linear_probe_ICOHP.png`
+- `linear_probe_ICOBI.png`
 
 ### Example execution
 
@@ -144,19 +150,29 @@ The MACE workflow writes to:
 
 Representative outputs include:
 
-- `PCAMACE_lobster_Pearson.jpg`
-- `Pearson_r_AllFeats.json`
-- `MACE_lobster_dcor_mean.json`
-- `MACE_lobster_dcor_std.json`
-- `MACE_charges_dcor_mean.json`
-- `MACE_charges_dcor_std.json`
-- linear-probe plots and CSV outputs for:
+- `mace_lobster_pearson_heatmap.jpg`
+- `mace_lobster_pearson_correlation.json`
+- `mace_lobster_dcor_mean.json`
+- `mace_lobster_dcor_std.json`
+- `mace_lobster_dcor_mean_heatmap.jpg`
+- `mace_pca_charge_dcor_mean.json`
+- `mace_pca_charge_dcor_std.json`
+- PCA charge scatter plots for:
   - Loewdin charge
   - Mulliken charge
-  - sum ICOHP
-  - sum ICOBI
-  - mean ICOHP
-  - mean ICOBI
+- linear-probe model, plot, and results files for:
+  - `chg_loew`
+  - `chg_mull`
+  - `sum_icohp`
+  - `sum_icobi`
+  - `mean_icohp`
+  - `mean_icobi`
+
+Examples of the generated linear-probe names are:
+
+- `mace_linear_probe_chg_loew_model.pkl`
+- `mace_linear_probe_sum_icohp_results.csv`
+- `mace_linear_probe_mean_icobi.jpg`
 
 ### Example execution
 

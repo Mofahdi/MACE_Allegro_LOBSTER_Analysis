@@ -192,9 +192,9 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.xticks(rotation=45, ha='right', fontsize=13)
         plt.yticks(rotation=0, fontsize=13)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lobster_corr, 'PCAMACE_lobster_Pearson.jpg'), dpi=dpi, bbox_inches='tight')
+        plt.savefig(os.path.join(self.lobster_corr, 'mace_lobster_pearson_heatmap.jpg'), dpi=dpi, bbox_inches='tight')
         plt.close()
-        corr.to_json(os.path.join(self.lobster_corr, "Pearson_r_AllFeats.json"), orient="records", indent=4)
+        corr.to_json(os.path.join(self.lobster_corr, "mace_lobster_pearson_correlation.json"), orient="records", indent=4)
 
 
 
@@ -237,8 +237,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         
         print('dCor between LOBSTER, MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
-        mean_mat.to_json(os.path.join(self.lobster_corr, "MACE_lobster_dcor_mean.json"), orient="records", indent=4)
-        std_mat.to_json(os.path.join(self.lobster_corr, "MACE_lobster_dcor_std.json"), orient="records", indent=4)
+        mean_mat.to_json(os.path.join(self.lobster_corr, "mace_lobster_dcor_mean.json"), orient="records", indent=4)
+        std_mat.to_json(os.path.join(self.lobster_corr, "mace_lobster_dcor_std.json"), orient="records", indent=4)
 
 
         mask = np.triu(np.ones_like(mean_mat, dtype=bool), k=1)
@@ -271,7 +271,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         #ax.set_title("MACE–LOBSTER Mean Distance Correlation")
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lobster_corr, "MACE_lobster_mean_dcor.jpg"), dpi=dpi, bbox_inches="tight")
+        plt.savefig(os.path.join(self.lobster_corr, "mace_lobster_dcor_mean_heatmap.jpg"), dpi=dpi, bbox_inches="tight")
         plt.close()
 
 
@@ -311,7 +311,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         loewdin_charge = self.df_all['charge_mull']
         mulliken_charge = self.df_all['charge_loew']
         ylabels= ['Loewdin Charge (e)', 'Mulliken Charge (e)']
-        plot_names = ['2DPCAMACE_LoewdinChg.jpg', '2DPCAMACE_MullChg.jpg']
+        plot_names = ['mace_pca_loewdin_charge_scatter.jpg', 'mace_pca_mulliken_charge_scatter.jpg']
 
         for i, (chg_label, plt_name) in enumerate(zip(ylabels, plot_names)):
             if i==0:
@@ -364,8 +364,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         
         print('dCor between charge and PC1-PC2 MACE node features (mean, std):'); print(mean_mat); print(std_mat); 
 
-        mean_mat.to_json(os.path.join(self.chrg_corr, "PCAMACE_charges_dcor_mean.json"), orient="records", indent=4)
-        std_mat.to_json(os.path.join(self.chrg_corr, "PCAMACE_charges_dcor_std.json"), orient="records", indent=4)
+        mean_mat.to_json(os.path.join(self.chrg_corr, "mace_pca_charge_dcor_mean.json"), orient="records", indent=4)
+        std_mat.to_json(os.path.join(self.chrg_corr, "mace_pca_charge_dcor_std.json"), orient="records", indent=4)
 
         pd.DataFrame(
             {
@@ -374,7 +374,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 'Loewdin': loewdin_charge,
                 'Mulliken': mulliken_charge, 
             }
-        ).to_csv(os.path.join(self.chrg_corr, "PCA_MACE_Loew_Mull.csv"), index=False)
+        ).to_csv(os.path.join(self.chrg_corr, "mace_pca_charge_summary.csv"), index=False)
 
 
 
@@ -433,7 +433,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 )
                 plt.tight_layout()
                 plt.savefig(
-                    os.path.join(self.chrg_corr, f'{chrg_type}_{pc_suffix}_MACE.jpg'),
+                    os.path.join(self.chrg_corr, f'mace_{pc_suffix.lower()}_vs_{chrg_type.replace("chg_", "")}_charge.jpg'),
                     dpi=dpi,
                 )
                 plt.close()
@@ -495,7 +495,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             plt.tight_layout()
             #if save_plot:
             plt.show()
-            plt.savefig(os.path.join(self.lobster_corr, 'sum_'+icoxx_type+'_PC2_MACE.jpg'), dpi=dpi)
+            plt.savefig(os.path.join(self.lobster_corr, f'mace_pc2_vs_sum_{icoxx_type}.jpg'), dpi=dpi)
             plt.close()
 
 
@@ -581,7 +581,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-        with open(os.path.join(self.lp, feature_type + "_linear_regression_model.pkl"), 'wb') as f:
+        with open(os.path.join(self.lp, f"mace_linear_probe_{feature_type}_model.pkl"), 'wb') as f:
             pickle.dump(model, f)
         y_pred = model.predict(X_test)
 
@@ -589,7 +589,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                         'id': ids_test, 
                         'true_'+feature_type: y_test,
                         'pred_'+feature_type: y_pred,
-                      }).to_csv(os.path.join(self.lp, feature_type+'_LinProb_results.csv'),
+                      }).to_csv(os.path.join(self.lp, f'mace_linear_probe_{feature_type}_results.csv'),
                                 index=False,)
         
         #print("Regression coefficients:", model.coef_)
@@ -632,7 +632,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lp, feature_type+"_linearProbe.jpg"), dpi=dpi)
+        plt.savefig(os.path.join(self.lp, f"mace_linear_probe_{feature_type}.jpg"), dpi=dpi)
         #plt.show()
         plt.close()
 

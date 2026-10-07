@@ -102,23 +102,27 @@ The script writes output files to the current working directory and to subdirect
 
 Representative outputs include:
 
-- `PCAMACE_lobster_Pearson.jpg`
-- `MACE_lobster_mean_dcor.jpg`
-- `MACE_lobster_std_dcor.jpg`
-- `2DPCAMACE_LoewdinChg.jpg`
-- `2DPCAMACE_MullChg.jpg`
-- `chg_loew_PC1_MACE.jpg`
-- `chg_mull_PC2_MACE.jpg`
-- `sum_icohp_PC2_MACE.jpg`
-- `sum_icobi_PC2_MACE.jpg`
-- `chg_loew_linearProbe.jpg`
+- `mace_lobster_pearson_heatmap.jpg`
+- `mace_lobster_pearson_correlation.json`
+- `mace_lobster_dcor_mean_heatmap.jpg`
+- `mace_lobster_dcor_mean.json`
+- `mace_lobster_dcor_std.json`
+- `mace_pca_loewdin_charge_scatter.jpg`
+- `mace_pca_mulliken_charge_scatter.jpg`
+- `mace_pc1_vs_loewdin_charge.jpg`
+- `mace_pc2_vs_mulliken_charge.jpg`
+- `mace_pc2_vs_sum_icohp.jpg`
+- `mace_pc2_vs_sum_icobi.jpg`
+- `mace_linear_probe_chg_loew.jpg`
+- `mace_linear_probe_chg_loew_model.pkl`
+- `mace_linear_probe_sum_icohp_results.csv`
 
 The script also saves JSON summaries such as:
 
-- `MACE_lobster_dcor_mean.json`
-- `MACE_lobster_dcor_std.json`
-- `PCAMACE_charges_dcor_mean.json`
-- `PCAMACE_charges_dcor_std.json`
+- `mace_lobster_dcor_mean.json`
+- `mace_lobster_dcor_std.json`
+- `mace_pca_charge_dcor_mean.json`
+- `mace_pca_charge_dcor_std.json`
 
 These dCor summaries are generated from the bootstrap sample size and bootstrap count configured in the run script (`--dcor-sample-size` and `--num-dcor-samples`).
 
@@ -131,7 +135,16 @@ These dCor summaries are generated from the bootstrap sample size and bootstrap 
 
 ## Installation
 
-First install DGL with the correct PyTorch/CUDA wheel for this environment:
+First create an environment and activate it
+
+```bash
+conda create -n mace_lobster_env python=3.12.13
+```
+```bash
+conda activate mace_lobster_env
+```
+
+Then, install DGL with the correct PyTorch/CUDA wheel for this environment:
 
 ```bash
 pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/cu124/repo.html
