@@ -21,7 +21,7 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info_test3.csv', 
+                                            df_path='nonmetals_mp_info.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )

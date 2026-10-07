@@ -93,7 +93,7 @@ The Allegro workflow creates:
 ```bash
 cd Allegro_Eij_ICOXX_Analysis
 python run_allegro_eij_icoxx_analysis.py \
-  --num-dcor-samples 40 \
+  --num-dcor-samples 20 \
   --dcor-sample-size 50000 \
   --dpi 800
 ```
