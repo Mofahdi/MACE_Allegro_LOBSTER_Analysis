@@ -21,50 +21,53 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info.csv', 
+                                            df_path='nonmetals_mp_info_test3.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )
 analyzer.process_df_and_model()
 analyzer.extract_features()
-analyzer.plot_Pearson_feats(dpi=dpi)
+analyzer.plot_pearson_heatmap(dpi=dpi)
 #exit()
 
 print('\n\nLinear Probing Loewdin charge, Mulliken charge, sum_icohp, and sum_icobi ....')
 print('Loewdin charge:')
-analyzer.linProb(feature_type = 'chg_loew', dpi=dpi) # 'chg_loew'  'chg_mull'  'sum_icohp'  'sum_icobi'  'mean_icohp'  'mean_icobi'
+analyzer.fit_linProb(feature_type = 'chg_loew', dpi=dpi) # 'chg_loew'  'chg_mull'  'sum_icohp'  'sum_icobi'  'mean_icohp'  'mean_icobi'
 print('\nMulliken charge:')
-analyzer.linProb(feature_type = 'chg_mull', dpi=dpi)
+analyzer.fit_linProb(feature_type = 'chg_mull', dpi=dpi)
 
 print('\nsum_icohp:')
-analyzer.linProb(feature_type = 'sum_icohp', dpi=dpi)
+analyzer.fit_linProb(feature_type = 'sum_icohp', dpi=dpi)
 print('\nsum_icobi:')
-analyzer.linProb(feature_type = 'sum_icobi', dpi=dpi)
+analyzer.fit_linProb(feature_type = 'sum_icobi', dpi=dpi)
 
 print('\nmean_icohp:')
-analyzer.linProb(feature_type = 'mean_icohp', dpi=dpi)
+analyzer.fit_linProb(feature_type = 'mean_icohp', dpi=dpi)
 print('\nmean_icobi:')
-analyzer.linProb(feature_type = 'mean_icobi', dpi=dpi)
+analyzer.fit_linProb(feature_type = 'mean_icobi', dpi=dpi)
 
 
+# print('\n\ncomputing dCor from sampled data ....')
+# analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
 
-print('\n\ncomputing dCor from sampled data ....')
-analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
 
-print('\nPlotting PCA of MACE node features color-coded with Loewdin and Mulliken charges....')
-print('\ncomputing dCor from sampled data between PCA of MACE nodes features and charges....')
-analyzer.plot_2DPCMACE_charge_and_dcor(
+print('\nPlotting PCA of MACE node embeddings color-coded with Loewdin and Mulliken charges....')
+print('\ncomputing dCor from sampled data between PCA of MACE nodes embeddings and charges....')
+analyzer.plot_pc_space_and_charge_dcor(
                                     sample_size=dcor_sample_size, 
                                     num_bootstrap=num_dcor_samples,
                                     dpi=dpi,
                                     )
 
-print('\nPlotting charge vs. PC1-PC2 of MACE node features....')
-analyzer.plot_1DPCMACE_chg(dpi=dpi)
+print('\nPlotting charge vs. PC1 and PC2 of MACE node embeddings....')
+analyzer.plot_pc1_pc2_vs_charge(dpi=dpi)
 
-print('\nPlotting sumICOXX vs. PC2 of MACE node feature....')
-analyzer.plot_PC2MACE_sumICOXX(dpi=dpi)
+print('\nPlotting sumICOXX vs. PC2 of MACE node embeddings....')
+analyzer.plot_pc2_vs_sum_icoxx(dpi=dpi)
 #analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icohp', dpi=dpi)
+
+
+
 
 
 
