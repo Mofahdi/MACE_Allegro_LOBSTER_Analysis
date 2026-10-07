@@ -246,7 +246,7 @@ class AllegroEijIcoxxAnalyzer:
         )
 
 
-    def linProb(self, icohp: bool, dpi: int):
+    def fit_linProb(self, icohp: bool, dpi: int):
         """
         Train a linear model for ICOHP or ICOBI prediction.
 

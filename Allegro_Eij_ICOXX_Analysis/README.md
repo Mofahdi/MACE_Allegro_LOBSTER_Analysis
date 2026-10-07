@@ -1,26 +1,27 @@
 # Allegro Eij / ICOXX Analysis
 
-This project combines Allegro graph predictions with Lobster ICOXX bond data to analyze the relationship between:
+This workflow loads crystal-structure metadata, runs a trained Allegro model, intersects the Allegro edge graph with ICOXX bond data from Lobster, and then analyzes how the Allegro edge energy $E_{ij}$ relates to bond distance, ICOHP, ICOBI, and learned edge-feature embeddings.
 
-- Allegro edge energies $E_{ij}$
-- bond distance
-- ICOHP values
-- ICOBI values
-- reduced PCA features derived from edge features
+The current pipeline includes:
 
-The workflow reads structure metadata, loads the trained Allegro model, intersects the model graph with the ICOXX graph, and then produces plots and distance-correlation summaries.
+- edge-level extraction of paired Allegro and ICOXX quantities
+- PCA on the Allegro edge-feature matrix
+- scatter plots of $E_{ij}$ versus bond distance and ICOXX values
+- linear-probe regression for predicting ICOHP or ICOBI from the Allegro edge features
+- distance-correlation summaries for the PCA space and the target scalar quantities
 
 ## Project files
 
-- `allegro_eij_icoxx_analysis.py` — main analysis class and plotting logic
-- `allegro_graph_pipeline.py` — Allegro model loading and DGL graph construction
-- `icoxx_graph.py` — ICOXX graph conversion utilities
-- `distance_correlation.py` — distance-correlation helper functions
-- `run_allegro_eij_icoxx_analysis.py` — command-line runner for the full analysis
+- `allegro_eij_icoxx_analysis.py` — main analysis class, plotting functions, and regression workflow
+- `allegro_graph_pipeline.py` — model loading, graph construction, and graph transforms
+- `icoxx_graph.py` — ICOXX graph conversion and bond parsing
+- `distance_correlation.py` — bootstrap-based distance-correlation utilities
+- `run_allegro_eij_icoxx_analysis.py` — command-line entry point for the full analysis
+- `README.md` — project usage and output description
 
-## Requirements
+## Dependencies
 
-This project expects the following dependencies:
+This project is built around the following stack:
 
 - Python 3.12.13
 - PyTorch 2.4.0
@@ -33,74 +34,142 @@ This project expects the following dependencies:
 - pymatgen 2026.5.4
 - nequip-allegro 0.8.3
 - dcor 0.7
+- joblib 
 
-## Inputs
+## Input data
 
-The analysis expects a CSV file containing a column named `mat_path`, where each row points to a structure directory. The script automatically constructs paths such as:
+The analysis expects a CSV file with at least a `mat_path` column. Each row should point to a structure directory whose contents include:
 
 - `CONTCAR.gz`
 - `ICOHPLIST.lobster.gz`
 - `ICOBILIST.lobster.gz`
 
+The code also reads an `id` column when present and uses it in the output tables for tracking individual structures or edges.
+
 Example metadata file:
 
 ```csv
-mat_path
-/path/to/material_1
-/path/to/material_2
-.. and so on
+id,mat_path
+1,/path/to/material_1
+2,/path/to/material_2
+3,/path/to/material_3
+.......
 ```
 
-You also need a trained Allegro model package, for example:
+The script also expects a trained Allegro model package, for example:
 
 ```text
 Allegro-OAM-L-0.1.nequip.zip
 ```
 
+The default script uses:
+
+- `df_path="nonmetals_mp_info.csv"`
+- `model_path="Allegro-OAM-L-0.1.nequip.zip"`
+
+## How the analysis works
+
+The main execution flow in `run_allegro_eij_icoxx_analysis.py` is:
+
+1. Load the metadata CSV and model.
+2. Build the Allegro graph and ICOXX graph for each structure.
+3. Intersect the two graphs on matching bond edges.
+4. Extract:
+   - `ids`
+   - `Eijs`
+   - `EijFeats`
+   - `icohps`
+   - `icobis`
+   - `dists`
+5. Standardize and reduce the edge-feature matrix with PCA.
+6. Save scatter plots and summary statistics for:
+   - $E_{ij}$ vs. bond distance
+   - $E_{ij}$ vs. ICOHP
+   - $E_{ij}$ vs. ICOBI
+   - PCA feature space colored by distance and ICOXX values
+7. Train and save linear-probe models to predict ICOHP or ICOBI from the Allegro edge embeddings.
+8. Compute bootstrap distance-correlation summaries for the PCA and scalar features.
+
 ## Running the analysis
 
-From this directory, run:
+From the project directory, run:
 
 ```bash
 python run_allegro_eij_icoxx_analysis.py \
-  --num-dcor-samples 40 \
+  --num-dcor-samples 20 \
   --dcor-sample-size 50000 \
   --dpi 800
 ```
 
-Optional arguments:
+The default arguments are defined in the script, so this also works:
 
-- `--num-dcor-samples`: number of bootstrap samples for the distance-correlation analysis
-- `--dcor-sample-size`: sample size used in each bootstrap draw
-- `--dpi`: image resolution for saved plots
+```bash
+python run_allegro_eij_icoxx_analysis.py \
+  --num-dcor-samples 20 \
+  --dcor-sample-size 50000 \
+  --dpi 800
+```
 
-## Outputs
 
-The script produces:
+Command-line arguments:
 
-- scatter plots for:
-  - `Eij` vs. bond distance
-  - `Eij` vs. ICOHP
-  - `Eij` vs. ICOBI
-  - PCA feature space colored by distance
-  - PCA feature space colored by ICOHP/ICOBI
-- summary JSON files such as:
-  - `XijD_dcor_mean_mat.json`
-  - `XijD_dcor_std_mat.json`
-  - `XijICOHP_dcor_mean.json`
-  - `XijICOHP_dcor_std.json`
-  - `XijICOBI_dcor_mean.json`
-  - `XijICOBI_dcor_std.json`
+- `--num-dcor-samples`: number of bootstrap samples used in the distance-correlation analysis
+- `--dcor-sample-size`: sample size used in each bootstrap iteration
+- `--dpi`: saved figure resolution in dots per inch
+
+The script automatically uses GPU if available and falls back to CPU otherwise.
+
+## Generated outputs
+
+The pipeline creates two output folders in the current working directory if they do not already exist:
+
+- `EijAnalysis/`
+- `LinearProbe/`
+
+### `EijAnalysis/` outputs
+
+This folder contains scatter plots and tabular summaries such as:
+
+- `Eij_d.jpg`
+- `Eij_ICOHP.jpg`
+- `Eij_ICOBI.jpg`
+- `PCAXijFeatureSpace_dist.jpg`
+- `PCAXijFeatureSpace_ICOHP.jpg`
+- `PCAXijFeatureSpace_ICOBI.jpg`
+- `Dist_Eij_all.csv`
+- `ICOHP_Eij_all.csv`
+- `ICOBI_Eij_all.csv`
+- `Dist_PCAXijFeats.csv`
+- `ICOHP_PCAXijFeats.csv`
+- `ICOBI_PCAXijFeats.csv`
+- `XijD_dcor_mean_mat.json`
+- `XijD_dcor_std_mat.json`
+- `XijICOHP_dcor_mean.json`
+- `XijICOHP_dcor_std.json`
+- `XijICOBI_dcor_mean.json`
+- `XijICOBI_dcor_std.json`
+
+### `LinearProbe/` outputs
+
+This folder stores the trained linear-regression models and evaluation tables:
+
+- `icohp_linear_regression_model.pkl`
+- `icobi_linear_regression_model.pkl`
+- `icohp_LinProb_results.csv`
+- `icobi_LinProb_results.csv`
+- `ICOHP_linearProbe.jpg`
+- `ICOBI_linearProbe.jpg`
+
+## Notes and caveats
+
+- The graph intersection step expects the Allegro graph and ICOXX graph to be aligned on comparable edge-level structure after filtering.
+- Large datasets can be expensive because the script performs per-structure graph construction, regression, and bootstrap distance-correlation estimation.
+- Increasing `--dcor-sample-size` or `--num-dcor-samples` will increase runtime and memory use.
+- The code is intended for reproducible analysis and result generation rather than only quick visual inspection.
 
 ## Typical workflow
 
-1. Prepare a metadata CSV with `mat_path` entries.
-2. Place the trained Allegro model in the same folder or update the model path.
-3. Run the CLI script.
-4. Inspect saved plots and JSON summaries.
-
-## Notes
-
-- The analysis pipeline expects the structure graph and the ICOXX graph to share comparable edge keys after intersection.
-- If your dataset is large, increasing `dcor_sample_size` or `num_dcor_samples` may increase runtime and memory usage.
-- The code is designed for a reproducible analysis workflow, not only a quick one-off plot.
+1. Prepare a metadata CSV with `mat_path` entries (and an optional `id` column).
+2. Ensure the trained Allegro model file is available in the working directory or edit the model path in the script.
+3. Run the analysis command.
+4. Review the generated plots and summary tables in `EijAnalysis/` and `LinearProbe/`.

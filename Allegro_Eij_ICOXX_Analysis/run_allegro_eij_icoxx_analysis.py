@@ -6,7 +6,7 @@ import torch
 from allegro_eij_icoxx_analysis import AllegroEijIcoxxAnalyzer
 
 parser = argparse.ArgumentParser(description="Run the Allegro Eij/ICOXX analysis workflow.")
-parser.add_argument("--num-dcor-samples", type=int, default=40, help="Number of bootstrap samples for distance-correlation estimation.")
+parser.add_argument("--num-dcor-samples", type=int, default=20, help="Number of bootstrap samples for distance-correlation estimation.")
 parser.add_argument("--dcor-sample-size", type=int, default=50000, help="Sample size used within each distance-correlation bootstrap iteration.")
 parser.add_argument("--dpi", type=int, default=800, help="Figure resolution in dots per inch for saved plots.")
 args = parser.parse_args()
@@ -65,13 +65,13 @@ print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, dcor_ICOBI)
 
 
 print('\n\nICOHP Linear Probe:')
-alleg_icoxx.linProb(icohp = True, dpi = dpi)
+alleg_icoxx.fit_linProb(icohp = True, dpi = dpi)
 
 print('\nICOBI Linear Probe:')
-alleg_icoxx.linProb(icohp = False, dpi = dpi)
+alleg_icoxx.fit_linProb(icohp = False, dpi = dpi)
 
 
-# Visualize the PCA-reduced Xij feature space colored by bond distance and
+# Visualize the PCA-reduced xij feature space colored by bond distance and
 # compute the distance-correlation matrix between the PCA components and distance.
 XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAXijFeats_d_and_dcor(
     num_dcor_samples=num_dcor_samples,
