@@ -1,0 +1,9 @@
+torch==2.4.0
+ase==3.29.0
+scikit-learn==1.9.0
+pandas
+numpy
+matplotlib
+pymatgen==2026.5.4
+nequip-allegro==0.8.3
+dcor==0.7
