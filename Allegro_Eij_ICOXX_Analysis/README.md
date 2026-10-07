@@ -34,7 +34,21 @@ This project is built around the following stack:
 - pymatgen 2026.5.4
 - nequip-allegro 0.8.3
 - dcor 0.7
-- joblib 
+
+
+## Installation
+
+First install DGL with the correct PyTorch/CUDA wheel for this environment:
+
+```bash
+pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/cu124/repo.html
+```
+
+Then install the remaining Python dependencies from the requirements file:
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Input data
 

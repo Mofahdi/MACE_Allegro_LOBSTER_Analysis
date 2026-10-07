@@ -128,3 +128,17 @@ These dCor summaries are generated from the bootstrap sample size and bootstrap 
 - The metadata file must contain valid paths to each material directory and the expected LOBSTER/structure files.
 - Output directories are created automatically if they do not exist.
 - The full analysis is intended for comparing MACE node embeddings with site-level charge and bonding information derived from LOBSTER outputs.
+
+## Installation
+
+First install DGL with the correct PyTorch/CUDA wheel for this environment:
+
+```bash
+pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/cu124/repo.html
+```
+
+Then install the remaining Python dependencies from the requirements file:
+
+```bash
+pip install -r requirements.txt
+```
