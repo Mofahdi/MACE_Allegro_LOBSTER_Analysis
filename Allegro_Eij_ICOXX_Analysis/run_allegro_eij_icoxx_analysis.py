@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device ='cpu'
 # Initialize the analysis pipeline with the structure metadata CSV and trained model.
 alleg_icoxx = AllegroEijIcoxxAnalyzer(
-    df_path="nonmetals_mp_info.csv",
+    df_path="mp_data_paths_test2.csv",
     model_path="Allegro-OAM-L-0.1.nequip.zip",
     device=device,
 )
@@ -36,6 +36,14 @@ ids, Eijs, xijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_EijFeats_icoxx
 PCAXijFeats_var = alleg_icoxx.PCA_Xij()
 print("PCA EijFeats variation:", PCAXijFeats_var)
 print("number of edges", Eijs.shape[0])
+
+
+print('\n\nICOHP Linear Probe:')
+alleg_icoxx.fit_linProb(icohp = True, dpi = dpi)
+
+print('\nICOBI Linear Probe:')
+alleg_icoxx.fit_linProb(icohp = False, dpi = dpi)
+exit()
 
 # Plot Eij versus bond distance and report Pearson and distance-correlation values.
 Pcorr_d, dcor_d = alleg_icoxx.plot_Eij_d(

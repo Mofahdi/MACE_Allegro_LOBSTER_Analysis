@@ -268,6 +268,7 @@ class AllegroEijIcoxxAnalyzer:
             actual-vs-predicted plot.
         """
 
+        mat_df = self.df.copy()
         ids = self.ids
         X = np.asarray(self.EijFeats, dtype=np.float32)
         y = self.icohps.detach().cpu().numpy().reshape(-1) if icohp else self.icobis.detach().cpu().numpy().reshape(-1)
@@ -278,9 +279,64 @@ class AllegroEijIcoxxAnalyzer:
         y = y[valid]
         ids = ids[valid]
 
-        ids_train, ids_test, X_train, X_test, y_train, y_test = train_test_split(
-            ids, X, y, test_size=0.2, random_state=42
+        # 1) Build an edge-level dataframe
+        edge_df = pd.DataFrame(
+            {
+                "id": ids,
+                "target": y,
+                #"xij_feat": X,
+            }
         )
+
+        # add features
+        for i in range(X.shape[1]):
+            edge_df[f"feature_{i}"] = X[:, i]
+
+        split_path = os.path.join(self.lp, "material_train_test_split.csv")
+        if not os.path.exists(split_path):
+            # material split not edge_level
+            unique_ids = mat_df["id"].unique()
+            train_ids, test_ids = train_test_split(
+                unique_ids,
+                test_size=0.2,
+                random_state=42,
+            )
+            split_df = pd.DataFrame(
+                {
+                    "id": np.concatenate([train_ids, test_ids]),
+                    "split": ["train"] * len(train_ids) + ["test"] * len(test_ids),
+                }
+            )
+            split_df.to_csv(os.path.join(self.lp, "material_train_test_split.csv"), index=False)
+            print('saved csv')
+        else:
+            split_df = pd.read_csv(os.path.join(self.lp, "material_train_test_split.csv"))
+            train_ids = split_df.loc[split_df["split"] == "train", "id"].to_numpy()
+            test_ids = split_df.loc[split_df["split"] == "test", "id"].to_numpy()
+            print('loaded csv')
+
+        train_edge_df = edge_df[edge_df["id"].isin(train_ids)].copy()
+        test_edge_df = edge_df[edge_df["id"].isin(test_ids)].copy()
+
+        train_edge_df = train_edge_df.merge(
+            mat_df, #[material_cols],
+            on="id",
+            how="left",
+        )
+        test_edge_df = test_edge_df.merge(
+            mat_df, #[material_cols],
+            on="id",
+            how="left",
+        )
+
+        X_train = train_edge_df[[f"feature_{i}" for i in range(X.shape[1])]].to_numpy()
+        y_train = train_edge_df["target"].to_numpy()
+        X_test = test_edge_df[[f"feature_{i}" for i in range(X.shape[1])]].to_numpy()
+        y_test = test_edge_df["target"].to_numpy()
+        ids_test = test_edge_df["id"].to_numpy()
+
+        #print(len(mat_df["id"].unique()), X_train.shape, y_train.shape)
+        #exit()
 
         model = LinearRegression()
         model.fit(X_train, y_train)
