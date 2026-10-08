@@ -252,15 +252,7 @@ if __name__ == '__main__':
     #print(grouped_indices.values())
 
     grouped_indices_list = list(map(lambda x: x[0], grouped_indices.values()))
-    new_df = df.loc[grouped_indices_list, ['id' ,'chg_spill_1','chg_spill_2','mat_path', 'struc_dir']]
-    print(new_df.shape)
-
-    structures, grouped_indices = load_structures(
-        new_df,
-        symprec=1e-4,
-        angle_tolerance=1.0,
-    )
-
+    new_df = df.loc[grouped_indices_list, ['id' , 'formula_pretty', 'chg_spill_1','chg_spill_2','mat_path']]
     print(new_df.shape)
 
     new_df.to_csv('mp_data_paths.csv', index=False)
