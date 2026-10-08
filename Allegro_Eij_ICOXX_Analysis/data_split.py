@@ -1,32 +1,59 @@
 from __future__ import annotations
 
 import random
+import warnings
 from collections import defaultdict
+from pathlib import Path
 
 import pandas as pd
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 
-def _load_structures_by_formula(df: pd.DataFrame):
+SPLIT_NAMES = ("train", "test")
+
+
+def load_structures(
+    df: pd.DataFrame,
+    symprec: float = 0.1,
+    angle_tolerance: float = 5.0,
+):
     structures = []
-    by_formula = defaultdict(list)
+    grouped_indices = defaultdict(list)
 
-    for idx, path in enumerate(df["struc_dir"]):
-        structure = Structure.from_file(path)
-        structures.append(structure)
-        by_formula[structure.composition.reduced_formula].append(idx)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
 
-    return structures, by_formula
+        for index, structure_path in enumerate(df["struc_dir"]):
+            structure = Structure.from_file(str(structure_path))
 
+            analyzer = SpacegroupAnalyzer(
+                structure,
+                symprec=symprec,
+                angle_tolerance=angle_tolerance,
+            )
 
-def structure_groups(df: pd.DataFrame):
-    """
-    Group structures that are equivalent according to StructureMatcher.
-    Structures in the same group will always stay together.
-    """
+            reduced_formula = structure.composition.reduced_formula
+            space_group_number = analyzer.get_space_group_number()
 
-    structures, by_formula = _load_structures_by_formula(df)
+            key = (reduced_formula, space_group_number)
+
+            structures.append(structure)
+            grouped_indices[key].append(index)
+
+    return structures, grouped_indices
+
+def structure_groups(
+    df: pd.DataFrame,
+    symprec: float = 0.1,
+    angle_tolerance: float = 5.0,
+):
+    structures, grouped_indices = load_structures(
+        df,
+        symprec=symprec,
+        angle_tolerance=angle_tolerance,
+    )
 
     matcher = StructureMatcher(
         primitive_cell=True,
@@ -35,87 +62,184 @@ def structure_groups(df: pd.DataFrame):
 
     groups = []
 
-    for indices in by_formula.values():
+    for indices in grouped_indices.values():
+        parents = {index: index for index in indices}
 
-        parents = {i: i for i in indices}
+        def find(index):
+            while parents[index] != index:
+                parents[index] = parents[parents[index]]
+                index = parents[index]
+            return index
 
-        def find(i):
-            while parents[i] != i:
-                parents[i] = parents[parents[i]]
-                i = parents[i]
-            return i
+        def union(left, right):
+            left_root = find(left)
+            right_root = find(right)
 
-        def union(i, j):
-            ri = find(i)
-            rj = find(j)
-            if ri != rj:
-                parents[rj] = ri
+            if left_root != right_root:
+                parents[right_root] = left_root
 
-        for pos, left in enumerate(indices):
-            for right in indices[pos + 1:]:
-                if matcher.fit(structures[left], structures[right]):
+        for position, left in enumerate(indices):
+            for right in indices[position + 1:]:
+                if matcher.fit(
+                    structures[left],
+                    structures[right],
+                ):
                     union(left, right)
 
-        formula_groups = defaultdict(list)
-        for idx in indices:
-            formula_groups[find(idx)].append(idx)
+        matched_groups = defaultdict(list)
 
-        groups.extend(formula_groups.values())
+        for index in indices:
+            matched_groups[find(index)].append(index)
+
+        groups.extend(matched_groups.values())
 
     return groups
 
-
-def train_test_split_indices(
+def structure_split_indices(
     df: pd.DataFrame,
-    train_frac: float = 0.8,
+    train_fraction: float = 0.8,
     seed: int = 42,
+    symprec: float = 0.1,
+    angle_tolerance: float = 5.0,
 ):
-    """
-    Structure-aware split.
+    groups = structure_groups(
+        df,
+        symprec=symprec,
+        angle_tolerance=angle_tolerance,
+    )
 
-    Equivalent structures are kept together and assigned
-    either to train or test.
-    """
+    random.Random(seed).shuffle(groups)
+    groups.sort(key=len, reverse=True)
 
-    groups = structure_groups(df)
+    target_sizes = {
+        "train": len(df) * train_fraction,
+        "test": len(df) * (1.0 - train_fraction),
+    }
 
-    rng = random.Random(seed)
-    rng.shuffle(groups)
-
-    total_size = len(df)
-
-    target_train = round(total_size * train_frac)
-
-    splits = {
+    split_indices = {
         "train": [],
         "test": [],
     }
 
-    for group in sorted(groups, key=len, reverse=True):
+    for group in groups:
+        split_name = min(
+            SPLIT_NAMES,
+            key=lambda name: (
+                len(split_indices[name]) / target_sizes[name]
+            ),
+        )
 
-        if len(splits["train"]) < target_train:
-            splits["train"].extend(group)
-        else:
-            splits["test"].extend(group)
+        split_indices[split_name].extend(group)
 
     return {
-        "train": sorted(splits["train"]),
-        "test": sorted(splits["test"]),
+        "train": sorted(split_indices["train"]),
+        "test": sorted(split_indices["test"]),
     }
 
-
-def write_split_csv(df, split_indices, output_file="splits.csv"):
-
+def write_split_csv(
+    df: pd.DataFrame,
+    split_indices,
+    output_path: str | Path,
+):
     rows = []
 
-    for split_name in ("train", "test"):
-        for idx in split_indices[split_name]:
+    for split_name in SPLIT_NAMES:
+        for index in split_indices[split_name]:
             rows.append(
                 {
-                    "id": df.iloc[idx]["id"],
+                    "id": str(df.iloc[index]["id"]),
                     "split": split_name,
-                    "index": idx,
+                    "index": index,
                 }
             )
 
-    pd.DataFrame(rows).to_csv(output_file, index=False)
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    pd.DataFrame(rows).to_csv(output_path, index=False)
+
+
+def read_split_csv(
+    df: pd.DataFrame,
+    split_path,
+    ):
+
+    split_df = pd.read_csv(split_path)
+
+    id_to_index = {
+        str(material_id): index
+        for index, material_id in enumerate(df["id"])
+    }
+
+    split_indices = {
+        "train": [],
+        "test": [],
+    }
+
+    for _, row in split_df.iterrows():
+        material_id = str(row["id"])
+        split_name = str(row["split"])
+
+        split_indices[split_name].append(
+            id_to_index[material_id]
+        )
+
+    return {
+        "train": sorted(split_indices["train"]),
+        "test": sorted(split_indices["test"]),
+    }
+
+
+def load_or_create_split(
+    df: pd.DataFrame,
+    split_path: str | Path,
+    train_fraction: float = 0.8,
+    seed: int = 42,
+    symprec: float = 0.1,
+    angle_tolerance: float = 5.0,
+):
+    split_path = Path(split_path)
+
+    if split_path.is_file():
+        return read_split_csv(df, split_path)
+
+    split_indices = structure_split_indices(
+        df,
+        train_fraction=train_fraction,
+        seed=seed,
+        symprec=symprec,
+        angle_tolerance=angle_tolerance,
+    )
+
+    write_split_csv(
+        df,
+        split_indices,
+        split_path,
+    )
+
+    return split_indices
+
+
+if __name__ == '__main__':
+
+
+    df = pd.read_csv('nonmetals_mp_info_test3.csv')
+    split_indices = load_or_create_split(
+        df,
+        split_path="LinearProbe/train_test_split.csv",
+        train_fraction=0.8,
+        seed=42,
+        symprec=0.1,
+        angle_tolerance=5.0,
+    )
+
+    print("Train:", len(split_indices["train"]))
+    print("Test:", len(split_indices["test"]))
+
+
+    train_df = df.iloc[split_indices["train"]].copy()
+    test_df = df.iloc[split_indices["test"]].copy()
+
+    print(train_df.shape)
+    print(test_df.shape)
+
