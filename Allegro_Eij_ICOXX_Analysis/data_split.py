@@ -6,6 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
+from dgl.data.utils import Subset
 from pymatgen.analysis.structure_matcher import StructureMatcher
 from pymatgen.core import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -54,10 +55,24 @@ def structure_groups(
         symprec=symprec,
         angle_tolerance=angle_tolerance,
     )
+    #print(len(grouped_indices.values()))
+    #print(len(list(set(grouped_indices.keys()))))
 
+    #df['']
+    #print(grouped_indices.values())
+
+    grouped_indices_list = list(map(lambda x: x[0], grouped_indices.values()))
+    new_df = df.iloc[grouped_indices_list]
+    print(new_df.shape)
+    exit()
     matcher = StructureMatcher(
+        ltol=0.3,
+        stol=0.5,
+        angle_tol=angle_tolerance,
         primitive_cell=True,
-        scale=True,
+        scale=True, # True False
+        attempt_supercell=False,
+        allow_subset=False,
     )
 
     groups = []
@@ -211,35 +226,67 @@ def load_or_create_split(
         angle_tolerance=angle_tolerance,
     )
 
-    write_split_csv(
-        df,
-        split_indices,
-        split_path,
-    )
+    # write_split_csv(
+    #     df,
+    #     split_indices,
+    #     split_path,
+    # )
 
     return split_indices
 
 
 if __name__ == '__main__':
+    df = pd.read_csv('nonmetals_mp_info.csv')
 
+    #from structure_split import load_or_create_split
 
-    df = pd.read_csv('nonmetals_mp_info_test3.csv')
+    structures, grouped_indices = load_structures(
+        df,
+        symprec=1e-4,
+        angle_tolerance=1.0,
+    )
+    #print(len(grouped_indices.values()))
+    #print(len(list(set(grouped_indices.keys()))))
+
+    #df['']
+    #print(grouped_indices.values())
+
+    grouped_indices_list = list(map(lambda x: x[0], grouped_indices.values()))
+    new_df = df.loc[grouped_indices_list, ['id' ,'chg_spill_1','chg_spill_2','mat_path', 'struc_dir']]
+    print(new_df.shape)
+
+    structures, grouped_indices = load_structures(
+        new_df,
+        symprec=1e-4,
+        angle_tolerance=1.0,
+    )
+
+    print(new_df.shape)
+
+    new_df.to_csv('mp_data_paths.csv', index=False)
+
+    exit()
     split_indices = load_or_create_split(
         df,
-        split_path="LinearProbe/train_test_split.csv",
+        split_path="train_test_split.csv",
         train_fraction=0.8,
         seed=42,
-        symprec=0.1,
-        angle_tolerance=5.0,
+        symprec=1e-4, #1e-3
+        angle_tolerance=1.0,
     )
 
     print("Train:", len(split_indices["train"]))
-    print("Test:", len(split_indices["test"]))
+    print("Test :", len(split_indices["test"]))
 
+    train_df = df.iloc[split_indices["train"]]
+    test_df = df.iloc[split_indices["test"]]
 
-    train_df = df.iloc[split_indices["train"]].copy()
-    test_df = df.iloc[split_indices["test"]].copy()
+    print(train_df.shape, test_df.shape)
 
-    print(train_df.shape)
-    print(test_df.shape)
+    # write_split_csv(
+    #     df,
+    #     split_indices,
+    #     output_path="train_test_split.csv",
+    # )
+
 
