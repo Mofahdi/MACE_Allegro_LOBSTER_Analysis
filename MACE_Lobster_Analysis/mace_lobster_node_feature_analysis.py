@@ -463,11 +463,11 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             if icoxx_type == 'icohp':
                 icoxx_data = new_df['site_icohp_sum'].copy()
                 #color = "#E4432E"
-                color = "#D52F2F"
+                color = "#DD2D2D"
             if icoxx_type == 'icobi':
                 icoxx_data = new_df['site_icobi_sum'].copy()
                 #color = "#286AD4"
-                color = "#2966E7"
+                color = "#0852F1"
 
             #plt.figure(figsize=(4.4,3.5))
             #plt.figure(figsize=(3.8, 3.8))
@@ -542,23 +542,21 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             xlabel = 'Actual Sum ICOHP (eV)'
             ylabel = 'Predicted Sum ICOHP (eV)'
             #color = "#C83F3F"
-            color = '#D52F2F'
+            color = '#DD2D2D'
 
         elif feature_type == 'sum_icobi':
             y = self.df_lobster['site_icobi_sum']
             xlabel = 'Actual Sum ICOBI'
             ylabel = 'Predicted Sum ICOBI'
             #color = "#2979FF"
-            color = "#2966E7"
+            color = "#0852F1"
 
         else:
             raise ValueError("you can only enter one of the following options: " \
             "1- 'charge_loew'," \
             "2- 'chg_mull', " \
             "3- 'sum_icohp', " \
-            "4- 'sum_icobi' " \
-            "5- 'mean_icohp' " \
-            "6- 'mean_icobi' " )
+            "4- 'sum_icobi' " )
 
         # Remove invalid or non-finite samples
         valid = np.isfinite(X).all(axis=1) & np.isfinite(y)
@@ -614,13 +612,13 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             )
             print("# Train materials:", len(train_df), "# Test materials:", len(test_df))
             split_df.to_csv(split_path, index=False)
-            print(f'saved {split_path} split for a later linear Probe')
+            print(f'saved "./LinearProbe/material_train_test_split.csv" split for a later Linear Probe')
             
         else:
             split_df = pd.read_csv(split_path)
             train_ids = split_df.loc[split_df["split"] == "train", "id"].to_numpy()
             test_ids = split_df.loc[split_df["split"] == "test", "id"].to_numpy()
-            print(f'loaded {split_path} to ensure same split')
+            print(f'loaded "./LinearProbe/material_train_test_split.csv" to ensure same split')
 
         train_edge_df = node_df[node_df["id"].isin(train_ids)].copy()
         test_edge_df = node_df[node_df["id"].isin(test_ids)].copy()
