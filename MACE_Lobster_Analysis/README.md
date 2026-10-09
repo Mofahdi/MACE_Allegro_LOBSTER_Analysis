@@ -27,7 +27,7 @@ The workflow includes:
 - `distance_correlation.py`
   Bootstrap-based distance-correlation implementation.
 
-- `nonmetals_mp_info.csv`
+- `mp_data_paths.csv`
   Material metadata table used by the pipeline.
 
 - `mace-mpa-0-medium.model`

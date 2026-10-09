@@ -4,6 +4,7 @@ MACE_Lobster_Analysis/mp_data_paths_test.csv
 MACE_Lobster_Analysis/mp_data_paths_test2.csv
 MACE_Lobster_Analysis/mp_data_paths_test3.csv
 MACE_Lobster_Analysis/mp_data_paths_test4.csv
+MACE_Lobster_Analysis/nonmetals_mp_info.csv
 MACE_Lobster_Analysis/nonmetals_mp_info_test.csv
 MACE_Lobster_Analysis/nonmetals_mp_info_test2.csv
 MACE_Lobster_Analysis/nonmetals_mp_info_test3.csv
@@ -17,6 +18,7 @@ Allegro_Eij_ICOXX_Analysis/mp_data_paths_test.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test2.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test3.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test4.csv
+Allegro_Eij_ICOXX_Analysis/nonmetals_mp_info.csv
 Allegro_Eij_ICOXX_Analysis/nonmetals_mp_info_test.csv
 Allegro_Eij_ICOXX_Analysis/nonmetals_mp_info_test2.csv
 Allegro_Eij_ICOXX_Analysis/nonmetals_mp_info_test3.csv

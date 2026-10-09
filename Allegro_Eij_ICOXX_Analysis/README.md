@@ -87,7 +87,7 @@ Allegro-OAM-L-0.1.nequip.zip
 
 The default script uses:
 
-- `df_path="nonmetals_mp_info.csv"`
+- `df_path="mp_data_paths.csv"`
 - `model_path="Allegro-OAM-L-0.1.nequip.zip"`
 
 ## How the analysis works
