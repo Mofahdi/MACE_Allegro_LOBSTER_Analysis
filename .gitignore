@@ -1,4 +1,6 @@
 MACE_Lobster_Analysis/submission_script.sh
+MACE_Lobster_Analysis/results.err
+MACE_Lobster_Analysis/results.out
 MACE_Lobster_Analysis/test
 MACE_Lobster_Analysis/mp_data_paths_test.csv
 MACE_Lobster_Analysis/mp_data_paths_test2.csv
@@ -13,6 +15,8 @@ MACE_Lobster_Analysis/__pycache__/
 
 
 Allegro_Eij_ICOXX_Analysis/submission_script.sh
+Allegro_Eij_ICOXX_Analysis/results.err
+Allegro_Eij_ICOXX_Analysis/results.out
 Allegro_Eij_ICOXX_Analysis/test
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test2.csv
