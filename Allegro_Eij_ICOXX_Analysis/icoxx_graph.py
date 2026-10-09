@@ -130,7 +130,7 @@ class Icoxx2Graph:
         """
         u = torch.tensor(src_id, dtype=torch.long)
         v = torch.tensor(dst_id, dtype=torch.long)
-        graph: dgl.DGLGraph = dgl.graph((u, v),) #num_nodes=len(atoms))
+        graph: dgl.DGLGraph = dgl.graph((u, v), num_nodes=len(atoms))
 
         lattice = torch.tensor(np.asarray(lattice_matrix), dtype=default_dtype)
         graph.ndata["Z"] = torch.tensor(atoms.get_atomic_numbers())
