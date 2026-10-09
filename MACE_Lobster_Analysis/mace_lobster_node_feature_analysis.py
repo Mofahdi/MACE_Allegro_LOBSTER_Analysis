@@ -115,8 +115,9 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                     torch.cuda.empty_cache()
 
             except Exception as e: 
-                print(f"FAILED: {cont_path}")
-                print(f"ERROR: {e}")
+                raise RuntimeError(
+                    f"Feature extraction failed for material {mat_id}: {cont_path}"
+                ) from e
 
         mace_node_feats = np.concatenate(mace_node_chunks, axis=0)
         del mace_node_chunks; 
