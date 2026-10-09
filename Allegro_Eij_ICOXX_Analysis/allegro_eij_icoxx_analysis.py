@@ -97,11 +97,11 @@ class AllegroEijIcoxxAnalyzer:
             ).to(self.device)
             g_intersect = intersect_graphs(g1=g_allegro, g2=g_icoxx, edge_key="edge_cell_shift")
 
-            Eij_chunks.append(g_intersect.edata['g1_edge_energy']); # [# edges, 1]
-            EijFeats_chunks.append(g_intersect.edata['g1_edge_features']) # [# edges, # channels]
-            icohp_chunks.append(g_intersect.edata['g2_ICOHPs'].unsqueeze(-1)) # [# edges, 1]
-            icobi_chunks.append(g_intersect.edata['g2_ICOBIs'].unsqueeze(-1)) # [# edges, 1]
-            d_chunks.append(g_intersect.edata['g2_bond_dist'].unsqueeze(-1)) # [# edges, 1]
+            Eij_chunks.append(g_intersect.edata['g1_edge_energy'].cpu()); # [# edges, 1]
+            EijFeats_chunks.append(g_intersect.edata['g1_edge_features'].cpu()) # [# edges, # channels]
+            icohp_chunks.append(g_intersect.edata['g2_ICOHPs'].unsqueeze(-1).cpu()) # [# edges, 1]
+            icobi_chunks.append(g_intersect.edata['g2_ICOBIs'].unsqueeze(-1).cpu()) # [# edges, 1]
+            d_chunks.append(g_intersect.edata['g2_bond_dist'].unsqueeze(-1).cpu()) # [# edges, 1]
             mat_id_chunks.append(np.array([mat_id]*g_intersect.num_edges()))
 
         self.ids = np.concatenate(mat_id_chunks) 
