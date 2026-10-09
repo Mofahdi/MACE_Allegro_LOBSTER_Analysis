@@ -28,8 +28,8 @@ This project is built around the following stack:
 - DGL 2.4.0+cu124
 - ASE 3.29.0
 - scikit-learn 1.9.0
-- pandas 3.0.5
-- NumPy 2.5.2
+- pandas 3.0.6
+- NumPy 2.5.3
 - matplotlib 3.11.1
 - pymatgen 2026.5.4
 - nequip-allegro 0.8.3
