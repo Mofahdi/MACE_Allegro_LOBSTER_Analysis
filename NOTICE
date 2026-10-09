@@ -116,7 +116,20 @@ https://github.com/ACEsuit/mace-foundations/releases/download/mace_mpa_0/mace-mp
 License:
 MIT License
 
-5. THIRD-PARTY COMPONENTS
+5. cuEquivariance
+
+This project uses NVIDIA cuEquivariance.
+
+All files in the cuEquivariance repository are licensed under the Apache License, Version 2.0.
+
+Source: https://github.com/NVIDIA/cuEquivariance
+
+License: Apache-2.0
+
+The license text is available at:
+https://github.com/NVIDIA/cuEquivariance/blob/main/LICENSE
+
+6. THIRD-PARTY COMPONENTS
 
 ---
 
