@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device ='cpu'
 # Initialize the analysis pipeline with the structure metadata CSV and trained model.
 alleg_icoxx = AllegroEijIcoxxAnalyzer(
-    df_path="mp_data_paths_test2.csv",
+    df_path="mp_data_paths.csv",
     model_path="Allegro-OAM-L-0.1.nequip.zip",
     device=device,
 )
@@ -44,7 +44,7 @@ Pcorr_d, dcor_d = alleg_icoxx.plot_Eij_d(
     Eij_icoxx_plot_name="Eij_vs_distance.png",
     dpi=dpi,
 )
-print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, dcor_d)
+print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, float(dcor_d))
 
 # Plot Eij versus ICOHP and report the corresponding correlation metrics.
 PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(
@@ -53,7 +53,7 @@ PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(
     Eij_icoxx_plot_name="Eij_vs_ICOHP.png",
     dpi=dpi,
 )
-print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, dcor_ICOHP)
+print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, float(dcor_ICOHP))
 
 # Plot Eij versus ICOBI as a complementary comparison to the ICOHP analysis.
 PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
@@ -62,7 +62,7 @@ PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
     Eij_icoxx_plot_name="Eij_vs_ICOBI.png",
     dpi=dpi,
 )
-print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, dcor_ICOBI)
+print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, float(dcor_ICOBI))
 
 
 print('\n\nICOHP Linear Probe:')

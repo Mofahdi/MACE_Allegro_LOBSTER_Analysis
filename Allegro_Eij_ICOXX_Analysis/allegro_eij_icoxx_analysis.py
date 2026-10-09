@@ -208,7 +208,7 @@ class AllegroEijIcoxxAnalyzer:
 
         icoxxs = self.icohps if icohp else self.icobis
         xlabel = 'ICOHP (eV)' if icohp else 'ICOBI'
-        color = '#D52F2F' if icohp else "#2966E7"
+        color = '#DD2D2D' if icohp else "#0852F1"
 
         plt.figure(figsize=(4.4,3.5))
         plt.scatter(icoxxs, self.Eijs, c=color, alpha=0.1, s = 10)
@@ -328,13 +328,13 @@ class AllegroEijIcoxxAnalyzer:
             )
             print("# Train materials:", len(train_df), "# Test materials:", len(test_df))
             split_df.to_csv(split_path, index=False)
-            print(f'saved {split_path} split for a later linear Probe')
+            print(f'saved "./LinearProbe/material_train_test_split.csv" split for a later Linear Probe')
             
         else:
             split_df = pd.read_csv(split_path)
             train_ids = split_df.loc[split_df["split"] == "train", "id"].to_numpy()
             test_ids = split_df.loc[split_df["split"] == "test", "id"].to_numpy()
-            print(f'loaded {split_path} to ensure same split')
+            print(f'loaded "./LinearProbe/material_train_test_split.csv" to ensure same split')
 
         train_edge_df = edge_df[edge_df["id"].isin(train_ids)].copy()
         test_edge_df = edge_df[edge_df["id"].isin(test_ids)].copy()
@@ -380,10 +380,10 @@ class AllegroEijIcoxxAnalyzer:
         r2 = r2_score(y_test, y_pred)
         print("R2:", r2)
 
-        color = '#D52F2F' if icohp else "#2966E7"
+        color = "#DD2D2D" if icohp else "#0852F1"
         # Predicted versus actual ICOHP
         plt.figure(figsize=(4.4, 3.5)) #(5, 4)
-        plt.scatter(y_test, y_pred, c=color, alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
+        plt.scatter(y_test, y_pred, c=color, alpha=0.1, s=10) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
         plt.xlabel("Actual ICOHP (eV)" if icohp else "Actual ICOBI")
