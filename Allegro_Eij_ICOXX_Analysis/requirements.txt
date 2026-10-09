@@ -6,4 +6,5 @@ numpy
 matplotlib
 pymatgen==2026.5.4
 nequip-allegro==0.8.3
+cuequivariance-torch==0.12.0
 dcor==0.7
