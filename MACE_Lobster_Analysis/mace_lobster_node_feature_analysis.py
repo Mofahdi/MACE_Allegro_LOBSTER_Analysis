@@ -308,8 +308,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         None
             Saves the PCA plots and the mean/std distance-correlation summaries.
         """
-        loewdin_charge = self.df_all['charge_mull']
-        mulliken_charge = self.df_all['charge_loew']
+        loewdin_charge = self.df_all['charge_loew']
+        mulliken_charge = self.df_all['charge_mull']
         ylabels= ['Loewdin Charge (e)', 'Mulliken Charge (e)']
         plot_names = ['mace_pca_loewdin_charge_scatter.jpg', 'mace_pca_mulliken_charge_scatter.jpg']
 
