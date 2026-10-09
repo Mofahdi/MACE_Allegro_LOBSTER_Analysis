@@ -32,18 +32,19 @@ alleg_icoxx = AllegroEijIcoxxAnalyzer(
 # We also output them here in case someone needs to process them differently
 ids, Eijs, xijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
 
-# Reduce the Xij feature matrix to a 2D PCA space for visualization and downstream analysis.
-PCAXijFeats_var = alleg_icoxx.PCA_Xij()
-print("PCA EijFeats variation:", PCAXijFeats_var)
-print("number of edges", Eijs.shape[0])
-
-
 print('\n\nICOHP Linear Probe:')
 alleg_icoxx.fit_linProb(icohp = True, dpi = dpi)
 
 print('\nICOBI Linear Probe:')
 alleg_icoxx.fit_linProb(icohp = False, dpi = dpi)
 exit()
+
+
+# Reduce the Xij feature matrix to a 2D PCA space for visualization and downstream analysis.
+PCAXijFeats_var = alleg_icoxx.PCA_Xij()
+print("PCA EijFeats variation:", PCAXijFeats_var)
+print("number of edges", Eijs.shape[0])
+
 
 # Plot Eij versus bond distance and report Pearson and distance-correlation values.
 Pcorr_d, dcor_d = alleg_icoxx.plot_Eij_d(
@@ -77,7 +78,7 @@ alleg_icoxx.fit_linProb(icohp = True, dpi = dpi)
 
 print('\nICOBI Linear Probe:')
 alleg_icoxx.fit_linProb(icohp = False, dpi = dpi)
-
+exit()
 
 # Visualize the PCA-reduced xij feature space colored by bond distance and
 # compute the distance-correlation matrix between the PCA components and distance.

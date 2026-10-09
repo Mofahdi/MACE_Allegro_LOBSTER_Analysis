@@ -14,6 +14,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import mean_absolute_error, r2_score
 
 from allegro_graph_pipeline import (
@@ -24,6 +25,8 @@ from allegro_graph_pipeline import (
 )
 from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
 from icoxx_graph import Icoxx2Graph
+
+from pymatgen.core import Structure
 
 default_dtype: torch.dtype = torch.float32
 torch.set_default_dtype(default_dtype)
@@ -209,7 +212,7 @@ class AllegroEijIcoxxAnalyzer:
         color = '#D52F2F' if icohp else "#2966E7"
 
         plt.figure(figsize=(4.4,3.5))
-        plt.scatter(icoxxs, self.Eijs, c='blue', alpha=0.1, s = 10)
+        plt.scatter(icoxxs, self.Eijs, c=color, alpha=0.1, s = 10)
         plt.xlabel(xlabel)
         plt.ylabel(r'Allegro $E_{ij}$ (eV)', ) #fontsize=12
         ax=plt.gca()
@@ -279,7 +282,7 @@ class AllegroEijIcoxxAnalyzer:
         y = y[valid]
         ids = ids[valid]
 
-        # 1) Build an edge-level dataframe
+        # Build an edge-level dataframe
         edge_df = pd.DataFrame(
             {
                 "id": ids,
@@ -287,11 +290,11 @@ class AllegroEijIcoxxAnalyzer:
                 #"xij_feat": X,
             }
         )
-
-        # add features
+        # add features to edge_df
         for i in range(X.shape[1]):
             edge_df[f"feature_{i}"] = X[:, i]
 
+        # this path saves
         split_path = os.path.join(self.lp, "material_train_test_split.csv")
         if not os.path.exists(split_path):
             # material split not edge_level
@@ -307,13 +310,13 @@ class AllegroEijIcoxxAnalyzer:
                     "split": ["train"] * len(train_ids) + ["test"] * len(test_ids),
                 }
             )
-            split_df.to_csv(os.path.join(self.lp, "material_train_test_split.csv"), index=False)
-            print('saved csv')
+            # Split by reduced formula
+            #print('saved csv')
         else:
             split_df = pd.read_csv(os.path.join(self.lp, "material_train_test_split.csv"))
             train_ids = split_df.loc[split_df["split"] == "train", "id"].to_numpy()
             test_ids = split_df.loc[split_df["split"] == "test", "id"].to_numpy()
-            print('loaded csv')
+            print(f'loaded {split_path} to ensure same split')
 
         train_edge_df = edge_df[edge_df["id"].isin(train_ids)].copy()
         test_edge_df = edge_df[edge_df["id"].isin(test_ids)].copy()
@@ -359,9 +362,10 @@ class AllegroEijIcoxxAnalyzer:
         r2 = r2_score(y_test, y_pred)
         print("R2:", r2)
 
+        color = '#D52F2F' if icohp else "#2966E7"
         # Predicted versus actual ICOHP
         plt.figure(figsize=(4.4, 3.5)) #(5, 4)
-        plt.scatter(y_test, y_pred, c='b', alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
+        plt.scatter(y_test, y_pred, c=color, alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
         plt.xlabel("Actual ICOHP (eV)" if icohp else "Actual ICOBI")
