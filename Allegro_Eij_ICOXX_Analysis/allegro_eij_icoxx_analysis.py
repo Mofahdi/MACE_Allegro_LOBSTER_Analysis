@@ -297,23 +297,42 @@ class AllegroEijIcoxxAnalyzer:
         # this path saves
         split_path = os.path.join(self.lp, "material_train_test_split.csv")
         if not os.path.exists(split_path):
-            # material split not edge_level
-            unique_ids = mat_df["id"].unique()
-            train_ids, test_ids = train_test_split(
-                unique_ids,
-                test_size=0.2,
-                random_state=42,
+
+            mat_df["reduced_formula"] = mat_df["struc_dir"].apply(
+                lambda x: Structure.from_file(x).composition.reduced_formula
             )
+
+            splitter = GroupShuffleSplit(
+                n_splits=1,
+                test_size=0.2,
+                random_state=42
+            )
+
+            train_idx, test_idx = next(
+                splitter.split(mat_df, groups=mat_df["reduced_formula"])
+            )
+
+            train_df = mat_df.iloc[train_idx].copy()
+            test_df = mat_df.iloc[test_idx].copy()
+
+            # Verify no composition leakage
+            assert set(train_df["reduced_formula"]).isdisjoint(
+                set(test_df["reduced_formula"])
+            )
+            train_ids = mat_df["id"].iloc[train_idx].tolist()
+            test_ids = mat_df["id"].iloc[test_idx].tolist()
             split_df = pd.DataFrame(
                 {
                     "id": np.concatenate([train_ids, test_ids]),
                     "split": ["train"] * len(train_ids) + ["test"] * len(test_ids),
                 }
             )
-            # Split by reduced formula
-            #print('saved csv')
+            print("Train materials:", len(train_df), "Test materials:", len(test_df))
+            split_df.to_csv(split_path, index=False)
+            print(f'saved {split_path} split for a later linear Probe')
+            
         else:
-            split_df = pd.read_csv(os.path.join(self.lp, "material_train_test_split.csv"))
+            split_df = pd.read_csv(split_path)
             train_ids = split_df.loc[split_df["split"] == "train", "id"].to_numpy()
             test_ids = split_df.loc[split_df["split"] == "test", "id"].to_numpy()
             print(f'loaded {split_path} to ensure same split')
