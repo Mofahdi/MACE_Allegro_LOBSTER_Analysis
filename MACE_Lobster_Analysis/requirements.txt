@@ -7,3 +7,6 @@ matplotlib
 pymatgen==2026.5.4
 lobsterpy==0.6.1
 mace-torch==0.3.16
+cuequivariance-torch==0.12.0
+seaborn==0.13.2
+dcor==0.7
