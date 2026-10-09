@@ -134,7 +134,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         print('[# nodes, # MACE feats]:', mace_node_feats.shape)
         print('[# nodes, # lobster feats]:', lobster_feats.shape)
 
-        mace_scaler = StandardScaler(copy=False)
+        mace_scaler = StandardScaler()
         self.mace_node_feats_scaled = mace_scaler.fit_transform(self.mace_node_feats)
         pca = PCA(n_components=2,) #svd_solver="randomized")
         self.mace_node_feats_pca = pca.fit_transform(self.mace_node_feats_scaled)
@@ -223,7 +223,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             The method stores the standardized MACE features on the instance as
             ``self.mace_node_feats_scaled`` and writes summary JSON outputs to disk.
         """
-        lobster_scaler = StandardScaler(copy=False)
+        lobster_scaler = StandardScaler()
         lobster_feats_scaled = lobster_scaler.fit_transform(self.lobster_feats)
         sets = {
             'MACE Node\nEmbeddings': self.mace_node_feats_scaled,
