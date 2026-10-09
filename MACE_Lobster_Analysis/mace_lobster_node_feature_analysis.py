@@ -11,13 +11,14 @@ from matplotlib.ticker import MaxNLocator
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GroupShuffleSplit
 from sklearn.metrics import mean_absolute_error, r2_score
-
 
 import torch, dgl
 from mace.calculators.mace import MACECalculator
 from ase.io import read 
+from pymatgen.core.structure import Structure
+
 from lobster_site_feature_extractor import extract_lobster_site_features
 from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
 
@@ -518,6 +519,8 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             Trains a linear model, saves the fitted model and predictions, prints
             MAE and R^2, and saves the actual-vs-predicted diagnostic plot.
         """
+        mat_df=self.df.copy()
+
         ids = self.ids
         X = np.asarray(self.mace_node_feats, dtype=np.float32)
 
@@ -547,18 +550,6 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             #color = "#2979FF"
             color = "#2966E7"
 
-        elif feature_type == 'mean_icohp':
-            y = self.df_lobster['site_icohp_mean']
-            xlabel = 'Actual Mean ICOHP (eV)'
-            ylabel = 'Predicted Mean ICOHP (eV)'
-            color = "#D52F2F"
-
-        elif feature_type == 'mean_icobi':
-            y = self.df_lobster['site_icobi_mean']
-            xlabel = 'Actual Mean ICOBI'
-            ylabel = 'Predicted Mean ICOBI'
-            color = "#2966E7"
-
         else:
             raise ValueError("you can only enter one of the following options: " \
             "1- 'charge_loew'," \
@@ -574,9 +565,87 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         y = y[valid]
         ids = ids[valid]
 
-        ids_train, ids_test, X_train, X_test, y_train, y_test = train_test_split(
-            ids, X, y, test_size=0.2, random_state=42
+
+        # Build an node-level dataframe
+        node_df = pd.DataFrame(
+            {
+                "id": ids,
+                "target": y,
+                #"xij_feat": X,
+            }
         )
+        # add features to node_df
+        for i in range(X.shape[1]):
+            node_df[f"feature_{i}"] = X[:, i]
+
+        # this path saves
+        split_path = os.path.join(self.lp, "material_train_test_split.csv")
+        if not os.path.exists(split_path):
+
+            mat_df["reduced_formula"] = mat_df["struc_dir"].apply(
+                lambda x: Structure.from_file(x).composition.reduced_formula
+            )
+
+            splitter = GroupShuffleSplit(
+                n_splits=1,
+                test_size=0.2,
+                random_state=42
+            )
+
+            train_idx, test_idx = next(
+                splitter.split(mat_df, groups=mat_df["reduced_formula"])
+            )
+
+            train_df = mat_df.iloc[train_idx].copy()
+            test_df = mat_df.iloc[test_idx].copy()
+
+            # Verify no composition leakage
+            assert set(train_df["reduced_formula"]).isdisjoint(
+                set(test_df["reduced_formula"])
+            )
+            train_ids = mat_df["id"].iloc[train_idx].tolist()
+            test_ids = mat_df["id"].iloc[test_idx].tolist()
+            split_df = pd.DataFrame(
+                {
+                    "id": np.concatenate([train_ids, test_ids]),
+                    "split": ["train"] * len(train_ids) + ["test"] * len(test_ids),
+                }
+            )
+            print("# Train materials:", len(train_df), "# Test materials:", len(test_df))
+            split_df.to_csv(split_path, index=False)
+            print(f'saved {split_path} split for a later linear Probe')
+            
+        else:
+            split_df = pd.read_csv(split_path)
+            train_ids = split_df.loc[split_df["split"] == "train", "id"].to_numpy()
+            test_ids = split_df.loc[split_df["split"] == "test", "id"].to_numpy()
+            print(f'loaded {split_path} to ensure same split')
+
+        train_edge_df = node_df[node_df["id"].isin(train_ids)].copy()
+        test_edge_df = node_df[node_df["id"].isin(test_ids)].copy()
+
+        train_edge_df = train_edge_df.merge(
+            mat_df, #[material_cols],
+            on="id",
+            how="left",
+        )
+        test_edge_df = test_edge_df.merge(
+            mat_df, #[material_cols],
+            on="id",
+            how="left",
+        )
+
+        X_train = train_edge_df[[f"feature_{i}" for i in range(X.shape[1])]].to_numpy()
+        y_train = train_edge_df["target"].to_numpy()
+        X_test = test_edge_df[[f"feature_{i}" for i in range(X.shape[1])]].to_numpy()
+        y_test = test_edge_df["target"].to_numpy()
+        ids_test = test_edge_df["id"].to_numpy()
+
+
+
+        # ids_train, ids_test, X_train, X_test, y_train, y_test = train_test_split(
+        #     ids, X, y, test_size=0.2, random_state=42
+        # )
 
         model = LinearRegression()
         model.fit(X_train, y_train)

@@ -21,7 +21,7 @@ else:
     device = 'cpu'
 
 analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
-                                            df_path='nonmetals_mp_info.csv', 
+                                            df_path='mp_data_paths_test3.csv', 
                                             model_path='./mace-mpa-0-medium.model', 
                                             device=device,
                                             )
@@ -41,10 +41,6 @@ analyzer.fit_linProb(feature_type = 'sum_icohp', dpi=dpi)
 print('\nsum_icobi:')
 analyzer.fit_linProb(feature_type = 'sum_icobi', dpi=dpi)
 
-print('\nmean_icohp:')
-analyzer.fit_linProb(feature_type = 'mean_icohp', dpi=dpi)
-print('\nmean_icobi:')
-analyzer.fit_linProb(feature_type = 'mean_icobi', dpi=dpi)
 
 
 print('\n\ncomputing dCor from sampled data ....')

@@ -13,8 +13,7 @@ from matplotlib.ticker import MaxNLocator
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GroupShuffleSplit
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 
 from allegro_graph_pipeline import (
@@ -327,7 +326,7 @@ class AllegroEijIcoxxAnalyzer:
                     "split": ["train"] * len(train_ids) + ["test"] * len(test_ids),
                 }
             )
-            print("Train materials:", len(train_df), "Test materials:", len(test_df))
+            print("# Train materials:", len(train_df), "# Test materials:", len(test_df))
             split_df.to_csv(split_path, index=False)
             print(f'saved {split_path} split for a later linear Probe')
             
