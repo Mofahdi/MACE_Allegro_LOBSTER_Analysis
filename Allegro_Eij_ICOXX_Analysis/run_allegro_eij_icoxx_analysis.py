@@ -30,7 +30,7 @@ alleg_icoxx = AllegroEijIcoxxAnalyzer(
 # Extract paired Eij values, edge features, ICOHP/ICOBI terms, and bond distances
 # across all structures after intersecting the Allegro and ICOXX graphs.
 # We also output them here in case someone needs to process them differently
-ids, Eijs, xijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_EijFeats_icoxxs()
+ids, Eijs, xijFeats, icohps, icobis, dists = alleg_icoxx.get_Eijs_XijFeats_icoxxs()
 
 # Reduce the Xij feature matrix to a 2D PCA space for visualization and downstream analysis.
 PCAXijFeats_var = alleg_icoxx.PCA_Xij()

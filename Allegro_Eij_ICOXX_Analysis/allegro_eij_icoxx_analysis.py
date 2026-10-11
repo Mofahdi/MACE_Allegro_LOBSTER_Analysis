@@ -64,7 +64,7 @@ class AllegroEijIcoxxAnalyzer:
         self.transforms=transforms
 
 
-    def get_Eijs_EijFeats_icoxxs(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def get_Eijs_XijFeats_icoxxs(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Extract matching Allegro Eij values and ICOXX features across all structures."""
         mat_id_chunks: list[torch.Tensor] = []
         Eij_chunks: list[torch.Tensor] = []
@@ -175,7 +175,7 @@ class AllegroEijIcoxxAnalyzer:
 
         return (
             r,
-            dcor.distance_correlation(self.Eijs, self.d),
+            dcor.distance_correlation(self.Eijs.squeeze().numpy(), self.d.squeeze().numpy()),
         )
 
         # scaler = StandardScaler()
@@ -246,7 +246,7 @@ class AllegroEijIcoxxAnalyzer:
 
         return (
             r,
-            dcor.distance_correlation(self.Eijs, icoxxs),
+            dcor.distance_correlation(self.Eijs.squeeze().numpy(), icoxxs.squeeze().numpy()),
         )
         # scaler = StandardScaler()
         # Eijs_scaled = scaler.fit_transform(self.Eijs)
