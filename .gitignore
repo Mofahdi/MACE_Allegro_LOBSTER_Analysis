@@ -12,6 +12,9 @@ MACE_Lobster_Analysis/nonmetals_mp_info_test2.csv
 MACE_Lobster_Analysis/nonmetals_mp_info_test3.csv
 MACE_Lobster_Analysis/nonmetals_mp_info_test4.csv
 MACE_Lobster_Analysis/__pycache__/
+MACE_Lobster_Analysis/LinearProbe/
+MACE_Lobster_Analysis/MACE_chrg_corr/
+MACE_Lobster_Analysis/MACE_Lobster_corr/
 
 
 Allegro_Eij_ICOXX_Analysis/submission_script.sh
@@ -30,3 +33,4 @@ Allegro_Eij_ICOXX_Analysis/nonmetals_mp_info_test4.csv
 Allegro_Eij_ICOXX_Analysis/__pycache__/
 Allegro_Eij_ICOXX_Analysis/LinearProbe
 Allegro_Eij_ICOXX_Analysis/EijAnalysis/
+Allegro_Eij_ICOXX_Analysis/pre_submission_script.sh
