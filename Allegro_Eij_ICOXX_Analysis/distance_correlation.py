@@ -48,22 +48,36 @@ def evaluate_distance_correlation_matrix_bootstrap(
     for i, j in itertools.combinations_with_replacement(names, 2):
         dcor_values = []
        # pval_values = []
+        if i == j:
+            mean_mat.loc[i, j] = 1.0
+            std_mat.loc[i, j] = 0.0
+            continue
 
         for _ in range(num_bootstrap):
             # Bootstrap resample indices with replacement
             idx = rng.integers(0, n_samples, sample_size)
             X_i = sets[i][idx]
             X_j = sets[j][idx]
+            #X_i = np.asarray(sets[i], dtype=np.float64)
+            #X_j = np.asarray(sets[j], dtype=np.float64)
 
             # Compute distance correlation and permutation p-value
-            val = dcor.distance_correlation(X_i, X_j)
+            #val = dcor.distance_correlation(X_i, X_j)
+            # if i == j:
+            #     val = dcor.distance_correlation(X_i, X_j)
+            # else:
+            val = dcor.distance_correlation(
+                np.asarray(X_i, dtype=np.float64),
+                np.asarray(X_j, dtype=np.float64),
+            )
             #test = dcor.independence.distance_covariance_test(
              #   X_i, X_j, num_resamples=num_resamples, random_state=random_state
             #)
 
             dcor_values.append(val)
             #pval_values.append(test.p_value)
-
+        
+        #print(dcor_values)
         mean_val = np.mean(dcor_values)
         std_val = np.std(dcor_values)
         #mean_pval = np.mean(pval_values)
