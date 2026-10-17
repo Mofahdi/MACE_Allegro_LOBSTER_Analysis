@@ -22,6 +22,7 @@ Allegro_Eij_ICOXX_Analysis/results.err
 Allegro_Eij_ICOXX_Analysis/results.out
 Allegro_Eij_ICOXX_Analysis/test
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test.csv
+Allegro_Eij_ICOXX_Analysis/mp_data_paths_test_pre.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test2.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test3.csv
 Allegro_Eij_ICOXX_Analysis/mp_data_paths_test4.csv
@@ -34,3 +35,11 @@ Allegro_Eij_ICOXX_Analysis/__pycache__/
 Allegro_Eij_ICOXX_Analysis/LinearProbe
 Allegro_Eij_ICOXX_Analysis/EijAnalysis/
 Allegro_Eij_ICOXX_Analysis/pre_submission_script.sh
+Allegro_Eij_ICOXX_Analysis/30_samples_50k_size
+Allegro_Eij_ICOXX_Analysis/20_samples_50k_size
+Allegro_Eij_ICOXX_Analysis/not_accepted
+Allegro_Eij_ICOXX_Analysis/log_scale
+Allegro_Eij_ICOXX_Analysis/results_pre.out
+Allegro_Eij_ICOXX_Analysis/results_4_changes.out
+Allegro_Eij_ICOXX_Analysis/results_64float.out
+Allegro_Eij_ICOXX_Analysis/results_good.out
