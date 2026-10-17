@@ -15,6 +15,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
+from scipy.stats import gaussian_kde
 
 from allegro_graph_pipeline import (
     create_DGL_g,
@@ -140,12 +141,30 @@ class AllegroEijIcoxxAnalyzer:
             A tuple of Pearson correlation and distance-correlation values.
         """
 
-        plt.figure(figsize=(4.4,3.5))
+        plt.figure(figsize=(4.4, 3.5))
         #plt.scatter(self.d, self.Eijs, c='blue', alpha=0.1)
-        plt.scatter(self.d, self.Eijs, c="#E6A700", alpha=0.1, s = 10)
+        #plt.scatter(self.d, self.Eijs, c="#E6A700", alpha=0.1, s = 10)
+        
+        x, y = self.d.numpy().reshape(-1), self.Eijs.numpy().reshape(-1)
+        xy = np.vstack([x, y])
+        density = gaussian_kde(xy)(xy)
+        # Plot dense points last.
+        order = np.argsort(density)
+        scatter = plt.scatter(
+            x[order],
+            y[order],
+            c=density[order],
+            cmap="plasma",
+            s=5,
+            alpha=1,
+            edgecolors="none",
+        )
         plt.xlabel('Bond Distance (Å)')
         plt.ylabel(r'Allegro $E_{ij}$ (eV)',) #fontsize=12)
+        plt.colorbar(scatter, label="Bond Density")
+
         ax=plt.gca()
+        #ax.set_yscale('log')
         #nx = len(ax.get_xticks())
         #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
         #ny = len(ax.get_yticks())
@@ -175,9 +194,10 @@ class AllegroEijIcoxxAnalyzer:
 
         return (
             r,
-            dcor.distance_correlation(self.Eijs.squeeze().numpy(), self.d.squeeze().numpy()),
+            dcor.distance_correlation(np.asarray(self.Eijs.squeeze().numpy().reshape(-1), dtype=np.float64), 
+                                      np.asarray(self.d.squeeze().numpy().reshape(-1), dtype=np.float64)),
         )
-
+    
         # scaler = StandardScaler()
         # Eijs_scaled = scaler.fit_transform(self.Eijs)
         # d_scaled = scaler.fit_transform(self.d)
@@ -211,15 +231,34 @@ class AllegroEijIcoxxAnalyzer:
         color = '#DD2D2D' if icohp else "#0852F1"
 
         plt.figure(figsize=(4.4,3.5))
-        plt.scatter(icoxxs, self.Eijs, c=color, alpha=0.1, s = 10)
+        #plt.scatter(icoxxs, self.Eijs, c=color, alpha=0.1, s = 10)
+        x, y = icoxxs.numpy().reshape(-1), self.Eijs.numpy().reshape(-1)
+        xy = np.vstack([x, y])
+        density = gaussian_kde(xy)(xy)
+        # Plot dense points last.
+        order = np.argsort(density)
+        scatter = plt.scatter(
+            x[order],
+            y[order],
+            c=density[order],
+            cmap="plasma",
+            s=5,
+            alpha=1,
+            edgecolors="none",
+        )
+
         plt.xlabel(xlabel)
         plt.ylabel(r'Allegro $E_{ij}$ (eV)', ) #fontsize=12
+        plt.colorbar(scatter, label="Bond Density")
+
         ax=plt.gca()
+        #ax.set_yscale('log')
+
         nx = len(ax.get_xticks())
         #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
         ny = len(ax.get_yticks())
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-        ax = plt.gca()
+        #ax = plt.gca()
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), icoxxs.reshape(-1)]))[0, 1].item()
         plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
         ax.legend(
@@ -243,10 +282,11 @@ class AllegroEijIcoxxAnalyzer:
             os.path.join(self.EijAnalysis, f"Eij_vs_{label.lower()}_data.csv"),
             index=False,
         )
-
+        dcor_icoxx = dcor.distance_correlation(np.asarray(self.Eijs.numpy().reshape(-1), dtype=np.float64), 
+                                               np.asarray(icoxxs.numpy().reshape(-1), dtype=np.float64)) #method="mergesort")
         return (
             r,
-            dcor.distance_correlation(self.Eijs.squeeze().numpy(), icoxxs.squeeze().numpy()),
+            dcor_icoxx,
         )
         # scaler = StandardScaler()
         # Eijs_scaled = scaler.fit_transform(self.Eijs)
@@ -468,12 +508,14 @@ class AllegroEijIcoxxAnalyzer:
                 "bond distance": self.d.squeeze(),
             }
         ).to_csv(os.path.join(self.EijAnalysis, "PCA_feature_space_distance_data.csv"), index=False)
-        sets = {"PCAXijfeats": self.EijFeats_pca, 'd': self.d } #"d": StandardScaler().fit_transform(self.d)}
+        sets = {"PCAXijfeats": self.EijFeats_pca, "d": self.d.squeeze().numpy().reshape(-1)} #"d": StandardScaler().fit_transform(self.d)}  'd': self.d.squeeze().numpy()
+        
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
             num_bootstrap=num_dcor_samples,
             sample_size=dcor_sample_size,
         )
+        #print(type(StandardScaler().fit_transform(self.d)), StandardScaler().fit_transform(self.d).shape, type(self.d.squeeze().numpy()), self.d.squeeze().numpy().shape)
         return mean_mat, std_mat
         #return dcor.distance_correlation(self.EijFeats_pca, StandardScaler().fit_transform(self.d))
 
@@ -537,11 +579,16 @@ class AllegroEijIcoxxAnalyzer:
                 colorBar_label: icoxxs.squeeze(),
             }
         ).to_csv(os.path.join(self.EijAnalysis, f"PCA_feature_space_{label.lower()}_data.csv"), index=False)
-        sets = {"PCAXijfeats": self.EijFeats_pca, colorBar_label: icoxxs} #StandardScaler().fit_transform(icoxxs)}
+        sets = {"PCAXijfeats": self.EijFeats_pca, colorBar_label: icoxxs.squeeze().numpy().reshape(-1)} #StandardScaler().fit_transform(icoxxs).ravel()}   
         mean_mat, std_mat = evaluate_distance_correlation_matrix_bootstrap(
             sets=sets,
             num_bootstrap=num_dcor_samples,
             sample_size=dcor_sample_size,
         )
+        #print(self.EijFeats_pca.dtype, self.d.squeeze().numpy().reshape(-1).dtype)
+        #print(self.EijFeats_pca.shape, self.d.squeeze().numpy().reshape(-1).shape); exit()
+        #print(mean_mat, std_mat)
+        #print(type(StandardScaler().fit_transform(icoxxs)), StandardScaler().fit_transform(icoxxs).shape, type(icoxxs.squeeze().numpy()), icoxxs.squeeze().numpy().shape)
+        
         return mean_mat, std_mat
 
