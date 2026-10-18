@@ -9,13 +9,17 @@ import torch
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import FuncFormatter
+#from matplotlib.colors import LogNorm
 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
-from scipy.stats import gaussian_kde
+
+#from scipy.stats import gaussian_kde
+from scipy.ndimage import gaussian_filter, map_coordinates
 
 from allegro_graph_pipeline import (
     create_DGL_g,
@@ -141,34 +145,60 @@ class AllegroEijIcoxxAnalyzer:
             A tuple of Pearson correlation and distance-correlation values.
         """
 
-        plt.figure(figsize=(4.4, 3.5))
+        #plt.figure(figsize=(4.4, 3.5))
         #plt.scatter(self.d, self.Eijs, c='blue', alpha=0.1)
         #plt.scatter(self.d, self.Eijs, c="#E6A700", alpha=0.1, s = 10)
         
         x, y = self.d.numpy().reshape(-1), self.Eijs.numpy().reshape(-1)
-        xy = np.vstack([x, y])
-        density = gaussian_kde(xy)(xy)
-        # Plot dense points last.
-        order = np.argsort(density)
-        scatter = plt.scatter(
-            x[order],
-            y[order],
-            c=density[order],
+        counts, xedges, yedges = np.histogram2d(x, y, bins=500)
+
+        smoothed = gaussian_filter(
+            counts, sigma=1.5, mode="constant"
+        )
+        rng = np.random.default_rng(42)
+        idx = rng.choice(
+            len(x), size=min(100_000, len(x)), replace=False
+        )
+        xp, yp = x[idx], y[idx]
+        gx = (xp - xedges[0]) / (xedges[1] - xedges[0]) - 0.5
+        gy = (yp - yedges[0]) / (yedges[1] - yedges[0]) - 0.5
+
+        colors = map_coordinates(
+            smoothed,
+            [gx, gy],
+            order=1,
+            mode="nearest",
+            prefilter=False,
+        )
+
+        # Draw sparse points first and dense points last.
+        order = np.argsort(colors)
+
+        fig, ax = plt.subplots(figsize=(4.4, 3.5))
+
+        scatter = ax.scatter(
+            xp[order],
+            yp[order],
+            c=colors[order],
             cmap="plasma",
             s=5,
             alpha=1,
             edgecolors="none",
+            rasterized=True,
         )
-        plt.xlabel('Bond Distance (Å)')
-        plt.ylabel(r'Allegro $E_{ij}$ (eV)',) #fontsize=12)
-        plt.colorbar(scatter, label="Bond Density")
 
-        ax=plt.gca()
-        #ax.set_yscale('log')
-        #nx = len(ax.get_xticks())
-        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-        #ny = len(ax.get_yticks())
-        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
+        cbar = fig.colorbar(
+            scatter, ax=ax,
+            label="Bond Point Density"
+        )
+        cbar.formatter = FuncFormatter(lambda value, pos: f"{value / 1000:g}k")
+        cbar.update_ticks()
+
+
+        ax.set_xlabel(r"Bond Distance (Å)")
+        ax.set_ylabel(r'Allegro $E_{ij}$ (eV)',) #fontsize=12)
+        #plt.colorbar(image, label="Bond Density")
+
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), self.d.reshape(-1)]))[0, 1].item()
         plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
         ax.legend(
@@ -233,32 +263,68 @@ class AllegroEijIcoxxAnalyzer:
         plt.figure(figsize=(4.4,3.5))
         #plt.scatter(icoxxs, self.Eijs, c=color, alpha=0.1, s = 10)
         x, y = icoxxs.numpy().reshape(-1), self.Eijs.numpy().reshape(-1)
-        xy = np.vstack([x, y])
-        density = gaussian_kde(xy)(xy)
-        # Plot dense points last.
-        order = np.argsort(density)
-        scatter = plt.scatter(
-            x[order],
-            y[order],
-            c=density[order],
+        
+        counts, xedges, yedges = np.histogram2d(x, y, bins=500)
+
+        smoothed = gaussian_filter(
+            counts, sigma=1.5, mode="constant"
+        )
+
+        # Display a subset to avoid drawing six million markers.
+        rng = np.random.default_rng(42)
+        idx = rng.choice(
+            len(x), size=min(100_000, len(x)), replace=False
+        )
+        xp, yp = x[idx], y[idx]
+        gx = (xp - xedges[0]) / (xedges[1] - xedges[0]) - 0.5
+        gy = (yp - yedges[0]) / (yedges[1] - yedges[0]) - 0.5
+
+        colors = map_coordinates(
+            smoothed,
+            [gx, gy],
+            order=1,
+            mode="nearest",
+            prefilter=False,
+        )
+
+        # sparse points first and dense points last.
+        order = np.argsort(colors)
+
+        fig, ax = plt.subplots(figsize=(4.4, 3.5))
+
+        scatter = ax.scatter(
+            xp[order],
+            yp[order],
+            c=colors[order],
             cmap="plasma",
             s=5,
             alpha=1,
             edgecolors="none",
+            rasterized=True,
         )
 
-        plt.xlabel(xlabel)
-        plt.ylabel(r'Allegro $E_{ij}$ (eV)', ) #fontsize=12
-        plt.colorbar(scatter, label="Bond Density")
+        # positive_colors = np.ma.masked_less_equal(colors[order], 0)
+        # scatter = ax.scatter(
+        #     xp[order],
+        #     yp[order],
+        #     c=positive_colors,
+        #     cmap="plasma",
+        #     norm=LogNorm(),
+        #     s=5,
+        #     edgecolors="none",
+        #     rasterized=True,
+        # )
 
-        ax=plt.gca()
-        #ax.set_yscale('log')
-
-        nx = len(ax.get_xticks())
-        #ax.xaxis.set_major_locator(MaxNLocator(nbins=nx + 1))
-        ny = len(ax.get_yticks())
-        #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
-        #ax = plt.gca()
+        cbar = fig.colorbar(
+            scatter, ax=ax,
+            label="Bond Point Density"
+        )
+        cbar.formatter = FuncFormatter(lambda value, pos: f"{value / 1000:g}k")
+        cbar.update_ticks()
+        
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(r'Allegro $E_{ij}$ (eV)', ) #fontsize=12
+        
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), icoxxs.reshape(-1)]))[0, 1].item()
         plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')
         ax.legend(
