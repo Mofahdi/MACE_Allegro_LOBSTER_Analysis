@@ -28,7 +28,7 @@ analyzer = MACE_LOBSTER_NodeFeatureAnalysis(
 analyzer.process_df_and_model()
 analyzer.extract_features()
 analyzer.plot_pearson_heatmap(dpi=dpi)
-#exit()
+
 
 print('\n\nLinear Probing Loewdin charge, Mulliken charge, sum_icohp, and sum_icobi ....')
 print('Loewdin charge:')
@@ -45,6 +45,7 @@ analyzer.fit_linProb(feature_type = 'sum_icobi', dpi=dpi)
 
 print('\n\ncomputing dCor from sampled data ....')
 analyzer.compute_distance_correlation(sample_size=dcor_sample_size, num_bootstrap=num_dcor_samples, dpi=dpi)
+
 
 
 print('\nPlotting PCA of MACE node embeddings color-coded with Loewdin and Mulliken charges....')

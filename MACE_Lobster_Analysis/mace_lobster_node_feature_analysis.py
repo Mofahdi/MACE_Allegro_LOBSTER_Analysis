@@ -14,6 +14,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, GroupShuffleSplit
 from sklearn.metrics import mean_absolute_error, r2_score
 
+from scipy.ndimage import gaussian_filter, map_coordinates
+
 import torch, dgl
 from mace.calculators.mace import MACECalculator
 from ase.io import read 
@@ -413,7 +415,53 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 plt.figure(figsize=(4.4, 3.5))
                 #plt.scatter(new_df[pc_column], chrg_dat, c='blue', alpha=0.1) 
                 #plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00A651", alpha=0.1)
-                plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00C853", alpha=0.1)
+                #plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00C853", alpha=0.1)
+                
+                x, y = new_df[pc_column].to_numpy().reshape(-1), chrg_dat.to_numpy().reshape(-1)
+                counts, xedges, yedges = np.histogram2d(x, y, bins=500)
+
+                smoothed = gaussian_filter(
+                    counts, sigma=1.5, mode="constant"
+                )
+                rng = np.random.default_rng(42)
+                idx = rng.choice(
+                    len(x), size=min(100_000, len(x)), replace=False
+                )
+                xp, yp = x[idx], y[idx]
+                gx = (xp - xedges[0]) / (xedges[1] - xedges[0]) - 0.5
+                gy = (yp - yedges[0]) / (yedges[1] - yedges[0]) - 0.5
+
+                colors = map_coordinates(
+                    smoothed,
+                    [gx, gy],
+                    order=1,
+                    mode="nearest",
+                    prefilter=False,
+                )
+
+                # Draw sparse points first and dense points last.
+                order = np.argsort(colors)
+
+                fig, ax = plt.subplots(figsize=(4.4, 3.5))
+
+                scatter = ax.scatter(
+                    xp[order],
+                    yp[order],
+                    c=colors[order],
+                    cmap="plasma",
+                    s=5,
+                    alpha=1,
+                    edgecolors="none",
+                    rasterized=True,
+                )
+
+                cbar = fig.colorbar(
+                    scatter, ax=ax,
+                    #label="Atom Point Density"
+                )
+                cbar.set_label("Atom Point Density", fontsize=11)
+
+                
                 plt.xlabel(pc_label, fontsize=12)
                 plt.ylabel(chrg_label, fontsize=12)
                 plt.xticks(fontsize=11)
@@ -473,7 +521,52 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             #plt.figure(figsize=(3.8, 3.8))
             plt.figure(figsize=(4.3, 3.5))
             #plt.scatter(new_df['PC2_MACE'], icoxx_data, c='blue', alpha=0.1)
-            plt.scatter(new_df['PC2_MACE'], icoxx_data, s = 10, c=color, alpha=0.1)
+            #plt.scatter(new_df['PC2_MACE'], icoxx_data, s = 10, c=color, alpha=0.1)
+            
+            x, y = new_df['PC2_MACE'].to_numpy().reshape(-1), icoxx_data.to_numpy().reshape(-1)
+            counts, xedges, yedges = np.histogram2d(x, y, bins=500)
+
+            smoothed = gaussian_filter(
+                counts, sigma=1.5, mode="constant"
+            )
+            rng = np.random.default_rng(42)
+            idx = rng.choice(
+                len(x), size=min(100_000, len(x)), replace=False
+            )
+            xp, yp = x[idx], y[idx]
+            gx = (xp - xedges[0]) / (xedges[1] - xedges[0]) - 0.5
+            gy = (yp - yedges[0]) / (yedges[1] - yedges[0]) - 0.5
+
+            colors = map_coordinates(
+                smoothed,
+                [gx, gy],
+                order=1,
+                mode="nearest",
+                prefilter=False,
+            )
+
+            # Draw sparse points first and dense points last.
+            order = np.argsort(colors)
+
+            fig, ax = plt.subplots(figsize=(4.4, 3.5))
+
+            scatter = ax.scatter(
+                xp[order],
+                yp[order],
+                c=colors[order],
+                cmap="plasma",
+                s=5,
+                alpha=1,
+                edgecolors="none",
+                rasterized=True,
+            )
+
+            cbar = fig.colorbar(
+                scatter, ax=ax,
+                #label="Atom Point Density"
+            )
+            cbar.set_label("Atom Point Density", fontsize=11)
+            
             plt.xlabel(r'PC2 (MACE Node Embeddings)', fontsize=12)
             plt.ylabel(icoxx_label, fontsize=12) #fontsize=12
             plt.xticks(fontsize=11)
