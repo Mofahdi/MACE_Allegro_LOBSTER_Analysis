@@ -195,8 +195,8 @@ class AllegroEijIcoxxAnalyzer:
         cbar.update_ticks()
 
 
-        ax.set_xlabel(r"Bond Distance (Å)")
-        ax.set_ylabel(r'Allegro $E_{ij}$ (eV)',) #fontsize=12)
+        ax.set_xlabel(r"Bond Distance (Å)", fontsize=11)
+        ax.set_ylabel(r'Allegro $E_{ij}$ (eV)', fontsize=11) #fontsize=12)
         #plt.colorbar(image, label="Bond Density")
 
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), self.d.reshape(-1)]))[0, 1].item()
@@ -291,7 +291,7 @@ class AllegroEijIcoxxAnalyzer:
         order = np.argsort(colors)
 
         fig, ax = plt.subplots(figsize=(4.4, 3.5))
-
+        
         scatter = ax.scatter(
             xp[order],
             yp[order],
@@ -303,18 +303,6 @@ class AllegroEijIcoxxAnalyzer:
             rasterized=True,
         )
 
-        # positive_colors = np.ma.masked_less_equal(colors[order], 0)
-        # scatter = ax.scatter(
-        #     xp[order],
-        #     yp[order],
-        #     c=positive_colors,
-        #     cmap="plasma",
-        #     norm=LogNorm(),
-        #     s=5,
-        #     edgecolors="none",
-        #     rasterized=True,
-        # )
-
         cbar = fig.colorbar(
             scatter, ax=ax,
             label="Bond Point Density"
@@ -322,8 +310,8 @@ class AllegroEijIcoxxAnalyzer:
         cbar.formatter = FuncFormatter(lambda value, pos: f"{value / 1000:g}k")
         cbar.update_ticks()
         
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(r'Allegro $E_{ij}$ (eV)', ) #fontsize=12
+        ax.set_xlabel(xlabel, fontsize=11)
+        ax.set_ylabel(r'Allegro $E_{ij}$ (eV)', fontsize=11) #fontsize=12
         
         r=torch.corrcoef(torch.stack([self.Eijs.reshape(-1), icoxxs.reshape(-1)]))[0, 1].item()
         plt.plot([], [], ' ', label=f'$r$ = {r:.2f}')

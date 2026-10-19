@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #device ='cpu'
 # Initialize the analysis pipeline with the structure metadata CSV and trained model.
 alleg_icoxx = AllegroEijIcoxxAnalyzer(
-    df_path="mp_data_paths_test.csv",
+    df_path="mp_data_paths.csv",
     model_path="Allegro-OAM-L-0.1.nequip.zip",
     device=device,
 )
