@@ -7,6 +7,9 @@ This repository brings together two complementary pipelines for comparing machin
 
 Together, they provide a consistent framework for testing whether different learned representations capture chemically meaningful structure-bonding relationships. In both workflows, the analysis combines descriptor extraction, PCA, linear probing, and distance-correlation evaluation to quantify alignment between model embeddings and physically interpretable chemical quantities.
 
+## Prerequisites
+- Run `download_data.py` to query the previously published [NOMAD-LAB database](https://doi.org/10.17172/nomad.mc38-9gm1) and download the required LOBSTER calculation output files. The script uses `nomad_entry_ids.csv` (needs pandas in your python environment), which maps material project IDs to NOMAD entry IDs corresponding to calculations performed with the minimal basis.
+
 ## Overview
 
 The two workflows share the same overall objective:
@@ -53,6 +56,7 @@ This pipeline loads a CSV of material entries, builds the Allegro graph for each
 The workflow expects a metadata CSV with at least a `mat_path` and `id` columns. Each structure directory should include:
 
 - `CONTCAR.gz`
+- `CHARGE.lobster.gz`
 - `ICOHPLIST.lobster.gz`
 - `ICOBILIST.lobster.gz`
 
