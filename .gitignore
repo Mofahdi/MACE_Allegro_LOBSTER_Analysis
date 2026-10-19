@@ -15,6 +15,8 @@ MACE_Lobster_Analysis/__pycache__/
 MACE_Lobster_Analysis/LinearProbe/
 MACE_Lobster_Analysis/MACE_chrg_corr/
 MACE_Lobster_Analysis/MACE_Lobster_corr/
+MACE_Lobster_Analysis/accepted
+
 
 
 Allegro_Eij_ICOXX_Analysis/submission_script.sh
@@ -43,3 +45,4 @@ Allegro_Eij_ICOXX_Analysis/results_pre.out
 Allegro_Eij_ICOXX_Analysis/results_4_changes.out
 Allegro_Eij_ICOXX_Analysis/results_64float.out
 Allegro_Eij_ICOXX_Analysis/results_good.out
+Allegro_Eij_ICOXX_Analysis/accepted

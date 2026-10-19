@@ -47,6 +47,11 @@ def evaluate_distance_correlation_matrix_bootstrap(
     for i, j in itertools.combinations_with_replacement(names, 2):
         dcor_values = []
 
+        if i == j:
+            mean_mat.loc[i, j] = 1.0
+            std_mat.loc[i, j] = 0.0
+            continue
+
         for _ in range(num_bootstrap):
             # Bootstrap resample indices with replacement
             idx = rng.integers(0, n_samples, sample_size)
