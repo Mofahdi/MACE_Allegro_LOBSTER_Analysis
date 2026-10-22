@@ -55,6 +55,7 @@ print('\ncomputing dCor from sampled data between PCA of MACE nodes embeddings a
 analyzer.plot_pc_space_and_charge_dcor(
                                     sample_size=dcor_sample_size, 
                                     num_bootstrap=num_dcor_samples,
+                                    extension=extension,
                                     dpi=dpi,
                                     )
 
@@ -64,7 +65,6 @@ analyzer.plot_pc1_pc2_vs_charge(extension=extension, dpi=dpi)
 print('\nPlotting sumICOXX vs. PC2 of MACE node embeddings....')
 analyzer.plot_pc2_vs_sum_icoxx(extension=extension, dpi=dpi)
 #analyzer.plot_PC2MACE_sumICOXX(icoxx_type='icohp', dpi=dpi)
-
 
 
 

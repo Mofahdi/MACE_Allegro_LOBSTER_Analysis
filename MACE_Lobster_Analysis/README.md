@@ -57,7 +57,11 @@ The script automatically constructs paths such as:
 From this directory, execute:
 
 ```bash
-python run_mace_lobster_analysis.py --num-dcor-samples 50 --dcor-sample-size 300 --dpi 800
+python run_mace_lobster_analysis.py \
+  --num-dcor-samples 50 \
+  --dcor-sample-size 300 \
+  --extension .pdf \
+  --dpi 800
 ```
 
 The default arguments are defined in the script, so this also works:
@@ -65,6 +69,17 @@ The default arguments are defined in the script, so this also works:
 ```bash
 python run_mace_lobster_analysis.py
 ```
+
+Available command-line arguments:
+
+| Argument | Default | Description |
+| --- | --- | --- |
+| `--num-dcor-samples` | `50` | Number of bootstrap samples used for distance-correlation estimates. |
+| `--dcor-sample-size` | `300` | Number of observations sampled in each bootstrap iteration. |
+| `--extension` | `.png` | File extension for saved figures, including the leading dot (for example, `.png`, `.pdf`, or `.jpg`). |
+| `--dpi` | `800` | Resolution in dots per inch for saved figures. |
+
+The selected extension applies to figure outputs throughout the workflow. It does not change the extensions of JSON summaries, CSV files, or serialized model files.
 
 ## What the script does
 
@@ -102,18 +117,18 @@ The script writes output files to the current working directory and to subdirect
 
 Representative outputs include:
 
-- `mace_lobster_pearson_heatmap.jpg`
+- `mace_lobster_pearson_heatmap.png`
 - `mace_lobster_pearson_correlation.json`
-- `mace_lobster_dcor_mean_heatmap.jpg`
+- `mace_lobster_dcor_mean_heatmap.png`
 - `mace_lobster_dcor_mean.json`
 - `mace_lobster_dcor_std.json`
-- `mace_pca_loewdin_charge_scatter.jpg`
-- `mace_pca_mulliken_charge_scatter.jpg`
-- `mace_pc1_vs_loewdin_charge.jpg`
-- `mace_pc2_vs_mulliken_charge.jpg`
-- `mace_pc2_vs_sum_icohp.jpg`
-- `mace_pc2_vs_sum_icobi.jpg`
-- `mace_linear_probe_chg_loew.jpg`
+- `mace_pca_loewdin_charge_scatter.png`
+- `mace_pca_mulliken_charge_scatter.png`
+- `mace_pc1_vs_loewdin_charge.png`
+- `mace_pc2_vs_mulliken_charge.png`
+- `mace_pc2_vs_sum_icohp.png`
+- `mace_pc2_vs_sum_icobi.png`
+- `mace_linear_probe_chg_loew.png`
 - `mace_linear_probe_chg_loew_model.pkl`
 - `mace_linear_probe_sum_icohp_results.csv`
 

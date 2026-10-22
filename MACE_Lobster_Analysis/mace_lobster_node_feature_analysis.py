@@ -316,7 +316,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         loewdin_charge = self.df_all['charge_loew']
         mulliken_charge = self.df_all['charge_mull']
         ylabels= ['Loewdin Charge (e)', 'Mulliken Charge (e)']
-        plot_names = ['mace_pca_loewdin_charge_scatter.jpg', 'mace_pca_mulliken_charge_scatter.jpg']
+        plot_names = ['mace_pca_loewdin_charge_scatter', 'mace_pca_mulliken_charge_scatter']
 
         for i, (chg_label, plt_name) in enumerate(zip(ylabels, plot_names)):
             if i==0:
@@ -797,7 +797,5 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.savefig(os.path.join(self.lp, f"mace_linear_probe_{feature_type}{extension}"), dpi=dpi)
         #plt.show()
         plt.close()
-
-
 
 
