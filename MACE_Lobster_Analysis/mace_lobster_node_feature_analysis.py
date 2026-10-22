@@ -151,7 +151,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_pearson_heatmap(self, dpi) -> None:
+    def plot_pearson_heatmap(self, extension: str = '.jpg', dpi: int = 800,) -> None:
         """Plot the Pearson correlation matrix between PCA-compressed MACE features and LOBSTER features.
 
         The first two principal components of the MACE node embeddings are appended to the
@@ -195,7 +195,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         plt.xticks(rotation=45, ha='right', fontsize=13)
         plt.yticks(rotation=0, fontsize=13)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lobster_corr, 'mace_lobster_pearson_heatmap.jpg'), dpi=dpi, bbox_inches='tight')
+        plt.savefig(os.path.join(self.lobster_corr, 'mace_lobster_pearson_heatmap'+extension), dpi=dpi, bbox_inches='tight')
         plt.close()
         corr.to_json(os.path.join(self.lobster_corr, "mace_lobster_pearson_correlation.json"), orient="records", indent=4)
 
@@ -204,6 +204,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
     def compute_distance_correlation(
             self, sample_size: int = 400, 
             num_bootstrap: int = 100, 
+            extension: str = '.jpg', 
             dpi: int = 800,
             ) -> None:
         """Compute the distance-correlation matrix between MACE and LOBSTER node features.
@@ -274,7 +275,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         #ax.set_title("MACE–LOBSTER Mean Distance Correlation")
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lobster_corr, "mace_lobster_dcor_mean_heatmap.jpg"), dpi=dpi, bbox_inches="tight")
+        plt.savefig(os.path.join(self.lobster_corr, "mace_lobster_dcor_mean_heatmap"+extension), dpi=dpi, bbox_inches="tight")
         plt.close()
 
 
@@ -285,6 +286,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         #plot_name_mulliken: str = ,
         sample_size: int = 400,
         num_bootstrap: int = 100,
+        extension: str = '.jpg', 
         dpi: int = 800,
     ) -> None:
         """Project MACE node features into PCA space and quantify their relationship to charge.
@@ -349,7 +351,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
             plt.tight_layout()
             #if save_plot:
-            plt.savefig(os.path.join(self.chrg_corr, plt_name), dpi=dpi) # dpi=dpi)
+            plt.savefig(os.path.join(self.chrg_corr, plt_name+extension), dpi=dpi) # dpi=dpi)
             plt.close()
 
 
@@ -381,7 +383,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
 
 
-    def plot_pc1_pc2_vs_charge(self, dpi: int) -> None:
+    def plot_pc1_pc2_vs_charge(self, extension: str = '.jpg', dpi: int = 800) -> None:
         """Plot both MACE principal components against Loewdin and Mulliken charge values.
 
         Parameters
@@ -482,14 +484,14 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 )
                 plt.tight_layout()
                 plt.savefig(
-                    os.path.join(self.chrg_corr, f'mace_{pc_suffix.lower()}_vs_{chrg_type.replace("chg_", "")}_charge.jpg'),
+                    os.path.join(self.chrg_corr, f'mace_{pc_suffix.lower()}_vs_{chrg_type.replace("chg_", "")}_charge'+extension),
                     dpi=dpi,
                 )
                 plt.close()
 
 
 
-    def plot_pc2_vs_sum_icoxx(self, dpi: int) -> None:
+    def plot_pc2_vs_sum_icoxx(self, extension: str = '.jpg', dpi: int = 800) -> None:
         """Plot the second MACE principal component versus summed ICOHP/ICOBI values.
 
         Parameters
@@ -589,13 +591,13 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
             plt.tight_layout()
             #if save_plot:
             plt.show()
-            plt.savefig(os.path.join(self.lobster_corr, f'mace_pc2_vs_sum_{icoxx_type}.jpg'), dpi=dpi)
+            plt.savefig(os.path.join(self.lobster_corr, f'mace_pc2_vs_sum_{icoxx_type}{extension}'), dpi=dpi)
             plt.close()
 
 
 
 
-    def fit_linProb(self, feature_type: str, dpi: int = 800) -> None:
+    def fit_linProb(self, feature_type: str, extension: str = '.jpg', dpi: int = 800) -> None:
         """Train a linear regression model to predict a target scalar property from MACE descriptors.
 
         Parameters
@@ -792,7 +794,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
 
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lp, f"mace_linear_probe_{feature_type}.jpg"), dpi=dpi)
+        plt.savefig(os.path.join(self.lp, f"mace_linear_probe_{feature_type}{extension}"), dpi=dpi)
         #plt.show()
         plt.close()
 
