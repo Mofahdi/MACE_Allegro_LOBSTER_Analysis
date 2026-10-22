@@ -131,7 +131,8 @@ class AllegroEijIcoxxAnalyzer:
     def plot_Eij_d(
         self,
         save_plot: bool = True,
-        Eij_icoxx_plot_name: str = "Eij_vs_distance.png",
+        Eij_icoxx_plot_name: str = "Eij_vs_distance",
+        extension: str = '.png',
         dpi: float = 400,
     ) -> tuple[float, float]:
         """Plot Eij against bond distance and return correlation metrics.
@@ -140,6 +141,7 @@ class AllegroEijIcoxxAnalyzer:
             save_plot: If True, save the figure to disk.
             Eij_icoxx_plot_name: File name used when saving the figure.
             dpi: Resolution used for saved plots.
+            extension: File extension to append to the plot filename, including the leading dot (e.g., ".png").
 
         Returns:
             A tuple of Pearson correlation and distance-correlation values.
@@ -214,7 +216,7 @@ class AllegroEijIcoxxAnalyzer:
         )
         plt.tight_layout()
         if save_plot:
-            plt.savefig(os.path.join(self.EijAnalysis, Eij_icoxx_plot_name), dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, Eij_icoxx_plot_name+extension), dpi=dpi)
         plt.show()
 
         pd.DataFrame({"bond distance": self.d.squeeze(), "Eij": self.Eijs.squeeze()}).to_csv(
@@ -241,7 +243,8 @@ class AllegroEijIcoxxAnalyzer:
         self,
         icohp: bool = True,
         save_plot: bool = True,
-        Eij_icoxx_plot_name: str = "Eij_vs_ICOHP.png",
+        Eij_icoxx_plot_name: str = "Eij_vs_ICOHP",
+        extension: str = '.png',
         dpi: float = 400,
     ) -> tuple[float, float]:
         """Plot Eij against ICOHP or ICOBI and return correlation metrics.
@@ -251,6 +254,7 @@ class AllegroEijIcoxxAnalyzer:
             save_plot: If True, save the figure to disk.
             Eij_icoxx_plot_name: File name used when saving the figure.
             dpi: Resolution used for saved plots.
+            
 
         Returns:
             A tuple of Pearson correlation and distance-correlation values.
@@ -328,7 +332,7 @@ class AllegroEijIcoxxAnalyzer:
         )
         plt.tight_layout()
         if save_plot:
-            plt.savefig(os.path.join(self.EijAnalysis, Eij_icoxx_plot_name), dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, Eij_icoxx_plot_name+extension), dpi=dpi)
         plt.show()
 
         label = "ICOHP" if icohp else "ICOBI"
@@ -351,7 +355,7 @@ class AllegroEijIcoxxAnalyzer:
         # )
 
 
-    def fit_linProb(self, icohp: bool, dpi: int):
+    def fit_linProb(self, icohp: bool, dpi: int, extension: str = '.png'):
         """
         Train a linear model for ICOHP or ICOBI prediction.
 
@@ -505,7 +509,7 @@ class AllegroEijIcoxxAnalyzer:
 
         #plt.legend(loc='upper left', frameon=False)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.lp, "linear_probe_ICOHP.png" if icohp else "linear_probe_ICOBI.png"), dpi=dpi)
+        plt.savefig(os.path.join(self.lp, "linear_probe_ICOHP"+extension if icohp else "linear_probe_ICOBI"+extension), dpi=dpi)
         #plt.show()
         plt.close()
 
@@ -515,7 +519,8 @@ class AllegroEijIcoxxAnalyzer:
         num_dcor_samples: int,
         dcor_sample_size: int,
         save_plot: bool = True,
-        PCAXijFeats_dist_plot_name: str = "PCA_feature_space_distance.png",
+        PCAXijFeats_dist_plot_name: str = "PCA_feature_space_distance",
+        extension: str = '.png',
         dpi: float = 400,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Plot the PCA manifold of xij features against bond distance.
@@ -552,7 +557,7 @@ class AllegroEijIcoxxAnalyzer:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         if save_plot:
-            plt.savefig(os.path.join(self.EijAnalysis, PCAXijFeats_dist_plot_name), dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, PCAXijFeats_dist_plot_name+extension), dpi=dpi)
         plt.show()
 
         pd.DataFrame(
@@ -580,7 +585,8 @@ class AllegroEijIcoxxAnalyzer:
         num_dcor_samples: int,
         dcor_sample_size: int,
         save_plot: bool = True,
-        PCAXijFeats_icoxx_plot_name: str = "PCA_feature_space_ICOHP.png",
+        PCAXijFeats_icoxx_plot_name: str = "PCA_feature_space_ICOHP",
+        extension: str = '.png',
         dpi: float = 400,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Plot the PCA manifold of xij features against ICOHP/ICOBI values.
@@ -622,7 +628,7 @@ class AllegroEijIcoxxAnalyzer:
         #ax.yaxis.set_major_locator(MaxNLocator(nbins=ny + 1))
         plt.tight_layout()
         if save_plot:
-            plt.savefig(os.path.join(self.EijAnalysis, PCAXijFeats_icoxx_plot_name), dpi=dpi)
+            plt.savefig(os.path.join(self.EijAnalysis, PCAXijFeats_icoxx_plot_name+extension), dpi=dpi)
         plt.show()
 
         label = "ICOHP" if icohp else "ICOBI"

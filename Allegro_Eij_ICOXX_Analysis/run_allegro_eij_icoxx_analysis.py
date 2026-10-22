@@ -8,12 +8,14 @@ from allegro_eij_icoxx_analysis import AllegroEijIcoxxAnalyzer
 parser = argparse.ArgumentParser(description="Run the Allegro Eij/ICOXX analysis workflow.")
 parser.add_argument("--num-dcor-samples", type=int, default=20, help="Number of bootstrap samples for distance-correlation estimation.")
 parser.add_argument("--dcor-sample-size", type=int, default=50000, help="Sample size used within each distance-correlation bootstrap iteration.")
+parser.add_argument("--extension", type=str, default='.png', help="File extension for saved figures, including the leading dot (e.g., .png or .pdf).")
 parser.add_argument("--dpi", type=int, default=800, help="Figure resolution in dots per inch for saved plots.")
 args = parser.parse_args()
 
 # good numbers are: 20 then 50,000, then 800
 num_dcor_samples = args.num_dcor_samples
 dcor_sample_size = args.dcor_sample_size
+extension = args.extension
 dpi = args.dpi
 
 # Use GPU when available; otherwise fall back to CPU for model inference.
@@ -42,7 +44,8 @@ print("number of edges", Eijs.shape[0])
 PCorr_ICOHP, dcor_ICOHP = alleg_icoxx.plot_Eij_icoxx(
     icohp=True,
     save_plot=True,
-    Eij_icoxx_plot_name="Eij_vs_ICOHP.png",
+    Eij_icoxx_plot_name="Eij_vs_ICOHP",
+    extension = extension,
     dpi=dpi,
 )
 print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, float(dcor_ICOHP))
@@ -51,7 +54,8 @@ print("Eij and ICOHP Pearson and dcor Correlations:", PCorr_ICOHP, float(dcor_IC
 PCorr_ICOBI, dcor_ICOBI = alleg_icoxx.plot_Eij_icoxx(
     icohp=False,
     save_plot=True,
-    Eij_icoxx_plot_name="Eij_vs_ICOBI.png",
+    Eij_icoxx_plot_name="Eij_vs_ICOBI",
+    extension = extension,
     dpi=dpi,
 )
 print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, float(dcor_ICOBI))
@@ -59,7 +63,8 @@ print("Eij and ICOBI Pearson and dcor Correlations:", PCorr_ICOBI, float(dcor_IC
 # Plot Eij versus bond distance and report Pearson and distance-correlation values.
 Pcorr_d, dcor_d = alleg_icoxx.plot_Eij_d(
     save_plot=True,
-    Eij_icoxx_plot_name="Eij_vs_distance.png",
+    Eij_icoxx_plot_name="Eij_vs_distance",
+    extension = extension,
     dpi=dpi,
 )
 print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, float(dcor_d))
@@ -81,7 +86,8 @@ XijICOHP_dcor_mean, XijICOHP_dcor_std = alleg_icoxx.plot_PCAXij_icoxx_and_dcor(
     dcor_sample_size=dcor_sample_size,
     icohp=True,
     save_plot=True,
-    PCAXijFeats_icoxx_plot_name="PCA_feature_space_ICOHP.png",
+    PCAXijFeats_icoxx_plot_name="PCA_feature_space_ICOHP",
+    extension = extension,
     dpi=dpi,
 )
 print("\n\nICOHP, Xij dcor (mean, std):")
@@ -96,7 +102,8 @@ XijICOBI_dcor_mean, XijICOBI_dcor_std = alleg_icoxx.plot_PCAXij_icoxx_and_dcor(
     dcor_sample_size=dcor_sample_size,
     icohp=False,
     save_plot=True,
-    PCAXijFeats_icoxx_plot_name="PCA_feature_space_ICOBI.png",
+    PCAXijFeats_icoxx_plot_name="PCA_feature_space_ICOBI",
+    extension = extension,
     dpi=dpi,
 )
 print("\n\nICOBI, Xij dcor (mean, std):")
@@ -110,7 +117,8 @@ XijD_dcor_mean_mat, XijD_dcor_std_mat = alleg_icoxx.plot_PCAXijFeats_d_and_dcor(
     num_dcor_samples=num_dcor_samples,
     dcor_sample_size=dcor_sample_size,
     save_plot=True,
-    PCAXijFeats_dist_plot_name="PCA_feature_space_distance.png",
+    PCAXijFeats_dist_plot_name="PCA_feature_space_distance",
+    extension = extension,
     dpi=dpi,
 )
 print("\n\nd, Xij dcor (mean, std):")
