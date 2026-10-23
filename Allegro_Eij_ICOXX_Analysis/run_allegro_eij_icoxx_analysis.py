@@ -72,10 +72,10 @@ print("Eij and bond length Pearson and dcor Correlations:", Pcorr_d, float(dcor_
 
 
 print('\n\nICOHP Linear Probe....')
-alleg_icoxx.fit_linProb(icohp = True, dpi = dpi)
+alleg_icoxx.fit_linProb(icohp = True, extension = extension, dpi = dpi)
 
 print('\nICOBI Linear Probe....')
-alleg_icoxx.fit_linProb(icohp = False, dpi = dpi)
+alleg_icoxx.fit_linProb(icohp = False, extension = extension, dpi = dpi)
 
 
 
