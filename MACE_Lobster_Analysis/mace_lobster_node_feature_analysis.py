@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 import seaborn as sns
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
@@ -26,6 +27,12 @@ from distance_correlation import evaluate_distance_correlation_matrix_bootstrap
 
 default_dtype = torch.float32
 torch.set_default_dtype(default_dtype)
+
+matplotlib.rcParams['pdf.fonttype'] = 42
+#plt.rcParams["font.family"] = "Arial"
+
+
+
 
 class MACE_LOBSTER_NodeFeatureAnalysis:
     def __init__(self, df_path: str, model_path: str, device: torch.device) -> None:
@@ -333,6 +340,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 self.df_all['PC2_MACE'], #self.mace_node_feats_pca[:, 1],
                 c=color_dat,
                 s=5,
+                rasterized=True,
                 #cmap="rainbow"
                 )
             plt.xlabel(r"PC1 (MACE Node Embeddings)", fontsize=11)
@@ -415,7 +423,6 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
                 chrg_dat: pd.Series = new_df[charge_column]
 
                 plt.figure(figsize=(4.4, 3.5))
-                #plt.scatter(new_df[pc_column], chrg_dat, c='blue', alpha=0.1) 
                 #plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00A651", alpha=0.1)
                 #plt.scatter(new_df[pc_column], chrg_dat, s = 10, c="#00C853", alpha=0.1)
                 
@@ -764,7 +771,7 @@ class MACE_LOBSTER_NodeFeatureAnalysis:
         # Predicted versus actual ICOHP
         plt.figure(figsize=(4.4, 3.5)) #(5, 4)
         #plt.scatter(y_test, y_pred, c='b', alpha=0.1,) #label=f"R$^2$ = {r2:.3f}")
-        plt.scatter(y_test, y_pred, c=color, alpha=0.1, s = 10) #label=f"R$^2$ = {r2:.3f}")
+        plt.scatter(y_test, y_pred, c=color, alpha=0.1, s = 10, rasterized=True,) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
         plt.xlabel(xlabel, fontsize=12)
