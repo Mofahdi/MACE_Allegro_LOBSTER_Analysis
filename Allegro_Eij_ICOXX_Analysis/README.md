@@ -121,8 +121,14 @@ From the project directory, run:
 python run_allegro_eij_icoxx_analysis.py \
   --num-dcor-samples 20 \
   --dcor-sample-size 50000 \
+  --extension .pdf \
   --dpi 800
 ```
+
+`--extension` sets the file extension for the analysis plots, including the
+leading dot. It defaults to `.png`; for example, use `--extension .pdf` to save
+those plots as PDF files. Plot names in the script are extension-free, so do
+not include an extension in the plot name itself.
 
 The default arguments are defined in the script, so this also works:
 
@@ -135,6 +141,7 @@ Command-line arguments:
 
 - `--num-dcor-samples`: number of bootstrap samples used in the distance-correlation analysis
 - `--dcor-sample-size`: sample size used in each bootstrap iteration
+- `--extension`: file extension for saved analysis plots, including the leading dot (default: `.png`)
 - `--dpi`: saved figure resolution in dots per inch
 
 The script automatically uses GPU if available and falls back to CPU otherwise.
