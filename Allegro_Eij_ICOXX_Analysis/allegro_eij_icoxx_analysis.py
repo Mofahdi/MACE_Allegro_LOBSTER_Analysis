@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FuncFormatter
@@ -34,6 +35,11 @@ from pymatgen.core import Structure
 
 default_dtype: torch.dtype = torch.float32
 torch.set_default_dtype(default_dtype)
+
+matplotlib.rcParams['pdf.fonttype'] = 42
+#plt.rcParams["font.family"] = "Arial"
+
+
 
 
 class AllegroEijIcoxxAnalyzer:
@@ -148,7 +154,6 @@ class AllegroEijIcoxxAnalyzer:
         """
 
         #plt.figure(figsize=(4.4, 3.5))
-        #plt.scatter(self.d, self.Eijs, c='blue', alpha=0.1)
         #plt.scatter(self.d, self.Eijs, c="#E6A700", alpha=0.1, s = 10)
         
         x, y = self.d.numpy().reshape(-1), self.Eijs.numpy().reshape(-1)
@@ -265,7 +270,6 @@ class AllegroEijIcoxxAnalyzer:
         color = '#DD2D2D' if icohp else "#0852F1"
 
         plt.figure(figsize=(4.4,3.5))
-        #plt.scatter(icoxxs, self.Eijs, c=color, alpha=0.1, s = 10)
         x, y = icoxxs.numpy().reshape(-1), self.Eijs.numpy().reshape(-1)
         
         counts, xedges, yedges = np.histogram2d(x, y, bins=500)
@@ -481,7 +485,7 @@ class AllegroEijIcoxxAnalyzer:
         color = "#DD2D2D" if icohp else "#0852F1"
         # Predicted versus actual ICOHP
         plt.figure(figsize=(4.4, 3.5)) #(5, 4)
-        plt.scatter(y_test, y_pred, c=color, alpha=0.1, s=10) #label=f"R$^2$ = {r2:.3f}")
+        plt.scatter(y_test, y_pred, c=color, alpha=0.1, s=10, rasterized=True) #label=f"R$^2$ = {r2:.3f}")
         limits = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
         plt.plot(limits, limits, "k--",) #label="ideal prediction")
         plt.xlabel("Actual ICOHP (eV)" if icohp else "Actual ICOBI")
@@ -543,6 +547,7 @@ class AllegroEijIcoxxAnalyzer:
             self.EijFeats_pca[:, 1],
             c=self.d,
             s=5,
+            rasterized=True,
             #cmap="rainbow"
             )
         plt.xlabel(r"PC1 (Allegro Edge Embeddings)", fontsize=11)
@@ -614,6 +619,7 @@ class AllegroEijIcoxxAnalyzer:
             self.EijFeats_pca[:, 1],
             c=icoxxs,
             s=5,
+            rasterized=True,
             #cmap="rainbow"
             )
         plt.xlabel(r"PC1 (Allegro Edge Embeddings)", fontsize=11)
