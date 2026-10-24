@@ -139,11 +139,14 @@ python run_allegro_eij_icoxx_analysis.py
 
 Command-line arguments:
 
-- `--num-dcor-samples`: number of bootstrap samples used in the distance-correlation analysis
-- `--dcor-sample-size`: sample size used in each bootstrap iteration
-- `--extension`: file extension for saved analysis plots, including the leading dot (default: `.png`)
-- `--dpi`: saved figure resolution in dots per inch
+| Argument | Default | Description |
+| --- | --- | --- |
+| `--num-dcor-samples` | `20` | Number of bootstrap samples used for distance-correlation estimates. |
+| `--dcor-sample-size` | `50000` | Number of observations sampled in each bootstrap iteration. |
+| `--extension` | `.png` | File extension for saved figures, including the leading dot (for example, `.png`, `.pdf`, or `.jpg`). |
+| `--dpi` | `800` | Resolution in dots per inch for saved figures. |
 
+The selected extension applies to figure outputs throughout the workflow. It does not change the extensions of JSON summaries, CSV files, or serialized model files.
 The script automatically uses GPU if available and falls back to CPU otherwise.
 
 ## Generated outputs
